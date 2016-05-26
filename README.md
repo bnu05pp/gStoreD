@@ -13,7 +13,7 @@ You can install gStoreD 1.0 in one command. Just run
 
 `# make` 
 
-to compile the gStore code and build executable "gload", "gquery", "gserver", "gclient".
+to compile the gStore code and build executable "gload", "gquery".
 
 ### Usage
 gStoreD 1.0 currently includes four executables and others.
