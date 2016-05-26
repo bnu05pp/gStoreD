@@ -1,0 +1,7 @@
+select ?a ?d ?f1 ?f2 ?n1 ?n2 where {
+?d	<http://dbpedia.org/ontology/spouse>	?a.
+?f2	<http://dbpedia.org/ontology/director>	?d.
+?f2	<http://xmlns.com/foaf/0.1/name>	?n2.
+?f1	<http://dbpedia.org/ontology/starring>	?a.
+?f1	<http://xmlns.com/foaf/0.1/name>	?n1.
+}
