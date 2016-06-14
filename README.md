@@ -13,7 +13,7 @@ You can install gStoreD 1.0 in one command. Just run
 
 `# make` 
 
-to compile the gStore code and build executable "gloadD", "gquery".
+to compile the gStore code and build executable "gloadD", "gqueryD".
 
 ### Usage
 gStoreD 1.0 currently includes four executables and others.
@@ -27,16 +27,12 @@ For example, we build a database from dbpedia_example_distgStore.n3 which can be
 
     [root@master Gstore]# mpiexec -f host.txt -n 5 ./gloadD db_dbpedia_example_distgStore ./example/dbpedia_example_distgStore.n3 ./example/dbpedia_example_distgStore_internal.TXT
 
-####2. gquery
-gquery is used to query an exsisting database with SPARQL files.
+####2. gqueryD
+gqueryD is used to query an exsisting database with SPARQL files.
 
-`./gqueryD db_name query_file_name`  (use `./gquery --help` for detail)
+`mpiexec -f host_file_name -n host_number + 1 ./gqueryD db_name query_file_name`  (use `./gquery --help` for detail)
 
-The program shows a command prompt("gsql>"): you can type in a command here, use `help` to see information of all commands.
-
-For `sparql` command, input a file name which can be interpreted as a single SPARQL query. 
-
-When the program finish answering the query, it shows the command prompt again. 
+When the program finish answering the query, the SPARQL matches are written in the file named `finalRes.txt`.
 
 *gStoreD 1.0 only support simple “select” queries now.*
 
