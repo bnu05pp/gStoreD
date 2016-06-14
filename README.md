@@ -23,6 +23,8 @@ gloadD is used to build a new database from a RDF triple format file.
 
 `# mpiexec -f host_file_name -n host_number + 1 ./gloadD db_name rdf_triple_file_name internal_vertices_file_name`
 
+Each line in the file of the internal vertices consists of two parts: the first part is the URI of an resouce, and the second part is the identifier of the partition that the resouce belongs to. The tab "\t" is used as the separator.
+
 For example, we build a database from dbpedia_example_distgStore.n3 which can be found in example folder.
 
     [root@master Gstore]# mpiexec -f host.txt -n 5 ./gloadD db_dbpedia_example_distgStore ./example/dbpedia_example_distgStore.n3 ./example/dbpedia_example_distgStore_internal.TXT
