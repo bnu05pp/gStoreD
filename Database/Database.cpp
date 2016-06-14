@@ -1712,6 +1712,134 @@ Database::objIDIsEntityID(int _id)
     return _id < Database::LITERAL_FIRST_ID;
 }
 
+bool
+Database::join(vector<int*>& _result_list, int _var_id, int _pre_id, \
+               int _var_id2, const char _edge_type, int _var_num, \
+               bool shouldAddLiteral, IDList& _can_list, bool* _dealed_internal_arr)
+{
+    int* id_list;
+    int id_list_len;
+    vector<int*> new_result_list;
+
+    vector<int*>::iterator itr = _result_list.begin();
+
+    bool has_preid = (_pre_id >= 0);
+    for ( ; itr != _result_list.end(); itr++)
+    {
+        int* itr_result = (*itr);
+		//if the mapping of the _var_id is not an internal vertex, do not join
+		if(itr_result[_var_id] == -1)
+		{
+			new_result_list.push_back(itr_result);
+			continue;
+		}
+		
+		if(itr_result[_var_id] < Database::LITERAL_FIRST_ID)
+		{
+			if ('0' == this->internal_tag_arr.at(itr_result[_var_id]))
+			{
+				new_result_list.push_back(itr_result);
+				continue;
+			}
+		}
+
+		/*
+		cout << "shouldAddLiteral is " << shouldAddLiteral << endl;
+        if (_can_list.size()==0 && !shouldAddLiteral)
+        {
+            itr_result[_var_num] = -1;
+            continue;
+        }
+		*/
+
+        if (has_preid)
+        {
+            if (_edge_type == BasicQuery::EDGE_IN)
+            {
+                kvstore->getsubIDlistByobjIDpreID(itr_result[_var_id],
+                                                  _pre_id, id_list, id_list_len);
+            }
+            else
+            {
+                kvstore->getobjIDlistBysubIDpreID(itr_result[_var_id],
+                                                  _pre_id, id_list, id_list_len);
+            }
+
+        }
+        else
+            /* pre_id == -1 means we cannot find such predicate in rdf file, so the result set of this sparql should be empty.
+             * note that we cannot support to query sparqls with predicate variables ?p.
+             */
+        {
+            id_list_len = 0;
+        }
+
+        if (id_list_len == 0)
+        {
+            itr_result[_var_num] = -1;
+            continue;
+        }
+		
+        stringstream _tmp_ss;
+        for (int i = 0; i < id_list_len; i++)
+        {
+			if(id_list[i] >= Database::LITERAL_FIRST_ID){
+				int* result = new int[_var_num + 1];
+				memcpy(result, itr_result,
+					   sizeof(int) * (_var_num + 1));
+				result[_var_id2] = id_list[i];
+				new_result_list.push_back(result);
+				continue;
+			}
+			
+			if ('0' == this->internal_tag_arr.at(id_list[i]))
+			{
+				int* result = new int[_var_num + 1];
+				memcpy(result, itr_result,
+					   sizeof(int) * (_var_num + 1));
+				result[_var_id2] = id_list[i];
+				new_result_list.push_back(result);
+				continue;
+			}
+			
+			if(_dealed_internal_arr[_var_id2]){
+				continue;
+			}
+
+            bool found_in_id_list = _can_list.bsearch_uporder(id_list[i]) >= 0;
+            bool should_add_this_literal = shouldAddLiteral && !this->objIDIsEntityID(id_list[i]);
+
+            // if we found this element(entity/literal) in var1's candidate list,
+            // or this is a literal element and var2 is a free literal variable,
+            // we should add this one to result array.
+            if (found_in_id_list || should_add_this_literal)
+            {
+				int* result = new int[_var_num + 1];
+				memcpy(result, itr_result,
+					   sizeof(int) * (_var_num + 1));
+				result[_var_id2] = id_list[i];
+				new_result_list.push_back(result);
+            }
+        }
+
+        delete[] id_list;
+    }
+	
+	//cout << "after join=========" << new_result_list.size() << endl;
+	_result_list.assign(new_result_list.begin(), new_result_list.end());
+	
+	int invalid_num = 0;
+    for(unsigned i = 0; i < _result_list.size(); i ++)
+    {
+        if(_result_list[i][_var_num] == -1)
+        {
+            invalid_num ++;
+        }
+    }
+
+    //cout << "*****Join done" << endl;
+    return true;
+}
 
 bool
 Database::join(vector<int*>& _result_list, int _var_id, int _pre_id, \
@@ -1844,30 +1972,24 @@ bool Database::select(vector<int*>& _result_list,int _var_id,int _pre_id,int _va
 
     int* id_list;
     int id_list_len;
+	vector<int*> new_result_list;
 
     vector<int*>::iterator itr = _result_list.begin();
     for ( ;	itr != _result_list.end(); itr++)
     {
         int* itr_result = (*itr);
+		
 		//if the endpoints of the mapping edges are two internal vertices, do not select
 		if ('0' == this->internal_tag_arr.at(itr_result[_var_id]) && '0' == this->internal_tag_arr.at(itr_result[_var_id2]))
-		{
-			continue;
-		}
-		
-		/*
-		//if the mapping of the _var_id is not an internal vertex, do not select
-		if ('0' == this->internal_tag_arr[itr_result[_var_id]])
 		{
 			new_result_list.push_back(itr_result);
 			continue;
 		}
-		*/
 		
-        if (itr_result[_var_num] == -1)
-        {
-            continue;
-        }
+        //if (itr_result[_var_num] == -1)
+        //{
+        //    continue;
+        //}
 
         //bool ret = false;
         if (_pre_id >= 0)
@@ -1904,7 +2026,7 @@ bool Database::select(vector<int*>& _result_list,int _var_id,int _pre_id,int _va
 
         if (id_list_len == 0)
         {
-            itr_result[_var_num] = -1;
+            //itr_result[_var_num] = -1;
             continue;
         }
 
@@ -1912,10 +2034,13 @@ bool Database::select(vector<int*>& _result_list,int _var_id,int _pre_id,int _va
                                       id_list_len) == -1)
         {
             itr_result[_var_num] = -1;
-        }
+        }else{
+			new_result_list.push_back(itr_result);
+		}
         delete[] id_list;
     }
 
+	_result_list.assign(new_result_list.begin(), new_result_list.end());
     int invalid_num = 0;
     for(unsigned i = 0; i < _result_list.size(); i ++)
     {
@@ -2011,26 +2136,28 @@ Database::joinASK(SPARQLquery& _sparql_query, int myRank, string& res_char_arr)/
     return var_num;
 }
 
-void
+string
 Database::printResList(vector<int*>* _res_list, int _len, string _offset)
 {
+	stringstream _ss;
 	for(int i = 0; i < _res_list->size(); i++){
-		cout << _offset;
 		int* result_var = _res_list->at(i);
+		_ss << _offset;
 		for(int j = 0; j < _len; j++){
 			if(result_var[j] != -1){
 				string _tmp = (this->kvstore)->getEntityByID(result_var[j]);
 				if(_tmp.compare("") != 0){
-					cout << _tmp << " ";
+					_ss << this->internal_tag_arr.at(result_var[j]) << " " << result_var[j] << " " << _tmp << " ";
 				}else{
-					cout << (this->kvstore)->getLiteralByID(result_var[j]) << " ";
+					_ss << "1 " << result_var[j] << " " << this->kvstore->getLiteralByID(result_var[j]) << " ";
 				}
 			}else{
-				cout << "-1 ";
+				_ss << "-1 ";
 			}
 		}
-		cout << endl;
+		_ss << endl;
 	}
+	return _ss.str();
 }
 
 void
@@ -2088,15 +2215,17 @@ Database::join_pe(BasicQuery* basic_query, string& res)
 	//set<int*>* all_result_set;
 	all_result_list->clear();
 	//set<string> dealed_subquery;
+	
+	//ofstream log_output("log_intermedidate.txt");
+	bool* dealed_internal_id_list = new bool[var_num];
+	memset(dealed_internal_id_list, 0, sizeof(bool) * var_num);
 
 	for(int res_j = 0; res_j < var_num; res_j++){
 	
 		//mark dealed_id_list and dealed_triple, 0 not processed, 1 for processed
 		bool* dealed_id_list = new bool[var_num];
-		//bool* dealed_internal_id_list = new bool[var_num];
 		bool* dealed_triple = new bool[triple_num];
 		memset(dealed_id_list, 0, sizeof(bool) * var_num);
-		//memset(dealed_internal_id_list, 0, sizeof(bool) * var_num);
 		memset(dealed_triple, 0, sizeof(bool) * triple_num);
 
 		int start_var_id = res_j;
@@ -2122,6 +2251,7 @@ Database::join_pe(BasicQuery* basic_query, string& res)
 		stack<int> var_stack;
 		var_stack.push(start_var_id);
 		dealed_id_list[start_var_id] = true;
+		//log_output << "start_var_id = " << start_var_id << endl;
 		//dealed_internal_id_list[start_var_id] = true;
 		//dealed_subquery.insert(this->printDealedVertices(dealed_internal_id_list, var_num));
 		/*
@@ -2133,15 +2263,17 @@ Database::join_pe(BasicQuery* basic_query, string& res)
 		while (!var_stack.empty())
 		{
 			int var_id = var_stack.top();
-			/*
+			
 			stringstream ss;
+			/*
 			ss << var_stack.size() << "-" << var_id << "\t";
-			this->printResList(p_result_list, var_num + 1, ss.str());
+			string output_str = this->printResList(p_result_list, var_num + 1, ss.str());
+			log_output << output_str << endl;
 			*/
 			var_stack.pop();
 			
 			int var_degree = basic_query->getVarDegree(var_id);
-			bool join_tag = false, processing_tag = false;
+			//bool join_tag = false, processing_tag = false;
 			for (int i = 0; i < var_degree; i++)
 			{
 				// each triple/edge need to be processed only once.
@@ -2157,7 +2289,7 @@ Database::join_pe(BasicQuery* basic_query, string& res)
 					continue;
 				}
 				
-				processing_tag = true;//if do not join or select, we do not clear the result list
+				//processing_tag = true;//if do not join or select, we do not clear the result list
 				
 				int pre_id = basic_query->getEdgePreID(var_id, i);//predicate id
 				char edge_type = basic_query->getEdgeType(var_id, i);
@@ -2167,12 +2299,12 @@ Database::join_pe(BasicQuery* basic_query, string& res)
 				{
 					//join
 					join(*p_result_list, var_id, pre_id, var_id2, edge_type,
-						 var_num, true, can_list);
-					
+						 var_num, true, can_list, dealed_internal_id_list);
 					/*
 					ss.str("");
 					ss << var_id << "\t" << var_id2 << "\t";
-					this->printResList(p_result_list, var_num + 1, ss.str());
+					string output_str = this->printResList(p_result_list, var_num + 1, ss.str());
+					log_output << "after join ++++++++ "<< endl << output_str << endl;
 					*/
 					var_stack.push(var_id2);
 					basic_query->setAddedLiteralCandidate(var_id2);
@@ -2182,17 +2314,21 @@ Database::join_pe(BasicQuery* basic_query, string& res)
 				{
 					//select
 					select(*p_result_list, var_id, pre_id, var_id2, edge_type,var_num);
-					join_tag = true;
+					//join_tag = true;
+					/*
+					ss.str("");
+					ss << var_id << "\t" << var_id2 << "\t";
+					output_str = this->printResList(p_result_list, var_num + 1, ss.str());
+					log_output << "after select ======== "<< endl << output_str << endl;
+					*/
 				}
 
 				dealed_triple[edge_id] = true;
 			}
-			if(!join_tag && var_stack.empty() && processing_tag){
-				p_result_list->clear();
-			}
 		}
 		//cout << "--------------variable " << res_j << " of " << var_num << " finds " << p_result_list->size() << " results" << endl;
 		all_result_list->insert(all_result_list->end(), p_result_list->begin(), p_result_list->end());
+		dealed_internal_id_list[start_var_id] = true;
 	}
 
     //cout << "OOOOOUT join partial evaluation and find out " << all_result_list->size() << " results" << endl;

@@ -28,7 +28,7 @@ objfile = $(kvstoreobj) $(vstreeobj) $(parserobj) $(serverobj) \
 inc = -I./tools/libantlr3c-3.4/ -I./tools/libantlr3c-3.4/include
 
 #gquery 
-all: lib_antlr gload gloadD gserver gclient gtest gquery gqueryASK gqueryD gqueryLIMIT1
+all: lib_antlr gloadD gqueryD
 
 #init: lib_antlr kvstore vstree parser server bstr database triple \
 #		util signature query
@@ -47,73 +47,26 @@ all: lib_antlr gload gloadD gserver gclient gtest gquery gqueryASK gqueryD gquer
 
 
 #executables begin
-
-gload: $(objdir)gload.o $(objfile)
-	$(CC) -g -o gload $(objdir)gload.o $(objfile) lib/libantlr.a 
 	
 gloadD: $(objdir)gloadD.o $(objfile)
 	$(MPICC) -g -o gloadD $(objdir)gloadD.o $(objfile) lib/libantlr.a 
-
-gquery: $(objdir)gquery.o $(objfile)
-	$(MPICC) -ltermcap -lreadline -g -o gquery $(objdir)gquery.o $(objfile) lib/libantlr.a 
-	#add -lreadline -ltermcap if using readline
-
-gqueryLIMIT1: $(objdir)gqueryLIMIT1.o $(objfile)
-	$(MPICC) -ltermcap -lreadline -g -o gqueryLIMIT1 $(objdir)gqueryLIMIT1.o $(objfile) lib/libantlr.a 
-	#add -lreadline -ltermcap if using readline
-	
-gqueryASK: $(objdir)gqueryASK.o $(objfile)
-	$(MPICC) -ltermcap -lreadline -g -o gqueryASK $(objdir)gqueryASK.o $(objfile) lib/libantlr.a 
-	#add -lreadline -ltermcap if using readline
 	
 gqueryD: $(objdir)gqueryD.o $(objfile)
 	$(MPICC) -ltermcap -lreadline -g -o gqueryD $(objdir)gqueryD.o $(objfile) lib/libantlr.a 
 	#add -lreadline -ltermcap if using readline
-
-gserver: $(objdir)gserver.o $(objfile)
-	$(CC) -g -o gserver $(objdir)gserver.o $(objfile)  lib/libantlr.a 
-
-gclient: $(objdir)gclient.o $(objfile)
-	$(CC) -g -o gclient $(objdir)gclient.o $(objfile)  lib/libantlr.a 
-gtest: $(objdir)gtest.o $(objfile)
-	$(CC) -g -o gtest $(objdir)gtest.o $(objfile) lib/libantlr.a
 
 #executables end
 
 
 #objects in Main/ begin
 
-$(objdir)gload.o: Main/gload.cpp 
-	$(CC) $(CFLAGS) Main/gload.cpp $(inc) -L./lib lib/libantlr.a -o $(objdir)gload.o 
-
 $(objdir)gloadD.o: Main/gloadD.cpp 
 	$(MPICC) $(CFLAGS) Main/gloadD.cpp $(inc) -L./lib lib/libantlr.a -o $(objdir)gloadD.o 
-	
-$(objdir)gquery.o: Main/gquery.cpp
-	$(MPICC) $(CFLAGS) Main/gquery.cpp $(inc) -o $(objdir)gquery.o -DREADLINE_ON
-	#add -DREADLINE_ON if using readline
-
-$(objdir)gqueryLIMIT1.o: Main/gqueryLIMIT1.cpp
-	$(MPICC) $(CFLAGS) Main/gqueryLIMIT1.cpp $(inc) -o $(objdir)gqueryLIMIT1.o -DREADLINE_ON
-	#add -DREADLINE_ON if using readline
-	
-$(objdir)gqueryASK.o: Main/gqueryASK.cpp
-	$(MPICC) $(CFLAGS) Main/gqueryASK.cpp $(inc) -o $(objdir)gqueryASK.o -DREADLINE_ON
-	#add -DREADLINE_ON if using readline
 	
 $(objdir)gqueryD.o: Main/gqueryD.cpp
 	$(MPICC) $(CFLAGS) Main/gqueryD.cpp $(inc) -o $(objdir)gqueryD.o -DREADLINE_ON
 	#add -DREADLINE_ON if using readline
 
-$(objdir)gserver.o: Main/gserver.cpp
-	$(CC) $(CFLAGS) Main/gserver.cpp $(inc) -o $(objdir)gserver.o
-
-$(objdir)gclient.o: Main/gclient.cpp
-	$(CC) $(CFLAGS) Main/gclient.cpp $(inc) -o $(objdir)gclient.o
-
-$(objdir)gtest.o: Main/gtest.cpp
-	$(CC) $(CFLAGS) Main/gtest.cpp $(inc) -o $(objdir)gtest.o
-	
 #objects in Main/ end
 
 
@@ -277,7 +230,7 @@ lib_antlr:
 
 clean:
 	#$(MAKE) -C KVstore clean
-	rm -rf gtest gload gloadD gquery gqueryASK gqueryD gqueryLIMIT1 gserver gclient $(objdir)*.o 
+	rm -rf gloadD gqueryD $(objdir)*.o 
 	rm -rf .project .cproject
 
 dist: clean

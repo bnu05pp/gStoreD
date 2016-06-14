@@ -132,6 +132,7 @@ main(int argc, char * argv[])
 		TripleWithObjType* triple_array = new TripleWithObjType[RDFParser::TRIPLE_NUM_PER_GROUP];
 		
 		int _sub_partition_id, _obj_partition_id;
+		bool ret = true, ret1 = true;
 		while(true)
 		{
 			int parse_triple_num = 0;
@@ -167,20 +168,30 @@ main(int argc, char * argv[])
 				
 				char* val = NULL;
 				int vlen = 0;
-				tp->search(_sub.c_str(), strlen(_sub.c_str()), val, vlen);
-				_sub_partition_id = atoi(val);
-				
-				_six_tuples_ss[_sub_partition_id] << _sub	<< '\t' << _pre << '\t' << _obj << "." << endl;
+				ret = tp->search(_sub.c_str(), strlen(_sub.c_str()), val, vlen);
+				if(ret == true){
+					_sub_partition_id = atoi(val);
+					
+					_six_tuples_ss[_sub_partition_id] << _sub << '\t' << _pre << '\t' << _obj << "." << endl;
+				}
 				// obj is entity
 				if (triple_array[i].isObjEntity())
 				{
 					char* val1 = NULL;
 					int vlen1 = 0;
-					tp->search(_obj.c_str(), strlen(_obj.c_str()), val1, vlen1);
-					_obj_partition_id = atoi(val);
-					
-					if(_sub_partition_id != _obj_partition_id){
-						_six_tuples_ss[_obj_partition_id] << _sub	<< '\t' << _pre << '\t' << _obj << "." << endl;
+					ret1 = tp->search(_obj.c_str(), strlen(_obj.c_str()), val1, vlen1);
+					if(ret1 == true){
+						_obj_partition_id = atoi(val1);
+						
+						if(_sub_partition_id != _obj_partition_id){
+							_six_tuples_ss[_obj_partition_id] << _sub	<< '\t' << _pre << '\t' << _obj << "." << endl;
+						}
+					}
+				}
+				
+				if(ret == false && ret1 == false){
+					for(j = 1; j < p; j++){
+						_six_tuples_ss[j - 1] << _sub << '\t' << _pre << '\t' << _obj << "." << endl;
 					}
 				}
 			}

@@ -1,0 +1,14 @@
+<http://dbpedia.org/resource/Woody_Allen>	<http://xmlns.com/foaf/0.1/name>	"Woody Allen"@en.
+<http://dbpedia.org/resource/Woody_Allen>	<http://dbpedia.org/ontology/spouse>	<http://dbpedia.org/resource/Louise_Lasser>.
+<http://dbpedia.org/resource/Sleeper_%28film%29>	<http://dbpedia.org/ontology/director>	<http://dbpedia.org/resource/Woody_Allen>.
+<http://dbpedia.org/resource/Small_Time_Crooks>	<http://dbpedia.org/ontology/director>	<http://dbpedia.org/resource/Woody_Allen>.
+<http://dbpedia.org/resource/Small_Time_Crooks>	<http://xmlns.com/foaf/0.1/name>	"Small Time Crooks"@en.
+<http://dbpedia.org/resource/Sleeper_%28film%29>	<http://xmlns.com/foaf/0.1/name>	"Sleeper"@en.
+<http://dbpedia.org/resource/Small_Time_Crooks>	<http://dbpedia.org/ontology/starring>	<http://dbpedia.org/resource/Hugh_Grant>.
+<http://dbpedia.org/resource/Woody_Allen>	<http://www.w3.org/2004/02/skos/core#subject>	<http://dbpedia.org/resource/Category:C%C3%A9sar_Award_winners>.
+<http://dbpedia.org/resource/Mystery_Men>	<http://dbpedia.org/ontology/starring>	<http://dbpedia.org/resource/Louise_Lasser>.
+<http://dbpedia.org/resource/Mystery_Men>	<http://xmlns.com/foaf/0.1/name>	"Mystery Men"@en.
+<http://dbpedia.org/resource/Mystery_Men>	<http://dbpedia.org/ontology/starring>	<http://dbpedia.org/resource/Hank_Azaria>.
+<http://dbpedia.org/resource/Hank_Azaria>	<http://xmlns.com/foaf/0.1/name>	"Hank Azaria"@en.
+<http://dbpedia.org/resource/A_Very_Young_Lady>	<http://dbpedia.org/ontology/starring>	<http://dbpedia.org/resource/Nancy_Kelly>.
+<http://dbpedia.org/resource/A_Very_Young_Lady>	<http://xmlns.com/foaf/0.1/name>	"A Very Young Lady"@en.

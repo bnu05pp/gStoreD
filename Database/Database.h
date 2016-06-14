@@ -176,6 +176,8 @@ private:
 	bool join(vector<int*>& _result_list, int _var_id, int _pre_id, int _var_id2, const char _edge_type,
 	          int _var_num, bool shouldAddLiteral, IDList& _can_list);
 	bool join(vector<int*>& _result_list, int _var_id, int _pre_id, int _var_id2, const char _edge_type,
+	          int _var_num, bool shouldAddLiteral, IDList& _can_list, bool* _dealed_internal_arr);
+	bool join(vector<int*>& _result_list, int _var_id, int _pre_id, int _var_id2, const char _edge_type,
 	          int _var_num, bool shouldAddLiteral);
 
 	bool select(vector<int*>& _result_list, int _var_id, int _pre_id, int _var_id2, const char _edge_type, int _var_num);
@@ -183,7 +185,7 @@ private:
 	/* get the final string result_set from SPARQLquery */
 	bool getFinalResult(SPARQLquery& _sparql_q, ResultSet& _result_set);
 	
-	void printResList(vector<int*>* _res_list, int _len, string _offset);
+	string printResList(vector<int*>* _res_list, int _len, string _offset);
 	void ResListtoString(vector<int*>* _res_list, int _len, string& res_char_arr);
 	string printDealedVertices(bool* _id_list, int _len);
 };

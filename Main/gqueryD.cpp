@@ -83,6 +83,84 @@ vector<string> split(string textline, string tag){
 	return res;
 }
 
+void NonrecursiveQuickSort(vector<PPPartialRes>& res1, int matchPos, int size)  
+{  
+    //  typedef vector<int> Stack_t;  
+    int* stack = new int[size];  
+    int top = 0;  
+    int low, high, i, j, pivot;  
+    PPPartialRes temp;  
+    //首先把整个数组入栈  
+    stack[top++] = size - 1;  
+    stack[top++] = 0;  
+    while(top != 0)  
+    {  
+        //取出栈顶元素，进行划分  
+        low = stack[--top];  
+        high = stack[--top];  
+        pivot = high;   //将最后一个元素作为轴  
+        i = low;       //保证i之前的元素的不大于轴  
+        //j从前往后滑动  
+        for(j=low; j < high; j++)  
+        {  
+            //如果碰到某个元素不大于轴，则与arr[i]交换  
+            if(res1[j].MatchVec[matchPos] <= res1[pivot].MatchVec[matchPos])// arr[j]<=arr[pivot])  
+            {
+				temp.MatchVec.assign(res1[j].MatchVec.begin(), res1[j].MatchVec.end());
+				temp.TagVec.assign(res1[j].TagVec.begin(), res1[j].TagVec.end());
+				temp.FragmentID = res1[j].FragmentID;
+
+				res1[j].MatchVec.assign(res1[i].MatchVec.begin(), res1[i].MatchVec.end());
+				res1[j].TagVec.assign(res1[i].TagVec.begin(), res1[i].TagVec.end());
+				res1[j].FragmentID = res1[i].FragmentID;
+
+				res1[i].MatchVec.assign(temp.MatchVec.begin(), temp.MatchVec.end());
+				res1[i].TagVec.assign(temp.TagVec.begin(), temp.TagVec.end());
+				res1[i].FragmentID = temp.FragmentID;
+				/*
+                temp = arr[j];  
+                arr[j] = arr[i];  
+                arr[i] = temp;  
+                */
+				i++;  
+            }  
+        }  
+        //i为分界点，交换arr[i]和轴  
+        if(i != pivot)  
+        {  
+            /*swap arr[i] and arr[pivot]*/
+			temp.MatchVec.assign(res1[i].MatchVec.begin(), res1[i].MatchVec.end());
+			temp.TagVec.assign(res1[i].TagVec.begin(), res1[i].TagVec.end());
+			temp.FragmentID = res1[i].FragmentID;
+
+			res1[i].MatchVec.assign(res1[pivot].MatchVec.begin(), res1[pivot].MatchVec.end());
+			res1[i].TagVec.assign(res1[pivot].TagVec.begin(), res1[pivot].TagVec.end());
+			res1[i].FragmentID = res1[pivot].FragmentID;
+
+			res1[pivot].MatchVec.assign(temp.MatchVec.begin(), temp.MatchVec.end());
+			res1[pivot].TagVec.assign(temp.TagVec.begin(), temp.TagVec.end());
+			res1[pivot].FragmentID = temp.FragmentID;
+			/*
+            temp = arr[i];  
+            arr[i] = arr[pivot];  
+            arr[pivot] = temp;
+			*/
+        }  
+        //判断小于轴的部分元素如果多于一个的话, 则入栈  
+        if(i - low > 1)  
+        {  
+            stack[top++] = i - 1;  
+            stack[top++] = low;  
+        }  
+        //判断大于轴的部分元素如果多于一个的话, 则入栈  
+        if(high - i > 1)  
+        {  
+            stack[top++] = high;  
+            stack[top++] = i + 1;  
+        }  
+    }  
+}
+
 void QuickSort(vector<PPPartialRes>& res1, int matchPos, int low, int high){
 	if(low >= high){
 		return;
@@ -140,12 +218,14 @@ void MergeJoin(set< vector<int> >& finalPartialResSet, vector<PPPartialRes>& res
 		return;
 	}
 	
-	QuickSort(res1, matchPos, 0, res1.size() - 1);
-	QuickSort(res2, matchPos, 0, res2.size() - 1);
+	//QuickSort(res1, matchPos, 0, res1.size() - 1);
+	NonrecursiveQuickSort(res1, matchPos, res1.size());
+	//QuickSort(res2, matchPos, 0, res2.size() - 1);
+	NonrecursiveQuickSort(res2, matchPos, res2.size());
 	//cout << "res1.size() = " << res1.size() << ", res2.size() = " << res2.size() << endl;
 
 	vector<PPPartialRes> new_res;
-	int tag = 0;
+	int first_pos = 0, second_pos = 0, tag = 0;
 	int l_iter = 0, r_iter = 0, len = res1[0].MatchVec.size();
 	while (l_iter < res1.size() && r_iter < res2.size()) {
 	
@@ -230,6 +310,64 @@ void MergeJoin(set< vector<int> >& finalPartialResSet, vector<PPPartialRes>& res
 	//res1.tag_vec.assign(new_tag_vec.begin(), new_tag_vec.end());
 }
 
+void HashJoin(set< vector<int> >& finalPartialResSet, vector<PPPartialRes>& res1, map<int, vector<PPPartialRes> >& res2, int fragmentNum, int matchPos){
+
+	if(0 == res1.size()){
+		return;
+	}
+	
+	int tag = 0, len = res1[0].MatchVec.size();
+	vector<PPPartialRes> new_res;
+	for(int i = 0; i < res1.size(); i++){
+		if('1' == res1[i].TagVec[matchPos]){
+			new_res.push_back(res1[i]);
+			continue;
+		}
+		if(res2.count(res1[i].MatchVec[matchPos]) == 0)
+			continue;
+		//cout << res2[res1[i].MatchVec[matchPos]].size() << " " << endl;
+		
+		vector<PPPartialRes> tmp_res = res2[res1[i].MatchVec[matchPos]];
+		for(int j = 0; j < tmp_res.size(); j++){
+			//cout << tmp_res.size() << "~~~~" << j << endl;
+			tag = 0;
+			PPPartialRes curPPPartialRes;
+			curPPPartialRes.TagVec.assign(len, '0');
+			curPPPartialRes.FragmentID = fragmentNum + res1[i].FragmentID;
+			for(int k = 0; k < len; k++){
+				//cout << "++++" << k << " " << res1[i].MatchVec[k] << " " << tmp_res[j].MatchVec[k] << endl;
+				if(res1[i].MatchVec[k] != -1 && tmp_res[j].MatchVec[k] != -1
+					&& res1[i].MatchVec[k] != tmp_res[j].MatchVec[k]){
+
+					tag = 1;
+					break;
+				}else if(res1[i].MatchVec[k] == -1 && tmp_res[j].MatchVec[k] != -1){
+					curPPPartialRes.TagVec[k] = tmp_res[j].TagVec[k];
+					curPPPartialRes.MatchVec.push_back(tmp_res[j].MatchVec[k]);
+				}else if(res1[i].MatchVec[k] != -1 && tmp_res[j].MatchVec[k] == -1){
+					curPPPartialRes.TagVec[k] = res1[i].TagVec[k];
+					curPPPartialRes.MatchVec.push_back(res1[i].MatchVec[k]);
+				}else{
+					if('1' == res1[i].TagVec[k] || '1' == tmp_res[j].TagVec[k])
+						curPPPartialRes.TagVec[k] = '1';
+					curPPPartialRes.MatchVec.push_back(res1[i].MatchVec[k]);
+				}
+			}
+					
+			//cout << "tag = " << tag << endl;
+			if(tag == 1)
+				continue;
+
+			if(0 == isFinalResult(curPPPartialRes)){
+				new_res.push_back(curPPPartialRes);
+			}else{
+				finalPartialResSet.insert(curPPPartialRes.MatchVec);
+			}
+		}
+	}
+	res1.assign(new_res.begin(), new_res.end());
+}
+
 //WARN:cannot support soft links!
 string
 getQueryFromFile(const char* _file_path)
@@ -297,7 +435,7 @@ main(int argc, char * argv[])
         return 0;
     }
 	
-	int myRank, p, size, i, j, k, l;
+	int myRank, p, size, i, j, k, l = 0;
 	double partialResStart, partialResEnd;
 	char* queryCharArr;
 	char* partialResArr;
@@ -310,7 +448,7 @@ main(int argc, char * argv[])
 	if(myRank == 0) {
 		double schedulingStart, schedulingEnd;
 		
-		string _query_str = getQueryFromFile(argv[1]);
+		string _query_str = getQueryFromFile(argv[2]);
 		queryCharArr = new char[1024];
 		strcpy(queryCharArr, _query_str.c_str());
 		size = strlen(queryCharArr);
@@ -325,9 +463,9 @@ main(int argc, char * argv[])
 		
 		map<string, int> URIIDMap;
 		map<int, string> IDURIMap;
-		int tag = 0, cur_id = 0;
-		int finalResNum = 0, sizeSum = 0, PPQueryVertexCount = 0;
-		set< vector<string> > finalPartialResSet;
+		int id_count = 0, cur_id = 0;
+		int partialResNum = 0, sizeSum = 0, PPQueryVertexCount = 0, finalResNum = 0, aResNum = 0;
+		set< vector<int> > finalPartialResSet;
 		
 		for(int pInt = 1; pInt < p; pInt++){
 			MPI_Recv(&PPQueryVertexCount, 1, MPI_INT, pInt, 10, MPI_COMM_WORLD, &status);
@@ -336,86 +474,131 @@ main(int argc, char * argv[])
 		for(i = 0; i < partialResVec.size(); i++){
 			partialResVec[i].match_pos = i;
 		}
+		ofstream log_output("log.txt");
 
-		// Receive all partial matches and final matches from all client sites
-		// Partial matches are put into partialResVec
-		// Final matches are put into finalPartialResSet
-		stringstream allLPMStrStrm;
-		
 		for(int pInt = 1; pInt < p; pInt++){
 			MPI_Recv(&size, 1, MPI_INT, pInt, 10, MPI_COMM_WORLD, &status);
-			char* PMStrArr = new char[size + 3];
-			MPI_Recv(PMStrArr, size, MPI_CHAR, pInt, 10, MPI_COMM_WORLD, &status);
-			PMStrArr[size] = 0;
+			sizeSum += size;
+			partialResArr = new char[size + 3];
+			MPI_Recv(partialResArr, size, MPI_CHAR, pInt, 10, MPI_COMM_WORLD, &status);
+			partialResArr[size] = 0;
 			
-			//printf("++++++++++++ %d ++++++++++++\n%s\n", pInt, PMStrArr);
+			//printf("++++++++++++ %d ++++++++++++\n%s\n", pInt, partialResArr);
+			//log_output << "++++++++++++ " << pInt << " ++++++++++++" << endl;
+			//log_output << partialResArr << endl;
+			aResNum = 0;
 			
-			string textline(PMStrArr);
+			string textline(partialResArr);
 			vector<string> resVec = split(textline, "\n");
 			for(i = 0; i < resVec.size(); i++){
+				//curPartialResSize = resVec[i].length();
 				vector<string> matchVec = split(resVec[i], "\t");
-				
 				if(matchVec.size() != PPQueryVertexCount)
 					continue;
-					
-				tag = 0;
+				PPPartialRes newPPPartialRes;
+				vector<int> match_pos_vec;
 				for(j = 0; j < matchVec.size(); j++){
-					if(matchVec[j].at(0) != '1'){
-						tag = 1;
-						break;
-					}
-				}
-				
-				if(0 != tag){
-					allLPMStrStrm << pInt << "\t" << resVec[i] << endl;
-				}else{
-					for(j = 0; j < matchVec.size(); j++){
+					if(strcmp(matchVec[j].c_str(),"-1") != 0){
+						newPPPartialRes.TagVec.push_back(matchVec[j].at(0));
 						matchVec[j].erase(0, 1);
+
+						if(URIIDMap.count(matchVec[j]) == 0){
+							URIIDMap.insert(make_pair(matchVec[j], id_count));
+							IDURIMap.insert(make_pair(id_count, matchVec[j]));
+							id_count++;
+						}
+						cur_id = URIIDMap[matchVec[j]];
+					}else{
+						newPPPartialRes.TagVec.push_back('2');
+						cur_id = -1;
 					}
-					finalPartialResSet.insert(matchVec);
+					newPPPartialRes.MatchVec.push_back(cur_id);
+					
+					if('1' == newPPPartialRes.TagVec[newPPPartialRes.TagVec.size() - 1])
+						match_pos_vec.push_back(j);
 				}
-				
+				newPPPartialRes.FragmentID = pInt;
+				newPPPartialRes.ID = partialResNum;
+
+				if(0 == isFinalResult(newPPPartialRes)){
+					for(j = 0; j < match_pos_vec.size(); j++){
+						partialResVec[match_pos_vec[j]].PartialResList.push_back(newPPPartialRes);
+					}
+					aResNum++;
+					partialResNum++;
+				}else{
+					finalPartialResSet.insert(newPPPartialRes.MatchVec);
+					//finalResNum++;
+				}
 			}
-			
-			delete[] PMStrArr;
+			printf("There are %d partial results and %d final results in Client %d!\n", aResNum, finalPartialResSet.size() - finalResNum, pInt);
+			finalResNum = finalPartialResSet.size();
+
+			delete[] partialResArr;
 		}
 
-		string allPMStr = allLPMStrStrm.str();
-		size = allPMStr.length();
-		char* allPMStrArr = new char[size + 3];
-		strcpy(allPMStrArr, allPMStr.c_str());
-		size = strlen(allPMStrArr);
-		for(i = 1; i < p; i++){
-			MPI_Send(&size, 1, MPI_INT, i, 10, MPI_COMM_WORLD);
-			MPI_Send(allPMStrArr, size, MPI_CHAR, i, 10, MPI_COMM_WORLD);
-		}
-		//printf("++++++++++++ all local partial results ++++++++++++\n%s\n", allPMStrArr);
-		delete[] allPMStrArr;
-		
-		schedulingStart = MPI_Wtime();
-		
-		l = 0;
-		for(i = 1; i < p; i++){
-			MPI_Recv(&size, 1, MPI_INT, i, 10, MPI_COMM_WORLD, &status);
-			l += size;
-		}
-		
-		schedulingEnd = MPI_Wtime();
+		partialResEnd = MPI_Wtime();
 
 		// If there no exist partial match, the process terminate
+		double time_cost_value = partialResEnd - partialResStart;
+		printf("Communication cost %f s!\n", time_cost_value);
+		printf("There are %d partial results with %d size.\n", partialResNum, sizeSum);
 		printf("There are %d inner matches.\n", finalPartialResSet.size());
-		printf("There are %d crossing matches.\n", l);
-		double time_cost_value = schedulingEnd - schedulingStart;
-		printf("Joining cost %f s!\n", time_cost_value);
+		
+		schedulingStart = MPI_Wtime();
+
+		sort(partialResVec.begin(), partialResVec.end(), myfunction0);
+		vector<int> match_pos_vec;
+		int tag = 0;
+		match_pos_vec.push_back(partialResVec[0].match_pos);
+		if(0 != partialResVec.size()){
+		
+			stringstream intermediate_strm;
+
+			for(i = 1; i < partialResVec.size(); i++){
+				//cout << "###########  " << partialResVec[i].match_pos << endl;
+				
+				map<int, vector<PPPartialRes> > tmpPartialResMap;
+				for(j = 0; j < partialResVec[i].PartialResList.size(); j++){
+					tag = 0;
+					for(k = 0; k < match_pos_vec.size(); k++){
+						if('1' == partialResVec[i].PartialResList[j].TagVec[match_pos_vec[k]]){
+							tag = 1;
+							break;
+						}
+					}
+					if(0 == tag){
+						if(tmpPartialResMap.count(partialResVec[i].PartialResList[j].MatchVec[partialResVec[i].match_pos]) == 0){
+							vector<PPPartialRes> tmpVec;
+							tmpPartialResMap.insert(make_pair(partialResVec[i].PartialResList[j].MatchVec[partialResVec[i].match_pos], tmpVec));
+						}
+						tmpPartialResMap[partialResVec[i].PartialResList[j].MatchVec[partialResVec[i].match_pos]].push_back(partialResVec[i].PartialResList[j]);
+					}
+				}
+				match_pos_vec.push_back(partialResVec[i].match_pos);
+				if(tmpPartialResMap.size() == 0){					
+					continue;
+				}
+				
+				HashJoin(finalPartialResSet, partialResVec[0].PartialResList, tmpPartialResMap, p, partialResVec[i].match_pos);
+
+				if(partialResVec[0].PartialResList.size() == 0){
+					break;
+				}
+			}
+		}
+		
+		printf("There are %d final matches.\n", finalPartialResSet.size());
+		schedulingEnd = MPI_Wtime();
 		time_cost_value = schedulingEnd - partialResStart;
 		printf("Total cost %f s!\n", time_cost_value);
 		
 		ofstream res_output("finalRes.txt");
-		set< vector<string> >::iterator iter = finalPartialResSet.begin();
+		set< vector<int> >::iterator iter = finalPartialResSet.begin();
 		while(iter != finalPartialResSet.end()){
-			vector<string> tempVec = *iter;
+			vector<int> tempVec = *iter;
 			for(l = 0; l < tempVec.size(); l++){
-				res_output << tempVec[l] << "\t";
+				res_output << IDURIMap[tempVec[l]] << "\t";
 			}
 			res_output << endl;
 			//total_res_count++;
@@ -423,11 +606,14 @@ main(int argc, char * argv[])
 		}
 		res_output.close();
 		
-	}else{		
+	}else{
+		//ofstream log_output("log.txt");
+		//Config _config = loadConfig("config.ini");
+		//log_output << "begin loading DB_store" << endl;
 		string db_folder = string(argv[1]);
-		//string db_folder = string(argv[1]);
 		Database _db(db_folder);
 		_db.load();
+		//cout << db_folder.c_str() << 
 		printf("finish loading DB_store:%s in Client %d.\n", db_folder.c_str(), myRank);
 		
 		MPI_Recv(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD, &status);
@@ -444,6 +630,12 @@ main(int argc, char * argv[])
 		BasicQuery* basic_query=&(cur_sparql_query.getBasicQuery(0));
 		_db.join_pe(basic_query, partialResStr);
 		int cur_var_num = basic_query->getVarNum();
+		//printf("There are %d results in Client %d!\n", (basic_query->getResultList()).size(), myRank);
+		
+		partialResEnd = MPI_Wtime();
+		
+		double time_cost_value = partialResEnd - partialResStart;
+		printf("Finding local partial matches costs %f s!\n", time_cost_value);
 		
 		partialResArr = new char[partialResStr.size() + 3];
 		strcpy(partialResArr, partialResStr.c_str());
@@ -454,295 +646,13 @@ main(int argc, char * argv[])
 //		cout << myRank << " : " << partialResArr << endl;
 		MPI_Send(partialResArr, size, MPI_CHAR, 0, 10, MPI_COMM_WORLD);
 		
-		//===============================================================================
-		//vector<PPPartialRes> tempResVec;
-		vector< PPPartialResVec > partialResVec(cur_var_num);
-		for(i = 0; i < partialResVec.size(); i++){
-			partialResVec[i].match_pos = i;
-		}
-		
-		set< vector<int> > finalPartialResSet;
-		map<string, int> URIIDMap;
-		map<int, string> IDURIMap;
-		int id_count = 0, cur_id = 0, partialResNum = 0, tag = 0;
-		
-		MPI_Recv(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD, &status);
-		char* allPartialResArr = new char[size];
-		MPI_Recv(allPartialResArr, size, MPI_CHAR, 0, 10, MPI_COMM_WORLD, &status);
-		allPartialResArr[size] = 0;
-		
-		//printf(" ============== %d ============== \n%s\n", myRank, allPartialResArr);
-
-		string textline(allPartialResArr);
-		vector<string> resVec = split(textline, "\n");
-		//printf("Client %d receives %d partial matches with %d characters.\n", myRank, resVec.size(), size);
-		//printf("%s\n", resVec[0].c_str());
-		for(i = 0; i < resVec.size(); i++){
-			vector<string> matchVec = split(resVec[i], "\t");
-			if(matchVec.size() != (cur_var_num + 1))
-				continue;
-			PPPartialRes newPPPartialRes;
-			vector<int> match_pos_vec;
-			for(j = 1; j < matchVec.size(); j++){
-				if(strcmp(matchVec[j].c_str(),"-1") != 0){
-					newPPPartialRes.TagVec.push_back(matchVec[j].at(0));
-					matchVec[j].erase(0, 1);
-
-					if(URIIDMap.count(matchVec[j]) == 0){
-						URIIDMap.insert(make_pair(matchVec[j], id_count));
-						IDURIMap.insert(make_pair(id_count, matchVec[j]));
-						id_count++;
-					}
-					cur_id = URIIDMap[matchVec[j]];
-				}else{
-					newPPPartialRes.TagVec.push_back('2');
-					cur_id = -1;
-				}
-				newPPPartialRes.MatchVec.push_back(cur_id);
-				
-				if('1' == newPPPartialRes.TagVec[newPPPartialRes.TagVec.size() - 1])
-					match_pos_vec.push_back(j - 1);
-			}
-			newPPPartialRes.FragmentID = atoi(matchVec[0].c_str());
-			newPPPartialRes.ID = partialResNum;
-
-			for(j = 0; j < match_pos_vec.size(); j++){
-				partialResVec[match_pos_vec[j]].PartialResList.push_back(newPPPartialRes);
-			}
-		}
-		//inner_match_count = finalPartialResSet.size();
-		//printf("there are %d inner matches.\n", inner_match_count);
-
-		delete[] allPartialResArr;
-
-		sort(partialResVec.begin(), partialResVec.end(), myfunction0);
-		
-		vector<int> match_pos_vec;
-		match_pos_vec.push_back(partialResVec[0].match_pos);
-		
-		vector<PPPartialRes> finalPartialResVec;
-		if(0 != partialResVec.size()){
-			
-			for(j = 0; j < partialResVec[0].PartialResList.size(); j++){
-				//printf("myRank = %d and %d result's FragmentID = %d\n", myRank, j, partialResVec[0].PartialResList[j].FragmentID);
-				if(partialResVec[0].PartialResList[j].FragmentID == myRank){
-					finalPartialResVec.push_back(partialResVec[0].PartialResList[j]);
-				}
-			}
-			/*
-			stringstream intermediate_strm;
-			for(j = 0; j < finalPartialResVec.size(); j++){
-				vector<int> tempVec = finalPartialResVec[j].MatchVec;
-				for(l = 0; l < tempVec.size(); l++){
-					if(-1 != tempVec[l]){
-						intermediate_strm << IDURIMap[tempVec[l]] << "\t";
-					}else{
-						intermediate_strm << -1 << "\t";
-					}
-				}
-				intermediate_strm << endl;
-			}
-			printf("~~~~~~~~~~~~~ %d ~~~~~~~~~~~~~\n%s\n", myRank, intermediate_strm.str().c_str());
-			intermediate_strm.str("");
-			*/
-			for(i = 1; i < partialResVec.size(); i++){
-				
-				vector<PPPartialRes> tmpPartialResVec;
-				for(j = 0; j < partialResVec[i].PartialResList.size(); j++){
-					tag = 0;
-					for(k = 0; k < match_pos_vec.size(); k++){
-						if('1' == partialResVec[i].PartialResList[j].TagVec[match_pos_vec[k]]){
-							tag = 1;
-							break;
-						}
-					}
-					if(0 == tag)
-						tmpPartialResVec.push_back(partialResVec[i].PartialResList[j]);
-				}
-				if(tmpPartialResVec.size() == 0){
-					match_pos_vec.push_back(partialResVec[i].match_pos);
-					continue;
-				}
-				
-				MergeJoin(finalPartialResSet, finalPartialResVec, tmpPartialResVec, p, partialResVec[i].match_pos);
-				match_pos_vec.push_back(partialResVec[i].match_pos);
-				if(finalPartialResVec.size() == 0){
-					break;
-				}
-			}
-		}
-		
-		size = finalPartialResSet.size();
-		MPI_Send(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD);
-		
 		delete[] partialResArr;
 	}
 	
 	delete[] queryCharArr;
 	
 	MPI_Finalize();
-/*
-    // read query from file.
-    if (argc >= 3)
-    {
-		string query = getQueryFromFile(argv[2]);
-        if (query.empty())
-        {
-            return 0;
-        }
-        printf("query is:\n%s\n\n", query.c_str());
-        ResultSet _rs;
-        _db.query(query, _rs, stdout);
-		
-        if (argc >= 4)
-        {
-            Util::save_to_file(argv[3], _rs.to_str());
-        }
-		
-        return 0;
-    }
 
-    // read query file path from terminal.
-    // BETTER: sighandler ctrl+C/D/Z
-    string query;
-    //char resolved_path[PATH_MAX+1];
-#ifdef READLINE_ON
-    char *buf, prompt[] = "gsql>";
-    //const int commands_num = 3;
-    //char commands[][20] = {"help", "quit", "sparql"};
-    printf("Type `help` for information of all commands\n");
-	printf("Type `help command_t` for detail of command_t\n");
-    rl_bind_key('\t', rl_complete);
-    while(true)
-    {
-        buf = readline(prompt);
-        if(buf == NULL)
-            continue;
-        else
-            add_history(buf);
-        if(strncmp(buf, "help", 4) == 0)
-        {
-			if(strcmp(buf, "help") == 0)
-			{
-            //print commands message
-            printf("help - print commands message\n");
-            printf("quit - quit the console normally\n");
-            printf("sparql - load query from the second argument\n");
-			}
-			else
-			{
-				//TODO: sparql path > file	
-			}
-            continue;
-        }
-        else if(strcmp(buf, "quit") == 0)
-            break;
-        else if(strncmp(buf, "sparql", 6) != 0)
-        {
-            printf("unknown commands\n");
-            continue;
-        }
-        std::string query_file;
-        //BETTER:build a parser for this console
-		bool ifredirect = false;
-		char* rp = buf;
-		while(*rp != '\0')
-		{
-			if(*rp == '>')
-			{
-				ifredirect = true;
-				break;
-			}
-			rp++;
-		}
-        char* p = buf + strlen(buf) - 1;
-		FILE* fp = stdout;      ///default to output on screen
-		if(ifredirect)
-		{
-			char* tp = p;
-			while(*tp == ' ' || *tp == '\t')
-				tp--;
-			*(tp+1) = '\0';
-			tp = rp + 2;
-			while(*tp == ' ' || *tp == '\t')
-				tp++;
-			fp = fopen(tp, "w");	//NOTICE:not judge here!
-			p = rp - 2;					//NOTICE: all separated with ' ' or '\t'
-		}
-        while(*p == ' ' || *p == '\t')	//set the end of path
-            p--;
-        *(p+1) = '\0';
-        p = buf + 6;
-        while(*p == ' ' || *p == '\t')	//acquire the start of path
-            p++;
-        //TODO: support the soft links(or hard links)
-        //there are also readlink and getcwd functions for help
-        //http://linux.die.net/man/2/readlink
-        //NOTICE:getcwd and realpath cannot acquire the real path of file
-        //in the same directory and the program is executing when the
-        //system starts running
-        //NOTICE: use realpath(p, NULL) is ok, but need to free the memory
-        char* q = realpath(p, NULL);	//QUERY:still not work for soft links
-#ifdef DEBUG_PRECISE
-        printf("%s\n", p);
-#endif
-        if(q == NULL)
-        {
-			printf("invalid path!\n");
-			free(q);
-			free(buf);
-			continue;
-        }
-        else
-			printf("%s\n", q);
-        //query = getQueryFromFile(p);
-        query = getQueryFromFile(q);
-        if(query.empty())
-        {
-			free(q);
-            //free(resolved_path);
-            free(buf);
-			if(ifredirect)
-				fclose(fp);
-            continue;
-        }
-        cout << "query is:" << endl;
-        cout << query << endl << endl;
-        ResultSet _rs;
-        _db.query(query, _rs, fp);
-        //test...
-        //std::string answer_file = query_file+".out";
-        //Util::save_to_file(answer_file.c_str(), _rs.to_str());
-		free(q);
-        //free(resolved_path);
-        free(buf);
-		if(ifredirect)
-			fclose(fp);
-#ifdef DEBUG_PRECISE
-        //printf("after buf freed!\n");
-#endif
-    }
-#else					//DEBUG:this not work!
-    while(true)
-    {
-        cout << "please input query file path:" << endl;
-        std::string query_file;
-        cin >> query_file;
-        //char* q = realpath(query_file.c_str(), NULL);
-        string query = getQueryFromFile(query_file.c_str());
-        if(query.empty())
-        {
-            //free(resolved_path);
-            continue;
-        }
-        cout << "query is:" << endl;
-        cout << query << endl << endl;
-        ResultSet _rs;
-        _db.query(query, _rs, stdout);
-        //free(resolved_path);
-    }
-#endif
-*/
     return 0;
 }
 

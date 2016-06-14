@@ -3,7 +3,7 @@
 ## gStoreD 1.0
 
 ### Overview
-gStoreD is a distributed RDF data management system (or what is commonly called a “triple store”) that is based on “partial evaluation” and maintains the graph structure of the original [RDF](http://www.w3.org/TR/rdf11-concepts/) data. Its data model is a labeled, directed multiedge graph, where each vertex corresponds to a subject or an object. We also represent a given [SPARQL](http://www.w3.org/TR/sparql11-overview/) query by a query graph Q. Query processing involves finding subgraph matches of Q over the RDF graph G. 
+gStoreD is a distributed RDF data management system (or what is commonly called a 鈥渢riple store鈥? that is based on 鈥減artial evaluation鈥?and maintains the graph structure of the original [RDF](http://www.w3.org/TR/rdf11-concepts/) data. Its data model is a labeled, directed multiedge graph, where each vertex corresponds to a subject or an object. We also represent a given [SPARQL](http://www.w3.org/TR/sparql11-overview/) query by a query graph Q. Query processing involves finding subgraph matches of Q over the RDF graph G. 
 
 ### Install Steps
 System Requirement: 64-bit linux server with GCC, mpich-3.0.4, make, readline installed.
@@ -34,7 +34,7 @@ gqueryD is used to query an exsisting database with SPARQL files.
 
 When the program finish answering the query, the SPARQL matches are written in the file named `finalRes.txt`.
 
-*gStoreD 1.0 only support simple “select” queries now.*
+*gStoreD 1.0 only support simple 鈥渟elect鈥?queries now.*
 
 We also take dbpedia_example_distgStore.n3 as an example.
 
