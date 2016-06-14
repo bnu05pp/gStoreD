@@ -47,3 +47,5 @@ We also take dbpedia_example_distgStore.n3 as an example.
 Notice: 
 
 All results are output into finalRes.txt.
+
+If you encounter any problems, please send emails to me (email address: pku09pp@pku.edu.cn).
