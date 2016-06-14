@@ -34,7 +34,7 @@ For example, we build a database from dbpedia_example_distgStore.n3 which can be
 ####2. gqueryD
 gqueryD is used to query an exsisting database with SPARQL files.
 
-`mpiexec -f host_file_name -n host_number + 1 ./gqueryD db_name query_file_name`  (use `./gquery --help` for detail)
+`mpiexec -f host_file_name -n host_number + 1 ./gqueryD db_name query_file_name`
 
 When the program finish answering the query, the SPARQL matches are written in the file named `finalRes.txt`.
 
