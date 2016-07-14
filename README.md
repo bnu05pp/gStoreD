@@ -42,7 +42,7 @@ When the program finish answering the query, the SPARQL matches are written in t
 
 We also take dbpedia_example_distgStore.n3 as an example.
 
-    [root@master Gstore]# mpiexec -f host_file_name -n host_number + 1 ./gquery db_dbpedia_example_distgStore ./example/query.txt
+    [root@master Gstore]# mpiexec -f hosts.txt -n 5 ./gquery db_dbpedia_example_distgStore ./example/query.txt
    
 Notice: 
 
