@@ -29,7 +29,7 @@ Each line in the file of the internal vertices consists of two parts: the first 
 
 For example, we build a database from dbpedia_example_distgStore.n3 which can be found in example folder.
 
-    [root@master Gstore]# mpiexec -f host.txt -n 5 ./gloadD db_dbpedia_example_distgStore ./example/dbpedia_example_distgStore.n3 ./example/dbpedia_example_distgStore_internal.TXT
+    [root@master Gstore]# mpiexec -f hosts.txt -n 5 ./gloadD db_dbpedia_example_distgStore ./example/dbpedia_example_distgStore.n3 ./example/dbpedia_example_distgStore_internal.TXT
 
 ####2. gqueryD
 gqueryD is used to query an exsisting database with SPARQL files.
