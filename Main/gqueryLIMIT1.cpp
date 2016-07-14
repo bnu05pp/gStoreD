@@ -310,10 +310,10 @@ void MergeJoin(set< vector<int> >& finalPartialResSet, vector<PPPartialRes>& res
 	//res1.tag_vec.assign(new_tag_vec.begin(), new_tag_vec.end());
 }
 
-void HashJoin(set< vector<int> >& finalPartialResSet, vector<PPPartialRes>& res1, map<int, vector<PPPartialRes> >& res2, int fragmentNum, int matchPos){
+int HashJoin(set< vector<int> >& finalPartialResSet, vector<PPPartialRes>& res1, map<int, vector<PPPartialRes> >& res2, int fragmentNum, int matchPos){
 
 	if(0 == res1.size()){
-		return;
+		return 0;
 	}
 	
 	int tag = 0, len = res1[0].MatchVec.size();
@@ -362,10 +362,12 @@ void HashJoin(set< vector<int> >& finalPartialResSet, vector<PPPartialRes>& res1
 				new_res.push_back(curPPPartialRes);
 			}else{
 				finalPartialResSet.insert(curPPPartialRes.MatchVec);
+				return 1;
 			}
 		}
 	}
 	res1.assign(new_res.begin(), new_res.end());
+	return 0;
 }
 
 //WARN:cannot support soft links!
@@ -549,7 +551,7 @@ main(int argc, char * argv[])
 
 		sort(partialResVec.begin(), partialResVec.end(), myfunction0);
 		vector<int> match_pos_vec;
-		int tag = 0;
+		int tag = 0, limit1_tag = 0;
 		match_pos_vec.push_back(partialResVec[0].match_pos);
 		if(0 != partialResVec.size()){
 		
@@ -580,7 +582,10 @@ main(int argc, char * argv[])
 					continue;
 				}
 				
-				HashJoin(finalPartialResSet, partialResVec[0].PartialResList, tmpPartialResMap, p, partialResVec[i].match_pos);
+				if(1 == HashJoin(finalPartialResSet, partialResVec[0].PartialResList, tmpPartialResMap, p, partialResVec[i].match_pos)){
+					limit1_tag = 1;
+					break;
+				}
 
 				if(partialResVec[0].PartialResList.size() == 0){
 					break;
@@ -588,7 +593,11 @@ main(int argc, char * argv[])
 			}
 		}
 		
-		printf("There are %d final matches.\n", finalPartialResSet.size());
+		if(limit1_tag == 1){
+			printf("There are some crossing matches.\n");
+		}else{
+			printf("There is no crossing match.\n");
+		}
 		schedulingEnd = MPI_Wtime();
 		time_cost_value = schedulingEnd - partialResStart;
 		printf("Total cost %f s!\n", time_cost_value);

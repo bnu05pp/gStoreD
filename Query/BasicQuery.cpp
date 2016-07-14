@@ -321,7 +321,7 @@ void BasicQuery::encodeBasicQuery(KVstore* _p_kvstore, const vector<string>& _qu
         string& sub = this->triple_vt[i].subject;
         string& pre = this->triple_vt[i].predicate;
         string& obj = this->triple_vt[i].object;
-
+		
         int pre_id = _p_kvstore->getIDByPredicate(pre);
         {
             stringstream _ss;

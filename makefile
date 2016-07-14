@@ -8,12 +8,12 @@ kvstoreobj = $(objdir)KVstore.o $(objdir)Tree.o $(objdir)Storage.o $(objdir)Node
 		$(objdir)IntlNode.o $(objdir)LeafNode.o $(objdir)Heap.o 
 	#$(objdir)RangeValue.o #$(objdir)Util.o $(objdir)TBstr.o $(objdir)Hash.o 
 utilobj = $(objdir)Util.o $(objdir)Stream.o
-queryobj = $(objdir)SPARQLquery.o $(objdir)BasicQuery.o $(objdir)ResultSet.o \
+queryobj = $(objdir)SPARQLquery.o $(objdir)BasicQuery.o $(objdir)Varset.o $(objdir)QueryTree.o $(objdir)ResultSet.o \
 		$(objdir)IDList.o 
 signatureobj = $(objdir)SigEntry.o $(objdir)Signature.o
 vstreeobj = $(objdir)VSTree.o $(objdir)EntryBuffer.o $(objdir)LRUCache.o \
 		$(objdir)VNode.o
-parserobj = $(objdir)RDFParser.o $(objdir)DBparser.o $(objdir)SparqlParser.o \
+parserobj = $(objdir)RDFParser.o $(objdir)DBparser.o $(objdir)QueryParser.o $(objdir)SparqlParser.o \
 			$(objdir)SparqlLexer.o $(objdir)TurtleParser.o
 serverobj = $(objdir)Operation.o $(objdir)Server.o $(objdir)Client.o \
 			$(objdir)Socket.o 
@@ -110,9 +110,9 @@ $(objdir)Bstr.o: Bstr/Bstr.cpp Bstr/Bstr.h
 #objects in Database/ begin
 
 $(objdir)Database.o: Database/Database.cpp Database/Database.h \
-	$(objdir)IDList.o $(objdir)ResultSet.o $(objdir)SPARQLquery.o \
-	$(objdir)BasicQuery.o $(objdir)Triple.o $(objdir)SigEntry.o \
-	$(objdir)KVstore.o $(objdir)VSTree.o $(objdir)DBparser.o \
+	$(objdir)IDList.o $(objdir)QueryTree.o $(objdir)ResultSet.o $(objdir)SPARQLquery.o \
+	$(objdir)BasicQuery.o $(objdir)Triple.o $(objdir)Varset.o $(objdir)SigEntry.o \
+	$(objdir)KVstore.o $(objdir)VSTree.o $(objdir)QueryParser.o $(objdir)DBparser.o \
 	$(objdir)Util.o $(objdir)RDFParser.o
 	$(CC) $(CFLAGS) Database/Database.cpp $(inc) -o $(objdir)Database.o
 
@@ -126,6 +126,12 @@ $(objdir)IDList.o: Query/IDList.cpp Query/IDList.h
 
 $(objdir)SPARQLquery.o: Query/SPARQLquery.cpp Query/SPARQLquery.h $(objdir)BasicQuery.o
 	$(CC) $(CFLAGS) Query/SPARQLquery.cpp $(inc) -o $(objdir)SPARQLquery.o
+
+$(objdir)QueryTree.o: Query/QueryTree.cpp Query/QueryTree.h $(objdir)Varset.o
+	$(CC) $(CFLAGS) Query/QueryTree.cpp $(inc) -o $(objdir)QueryTree.o
+
+$(objdir)Varset.o: Query/Varset.cpp Query/Varset.h
+	$(CC) $(CFLAGS) Query/Varset.cpp $(inc) -o $(objdir)Varset.o
 
 $(objdir)BasicQuery.o: Query/BasicQuery.cpp Query/BasicQuery.h $(objdir)Signature.o
 	$(CC) $(CFLAGS) Query/BasicQuery.cpp $(inc) -o $(objdir)BasicQuery.o
@@ -186,6 +192,9 @@ $(objdir)VNode.o: VSTree/VNode.cpp VSTree/VNode.h
 
 $(objdir)DBparser.o: Parser/DBparser.cpp Parser/DBparser.h $(objdir)SparqlParser.o $(objdir)SparqlLexer.o $(objdir)Triple.o
 	$(CC) $(CFLAGS) Parser/DBparser.cpp $(inc) -o $(objdir)DBparser.o
+	
+$(objdir)QueryParser.o: Parser/QueryParser.cpp Parser/QueryParser.h $(objdir)SparqlParser.o $(objdir)SparqlLexer.o $(objdir)QueryTree.o
+	$(CC) $(CFLAGS) Parser/QueryParser.cpp $(inc) -o $(objdir)QueryParser.o
 
 $(objdir)SparqlParser.o: Parser/SparqlParser.c Parser/SparqlParser.h
 	gcc  $(CFLAGS) Parser/SparqlParser.c $(inc) -o $(objdir)SparqlParser.o

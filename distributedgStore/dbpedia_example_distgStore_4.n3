@@ -1,0 +1,6 @@
+<http://dbpedia.org/resource/Man-Trap>	<http://dbpedia.org/ontology/director>	<http://dbpedia.org/resource/Edmond_O%27Brien>.
+<http://dbpedia.org/resource/Man-Trap>	<http://xmlns.com/foaf/0.1/name>	"Man-Trap"@en.
+<http://dbpedia.org/resource/Man-Trap>	<http://dbpedia.org/ontology/starring>	<http://dbpedia.org/resource/Nancy_Kelly>.
+<http://dbpedia.org/resource/Edmond_O%27Brien>	<http://dbpedia.org/ontology/birthPlace>	<http://dbpedia.org/resource/New_York_City>.
+<http://dbpedia.org/resource/Edmond_O%27Brien>	<http://xmlns.com/foaf/0.1/name>	"Edmond O'Brien"@en.
+<http://dbpedia.org/resource/Edmond_O%27Brien>	<http://dbpedia.org/ontology/spouse>	<http://dbpedia.org/resource/Nancy_Kelly>.

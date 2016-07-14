@@ -628,7 +628,6 @@ main(int argc, char * argv[])
 		
 		SPARQLquery cur_sparql_query = _db.query(_query_str, _rs, partialResStr, myRank);
 		BasicQuery* basic_query=&(cur_sparql_query.getBasicQuery(0));
-		//printf("begin partial evaluation.\n");
 		_db.join_pe(basic_query, partialResStr);
 		int cur_var_num = basic_query->getVarNum();
 		//printf("There are %d results in Client %d!\n", (basic_query->getResultList()).size(), myRank);
@@ -636,7 +635,7 @@ main(int argc, char * argv[])
 		partialResEnd = MPI_Wtime();
 		
 		double time_cost_value = partialResEnd - partialResStart;
-		printf("Finding local partial matches costs %f s in %d !\n", time_cost_value, myRank);
+		printf("Finding local partial matches costs %f s!\n", time_cost_value);
 		
 		partialResArr = new char[partialResStr.size() + 3];
 		strcpy(partialResArr, partialResStr.c_str());
@@ -644,7 +643,7 @@ main(int argc, char * argv[])
 		
 		MPI_Send(&cur_var_num, 1, MPI_INT, 0, 10, MPI_COMM_WORLD);
 		MPI_Send(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD);		
-		//cout << myRank << " : " << partialResArr << endl;
+//		cout << myRank << " : " << partialResArr << endl;
 		MPI_Send(partialResArr, size, MPI_CHAR, 0, 10, MPI_COMM_WORLD);
 		
 		delete[] partialResArr;
@@ -653,7 +652,168 @@ main(int argc, char * argv[])
 	delete[] queryCharArr;
 	
 	MPI_Finalize();
+/*
+    // read query from file.
+    if (argc >= 3)
+    {
+		string query = getQueryFromFile(argv[2]);
+        if (query.empty())
+        {
+            return 0;
+        }
+        printf("query is:\n%s\n\n", query.c_str());
+        ResultSet _rs;
+        _db.query(query, _rs, stdout);
+		
+        if (argc >= 4)
+        {
+            Util::save_to_file(argv[3], _rs.to_str());
+        }
+		
+        return 0;
+    }
 
+    // read query file path from terminal.
+    // BETTER: sighandler ctrl+C/D/Z
+    string query;
+    //char resolved_path[PATH_MAX+1];
+#ifdef READLINE_ON
+    char *buf, prompt[] = "gsql>";
+    //const int commands_num = 3;
+    //char commands[][20] = {"help", "quit", "sparql"};
+    printf("Type `help` for information of all commands\n");
+	printf("Type `help command_t` for detail of command_t\n");
+    rl_bind_key('\t', rl_complete);
+    while(true)
+    {
+        buf = readline(prompt);
+        if(buf == NULL)
+            continue;
+        else
+            add_history(buf);
+        if(strncmp(buf, "help", 4) == 0)
+        {
+			if(strcmp(buf, "help") == 0)
+			{
+            //print commands message
+            printf("help - print commands message\n");
+            printf("quit - quit the console normally\n");
+            printf("sparql - load query from the second argument\n");
+			}
+			else
+			{
+				//TODO: sparql path > file	
+			}
+            continue;
+        }
+        else if(strcmp(buf, "quit") == 0)
+            break;
+        else if(strncmp(buf, "sparql", 6) != 0)
+        {
+            printf("unknown commands\n");
+            continue;
+        }
+        std::string query_file;
+        //BETTER:build a parser for this console
+		bool ifredirect = false;
+		char* rp = buf;
+		while(*rp != '\0')
+		{
+			if(*rp == '>')
+			{
+				ifredirect = true;
+				break;
+			}
+			rp++;
+		}
+        char* p = buf + strlen(buf) - 1;
+		FILE* fp = stdout;      ///default to output on screen
+		if(ifredirect)
+		{
+			char* tp = p;
+			while(*tp == ' ' || *tp == '\t')
+				tp--;
+			*(tp+1) = '\0';
+			tp = rp + 2;
+			while(*tp == ' ' || *tp == '\t')
+				tp++;
+			fp = fopen(tp, "w");	//NOTICE:not judge here!
+			p = rp - 2;					//NOTICE: all separated with ' ' or '\t'
+		}
+        while(*p == ' ' || *p == '\t')	//set the end of path
+            p--;
+        *(p+1) = '\0';
+        p = buf + 6;
+        while(*p == ' ' || *p == '\t')	//acquire the start of path
+            p++;
+        //TODO: support the soft links(or hard links)
+        //there are also readlink and getcwd functions for help
+        //http://linux.die.net/man/2/readlink
+        //NOTICE:getcwd and realpath cannot acquire the real path of file
+        //in the same directory and the program is executing when the
+        //system starts running
+        //NOTICE: use realpath(p, NULL) is ok, but need to free the memory
+        char* q = realpath(p, NULL);	//QUERY:still not work for soft links
+#ifdef DEBUG_PRECISE
+        printf("%s\n", p);
+#endif
+        if(q == NULL)
+        {
+			printf("invalid path!\n");
+			free(q);
+			free(buf);
+			continue;
+        }
+        else
+			printf("%s\n", q);
+        //query = getQueryFromFile(p);
+        query = getQueryFromFile(q);
+        if(query.empty())
+        {
+			free(q);
+            //free(resolved_path);
+            free(buf);
+			if(ifredirect)
+				fclose(fp);
+            continue;
+        }
+        cout << "query is:" << endl;
+        cout << query << endl << endl;
+        ResultSet _rs;
+        _db.query(query, _rs, fp);
+        //test...
+        //std::string answer_file = query_file+".out";
+        //Util::save_to_file(answer_file.c_str(), _rs.to_str());
+		free(q);
+        //free(resolved_path);
+        free(buf);
+		if(ifredirect)
+			fclose(fp);
+#ifdef DEBUG_PRECISE
+        //printf("after buf freed!\n");
+#endif
+    }
+#else					//DEBUG:this not work!
+    while(true)
+    {
+        cout << "please input query file path:" << endl;
+        std::string query_file;
+        cin >> query_file;
+        //char* q = realpath(query_file.c_str(), NULL);
+        string query = getQueryFromFile(query_file.c_str());
+        if(query.empty())
+        {
+            //free(resolved_path);
+            continue;
+        }
+        cout << "query is:" << endl;
+        cout << query << endl << endl;
+        ResultSet _rs;
+        _db.query(query, _rs, stdout);
+        //free(resolved_path);
+    }
+#endif
+*/
     return 0;
 }
 

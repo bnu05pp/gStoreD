@@ -18,8 +18,10 @@
 #include "../KVstore/KVstore.h"
 #include "../VSTree/VSTree.h"
 #include "../Parser/DBparser.h"
+#include "../Parser/QueryParser.h"
 #include "../Parser/RDFParser.h"
 #include "../Util/Util.h"
+#include "../Query/QueryTree.h"
 #include <list>
 
 using namespace std;
@@ -85,9 +87,14 @@ public:
 	int getIDofEntity(string _s);
 	void setInternalVertices(const char* _path);
 	
-	bool join_pe(BasicQuery* _basic_query);
+	bool join(SPARQLquery& _sparql_query);
+	bool join_basic(BasicQuery* _basic_query);
+	
+	bool join_pe(BasicQuery* _basic_query);	
 	bool join_pe(BasicQuery* basic_query, string& res);
 	bool join_pe_ask(BasicQuery* basic_query, string& res);
+	
+	void getBasicQuery(SPARQLquery& _sparql_q, QueryTree::GroupPattern &grouppattern);
 
 private:
 	string name;
@@ -163,7 +170,6 @@ private:
 	 * and store the resut in _result_set
 	 *  */
 	bool join(SPARQLquery& _sparql_query, int myRank);
-	bool join(SPARQLquery& _sparql_query);
 	int join(SPARQLquery& _sparql_query, int myRank, string& res_char_arr);
 	int joinASK(SPARQLquery& _sparql_query, int myRank, string& res_char_arr);//, string& query_graph);
 
@@ -172,7 +178,7 @@ private:
 	void preid_filter(BasicQuery* basic_query, int _var_i);
 	void only_pre_filter_after_join(BasicQuery* basic_query);
 	void add_literal_candidate(BasicQuery* basic_query);
-	bool join_basic(BasicQuery* _basic_query);
+	
 	bool join(vector<int*>& _result_list, int _var_id, int _pre_id, int _var_id2, const char _edge_type,
 	          int _var_num, bool shouldAddLiteral, IDList& _can_list);
 	bool join(vector<int*>& _result_list, int _var_id, int _pre_id, int _var_id2, const char _edge_type,

@@ -629,9 +629,9 @@ main(int argc, char * argv[])
 		SPARQLquery cur_sparql_query = _db.query(_query_str, _rs, partialResStr, myRank);
 		BasicQuery* basic_query=&(cur_sparql_query.getBasicQuery(0));
 		//printf("begin partial evaluation.\n");
-		_db.join_pe(basic_query, partialResStr);
+		_db.join_basic(basic_query);
 		int cur_var_num = basic_query->getVarNum();
-		//printf("There are %d results in Client %d!\n", (basic_query->getResultList()).size(), myRank);
+		printf("There are %d results in Client %d!\n", (basic_query->getResultList()).size(), myRank);
 		
 		partialResEnd = MPI_Wtime();
 		

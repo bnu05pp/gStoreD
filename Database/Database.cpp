@@ -171,14 +171,29 @@ Database::query(const string _query, ResultSet& _result_set, string& _res, int m
 {
     long tv_begin = Util::get_cur_time();
 
+	//cout << "begin Parsing" << endl;
+	/*
     DBparser _parser;
     SPARQLquery _sparql_q(_query);
     _parser.sparqlParser(_query, _sparql_q);
+	*/
+	QueryParser _parser;
+	QueryTree query_tree;    
+    _parser.sparqlParser(_query, query_tree);
+	query_tree.getGroupPattern().getVarset();
+	
+	SPARQLquery _sparql_q(_query);
+	//cout << "before get basic query" << endl;
+	this->getBasicQuery(_sparql_q, query_tree.getGroupPattern());
+
 
     long tv_parse = Util::get_cur_time();
     //cout << "after Parsing, used " << (tv_parse - tv_begin) << endl;
     //cout << "after Parsing..." << endl << _sparql_q.triple_str() << endl;
-
+	
+	for (int i = 0; i < query_tree.getProjection().varset.size(); i++)
+		_sparql_q.addQueryVar(query_tree.getProjection().varset[i]);
+		
     _sparql_q.encodeQuery(this->kvstore);
 
     //cout << "sparqlSTR:\t" << _sparql_q.to_str() << endl;
@@ -191,7 +206,7 @@ Database::query(const string _query, ResultSet& _result_set, string& _res, int m
     (this->vstree)->retrieve(_sparql_q, this->internal_tag_arr);
 
     long tv_retrieve = Util::get_cur_time();
-    //cout << "after Retrieve, used " << (tv_retrieve - tv_encode) << "ms." << endl;
+    //cout << "after Retrieve, used " << _result_set.select_var_num << "ms." << endl;
 
     int var_num = this->join(_sparql_q, myRank, _res);
 	
@@ -200,36 +215,107 @@ Database::query(const string _query, ResultSet& _result_set, string& _res, int m
     return _sparql_q;
 }
 
+void Database::getBasicQuery(SPARQLquery& _sparql_q, QueryTree::GroupPattern &grouppattern)
+{
+    for (int i = 0; i < (int)grouppattern.unions.size(); i++)
+        for (int j = 0; j < (int)grouppattern.unions[i].grouppattern_vec.size(); j++)
+            getBasicQuery(_sparql_q, grouppattern.unions[i].grouppattern_vec[j]);
+    for (int i = 0; i < (int)grouppattern.optionals.size(); i++)
+        getBasicQuery(_sparql_q, grouppattern.optionals[i].grouppattern);
+
+    int current_optional = 0;
+    int first_patternid = 0;
+
+    grouppattern.initPatternBlockid();
+    vector<int> basicqueryid((int)grouppattern.patterns.size(), 0);
+
+    for (int i = 0; i < (int)grouppattern.patterns.size(); i++)
+    {
+        for (int j = first_patternid; j < i; j++)
+            if (grouppattern.patterns[i].varset.hasCommonVar(grouppattern.patterns[j].varset))
+                grouppattern.mergePatternBlockid(i, j);
+
+        if ((current_optional != (int)grouppattern.optionals.size() && i == grouppattern.optionals[current_optional].lastpattern) || i + 1 == (int)grouppattern.patterns.size())
+        {
+            for (int j = first_patternid; j <= i; j++)
+                if ((int)grouppattern.patterns[j].varset.varset.size() > 0)
+                {
+                    if (grouppattern.getRootPatternBlockid(j) == j)			//root node
+                    {
+                        _sparql_q.addBasicQuery();
+                        //this->sparql_query_varset.push_back(Varset());
+
+                        for (int k = first_patternid; k <= i; k++)
+                            if (grouppattern.getRootPatternBlockid(k) == j)
+                            {
+                                _sparql_q.addTriple(Triple(
+                                                                 grouppattern.patterns[k].subject.value,
+                                                                 grouppattern.patterns[k].predicate.value,
+                                                                 grouppattern.patterns[k].object.value));
+
+                                basicqueryid[k] = _sparql_q.getBasicQueryNum() - 1;
+                                //this->sparql_query_varset[(int)this->sparql_query_varset.size() - 1] = this->sparql_query_varset[(int)this->sparql_query_varset.size() - 1] + grouppattern.patterns[k].varset;
+                            }
+                    }
+                }
+                else	basicqueryid[j] = -1;
+
+            for (int j = first_patternid; j <= i; j++)
+                grouppattern.pattern_blockid[j] = basicqueryid[j];
+
+            if (current_optional != (int)grouppattern.optionals.size())	current_optional++;
+            first_patternid = i + 1;
+        }
+    }
+
+    for(int i = 0; i < (int)grouppattern.filter_exists_grouppatterns.size(); i++)
+        for (int j = 0; j < (int)grouppattern.filter_exists_grouppatterns[i].size(); j++)
+            getBasicQuery(_sparql_q, grouppattern.filter_exists_grouppatterns[i][j]);
+}
+
 int
 Database::queryASK(const string _query, ResultSet& _result_set, string& _res, int myRank)//, string& query_graph)
 {
     long tv_begin = Util::get_cur_time();
 
+	//cout << "begin Parsing" << endl;
+	/*
     DBparser _parser;
     SPARQLquery _sparql_q(_query);
     _parser.sparqlParser(_query, _sparql_q);
+	*/
+	QueryParser _parser;
+	QueryTree query_tree;    
+    _parser.sparqlParser(_query, query_tree);
+	query_tree.getGroupPattern().getVarset();
+	
+	SPARQLquery _sparql_q(_query);
+	//cout << "before get basic query" << endl;
+	this->getBasicQuery(_sparql_q, query_tree.getGroupPattern());
+
 
     long tv_parse = Util::get_cur_time();
     //cout << "after Parsing, used " << (tv_parse - tv_begin) << endl;
     //cout << "after Parsing..." << endl << _sparql_q.triple_str() << endl;
-	//printf("after Parsing in Client %d\n", myRank);
-
+	
+	for (int i = 0; i < query_tree.getProjection().varset.size(); i++)
+		_sparql_q.addQueryVar(query_tree.getProjection().varset[i]);
+		
     _sparql_q.encodeQuery(this->kvstore);
 
     //cout << "sparqlSTR:\t" << _sparql_q.to_str() << endl;
-	//printf("sparqlSTR in Client %d\n", myRank);
 
     long tv_encode = Util::get_cur_time();
     //cout << "after Encode, used " << (tv_encode - tv_parse) << "ms." << endl;
-	//printf("after Encode in Client %d\n", myRank);
 
     _result_set.select_var_num = _sparql_q.getQueryVarNum();
 
     (this->vstree)->retrieve(_sparql_q, this->internal_tag_arr);
 
     long tv_retrieve = Util::get_cur_time();
-    //cout << "after Retrieve, used " << (tv_retrieve - tv_encode) << "ms." << endl;
-	//printf("after Retrieve in Client %d\n", myRank);
+    //cout << "after Retrieve, used " << _result_set.select_var_num << "ms." << endl;
+
+    //int var_num = this->join(_sparql_q, myRank, _res);
 
     int var_num = this->joinASK(_sparql_q, myRank, _res);
 	//printf("after joinASK in Client %d\n", myRank);
@@ -1743,14 +1829,11 @@ Database::join(vector<int*>& _result_list, int _var_id, int _pre_id, \
 			}
 		}
 
-		/*
-		cout << "shouldAddLiteral is " << shouldAddLiteral << endl;
-        if (_can_list.size()==0 && !shouldAddLiteral)
+        if (_can_list.size() == 0 && !shouldAddLiteral)
         {
             itr_result[_var_num] = -1;
             continue;
         }
-		*/
 
         if (has_preid)
         {
@@ -1771,7 +1854,16 @@ Database::join(vector<int*>& _result_list, int _var_id, int _pre_id, \
              * note that we cannot support to query sparqls with predicate variables ?p.
              */
         {
-            id_list_len = 0;
+			if (_edge_type == BasicQuery::EDGE_IN)
+			{
+				kvstore->getsubIDlistByobjID(itr_result[_var_id],
+						id_list, id_list_len);
+			}
+			else
+			{
+				kvstore->getobjIDlistBysubID(itr_result[_var_id],
+						id_list, id_list_len);
+			}
         }
 
         if (id_list_len == 0)
@@ -1980,6 +2072,20 @@ bool Database::select(vector<int*>& _result_list,int _var_id,int _pre_id,int _va
         int* itr_result = (*itr);
 		
 		//if the endpoints of the mapping edges are two internal vertices, do not select
+		//cout << itr_result[_var_id] << "\t" << Database::LITERAL_FIRST_ID << "\t" << itr_result[_var_id2] << "\t" << this->internal_tag_arr.size() << endl;
+		if(itr_result[_var_id] == -1){
+			if(itr_result[_var_id2] < Database::LITERAL_FIRST_ID && '0' == this->internal_tag_arr.at(itr_result[_var_id2])){
+				new_result_list.push_back(itr_result);
+			}
+			continue;
+		}
+		if(itr_result[_var_id2] == -1){
+			if(itr_result[_var_id] < Database::LITERAL_FIRST_ID && '0' == this->internal_tag_arr.at(itr_result[_var_id])){
+				new_result_list.push_back(itr_result);
+			}
+			continue;
+		}
+
 		if ('0' == this->internal_tag_arr.at(itr_result[_var_id]) && '0' == this->internal_tag_arr.at(itr_result[_var_id2]))
 		{
 			new_result_list.push_back(itr_result);
@@ -2011,17 +2117,16 @@ bool Database::select(vector<int*>& _result_list,int _var_id,int _pre_id,int _va
              * note that we cannot support to query sparqls with predicate variables ?p.
              */
         {
-            id_list_len = 0;
-//			if (_edge_type == BasicQuery::EDGE_IN)
-//			{
-//				kvstore->getsubIDlistByobjID(itr_result[_var_id],
-//						id_list, id_list_len);
-//			}
-//			else
-//			{
-//				kvstore->getobjIDlistBysubID(itr_result[_var_id],
-//						id_list, id_list_len);
-//			}
+			if (_edge_type == BasicQuery::EDGE_IN)
+			{
+				kvstore->getsubIDlistByobjID(itr_result[_var_id],
+						id_list, id_list_len);
+			}
+			else
+			{
+				kvstore->getobjIDlistBysubID(itr_result[_var_id],
+						id_list, id_list_len);
+			}
         }
 
         if (id_list_len == 0)
@@ -2110,7 +2215,7 @@ Database::joinASK(SPARQLquery& _sparql_query, int myRank, string& res_char_arr)/
         this->join_pe_ask(basic_query, res_char_arr);
         long after_joinbasic = Util::get_cur_time();
 		
-		printf("There are %d partial results in Client %d!\n", (basic_query->getResultList()).size(), myRank);
+		//printf("There are %d partial results in Client %d!\n", (basic_query->getResultList()).size(), myRank);
 		/*
 		for(int j = 0; j < var_num; j++){
 			int var_degree = basic_query->getVarDegree(j);
@@ -2219,6 +2324,30 @@ Database::join_pe(BasicQuery* basic_query, string& res)
 	//ofstream log_output("log_intermedidate.txt");
 	bool* dealed_internal_id_list = new bool[var_num];
 	memset(dealed_internal_id_list, 0, sizeof(bool) * var_num);
+	
+	for(int res_j = 0; res_j < var_num; res_j++){
+		int var_degree = basic_query->getVarDegree(res_j);
+		//bool join_tag = false, processing_tag = false;
+		for (int i = 0; i < var_degree; i++)
+		{
+			// each triple/edge need to be processed only once.
+			int edge_id = basic_query->getEdgeID(res_j, i);
+			
+			int var_id2 = basic_query->getEdgeNeighborID(res_j, i);
+			if (var_id2 == -1)
+			{
+				continue;
+			}
+			
+			//processing_tag = true;//if do not join or select, we do not clear the result list
+			Triple curTriple = basic_query->getTriple(edge_id);
+			int pre_id = basic_query->getEdgePreID(res_j, i);//predicate id
+			
+			if(curTriple.getPredicate().at(0) != '?' && pre_id == -1){
+				return false;
+			}
+		}
+	}
 
 	for(int res_j = 0; res_j < var_num; res_j++){
 	
@@ -2290,16 +2419,19 @@ Database::join_pe(BasicQuery* basic_query, string& res)
 				}
 				
 				//processing_tag = true;//if do not join or select, we do not clear the result list
-				
+				Triple curTriple = basic_query->getTriple(edge_id);
 				int pre_id = basic_query->getEdgePreID(var_id, i);//predicate id
 				char edge_type = basic_query->getEdgeType(var_id, i);
 				IDList& can_list = basic_query->getCandidateList(var_id2);
 				
 				if (!dealed_id_list[var_id2])
 				{
+					//cout << "join +++ " << var_id << "\t" << var_id2 << "\t" << pre_id << "\t" << dealed_id_list[var_id2] << "\t" << can_list.size() << "\t" << curTriple.getPredicate() << endl;
 					//join
+					bool shouldVar2AddLiteralCandidateWhenJoin = basic_query->isFreeLiteralVariable(var_id2) && !basic_query->isAddedLiteralCandidate(var_id2);
+					
 					join(*p_result_list, var_id, pre_id, var_id2, edge_type,
-						 var_num, true, can_list, dealed_internal_id_list);
+						 var_num, shouldVar2AddLiteralCandidateWhenJoin, can_list, dealed_internal_id_list);
 					/*
 					ss.str("");
 					ss << var_id << "\t" << var_id2 << "\t";
@@ -2312,6 +2444,7 @@ Database::join_pe(BasicQuery* basic_query, string& res)
 				}
 				else
 				{
+					//cout << "select +++ " << var_id << "\t" << var_id2 << "\t" << pre_id << "\t" << dealed_id_list[var_id2] << "\t" << curTriple.getPredicate() << endl;
 					//select
 					select(*p_result_list, var_id, pre_id, var_id2, edge_type,var_num);
 					//join_tag = true;
@@ -2350,15 +2483,41 @@ Database::join_pe_ask(BasicQuery* basic_query, string& res)
 	//set<int*>* all_result_set;
 	all_result_list->clear();
 	//set<string> dealed_subquery;
+	
+	//ofstream log_output("log_intermedidate.txt");
+	bool* dealed_internal_id_list = new bool[var_num];
+	memset(dealed_internal_id_list, 0, sizeof(bool) * var_num);
+	
+	for(int res_j = 0; res_j < var_num; res_j++){
+		int var_degree = basic_query->getVarDegree(res_j);
+		//bool join_tag = false, processing_tag = false;
+		for (int i = 0; i < var_degree; i++)
+		{
+			// each triple/edge need to be processed only once.
+			int edge_id = basic_query->getEdgeID(res_j, i);
+			
+			int var_id2 = basic_query->getEdgeNeighborID(res_j, i);
+			if (var_id2 == -1)
+			{
+				continue;
+			}
+			
+			//processing_tag = true;//if do not join or select, we do not clear the result list
+			Triple curTriple = basic_query->getTriple(edge_id);
+			int pre_id = basic_query->getEdgePreID(res_j, i);//predicate id
+			
+			if(curTriple.getPredicate().at(0) != '?' && pre_id == -1){
+				return false;
+			}
+		}
+	}
 
 	for(int res_j = 0; res_j < var_num; res_j++){
 	
 		//mark dealed_id_list and dealed_triple, 0 not processed, 1 for processed
 		bool* dealed_id_list = new bool[var_num];
-		//bool* dealed_internal_id_list = new bool[var_num];
 		bool* dealed_triple = new bool[triple_num];
 		memset(dealed_id_list, 0, sizeof(bool) * var_num);
-		//memset(dealed_internal_id_list, 0, sizeof(bool) * var_num);
 		memset(dealed_triple, 0, sizeof(bool) * triple_num);
 
 		int start_var_id = res_j;
@@ -2384,16 +2543,29 @@ Database::join_pe_ask(BasicQuery* basic_query, string& res)
 		stack<int> var_stack;
 		var_stack.push(start_var_id);
 		dealed_id_list[start_var_id] = true;
+		//log_output << "start_var_id = " << start_var_id << endl;
 		//dealed_internal_id_list[start_var_id] = true;
 		//dealed_subquery.insert(this->printDealedVertices(dealed_internal_id_list, var_num));
-		
+		/*
+		for(set<string>::iterator it = dealed_subquery.begin(); it != dealed_subquery.end(); it++){
+			cout << *it << ";";
+		}
+		cout << endl;
+		*/
 		while (!var_stack.empty())
 		{
 			int var_id = var_stack.top();
+			
+			stringstream ss;
+			/*
+			ss << var_stack.size() << "-" << var_id << "\t";
+			string output_str = this->printResList(p_result_list, var_num + 1, ss.str());
+			log_output << output_str << endl;
+			*/
 			var_stack.pop();
 			
 			int var_degree = basic_query->getVarDegree(var_id);
-			bool join_tag = false, processing_tag = false;
+			//bool join_tag = false, processing_tag = false;
 			for (int i = 0; i < var_degree; i++)
 			{
 				// each triple/edge need to be processed only once.
@@ -2409,22 +2581,23 @@ Database::join_pe_ask(BasicQuery* basic_query, string& res)
 					continue;
 				}
 				
-				processing_tag = true;//if do not join or select, we do not clear the result list
-				
+				//processing_tag = true;//if do not join or select, we do not clear the result list
+				Triple curTriple = basic_query->getTriple(edge_id);
 				int pre_id = basic_query->getEdgePreID(var_id, i);//predicate id
 				char edge_type = basic_query->getEdgeType(var_id, i);
 				IDList& can_list = basic_query->getCandidateList(var_id2);
 				
 				if (!dealed_id_list[var_id2])
 				{
+					//cout << "join +++" << var_id << "\t" << var_id2 << "\t" << pre_id << "\t" << dealed_id_list[var_id2] << "\t" << curTriple.getPredicate() << endl;
 					//join
 					join(*p_result_list, var_id, pre_id, var_id2, edge_type,
-						 var_num, true, can_list);
-					
+						 var_num, true, can_list, dealed_internal_id_list);
 					/*
 					ss.str("");
 					ss << var_id << "\t" << var_id2 << "\t";
-					this->printResList(p_result_list, var_num + 1, ss.str());
+					string output_str = this->printResList(p_result_list, var_num + 1, ss.str());
+					log_output << "after join ++++++++ "<< endl << output_str << endl;
 					*/
 					var_stack.push(var_id2);
 					basic_query->setAddedLiteralCandidate(var_id2);
@@ -2432,40 +2605,59 @@ Database::join_pe_ask(BasicQuery* basic_query, string& res)
 				}
 				else
 				{
+					//cout << "select +++" << var_id << "\t" << var_id2 << "\t" << pre_id << "\t" << dealed_id_list[var_id2] << "\t" << curTriple.getPredicate() << endl;
 					//select
 					select(*p_result_list, var_id, pre_id, var_id2, edge_type,var_num);
-					join_tag = true;
+					//join_tag = true;
+					/*
+					ss.str("");
+					ss << var_id << "\t" << var_id2 << "\t";
+					output_str = this->printResList(p_result_list, var_num + 1, ss.str());
+					log_output << "after select ======== "<< endl << output_str << endl;
+					*/
 				}
 
 				dealed_triple[edge_id] = true;
 			}
-			if(!join_tag && var_stack.empty() && processing_tag){
-				p_result_list->clear();
-			}
 		}
 		//cout << "--------------variable " << res_j << " of " << var_num << " finds " << p_result_list->size() << " results" << endl;
 		all_result_list->insert(all_result_list->end(), p_result_list->begin(), p_result_list->end());
+		dealed_internal_id_list[start_var_id] = true;
 	}
 
 	//ResListtoString(all_result_list, var_num, res);
-	char* dealed_internal_id_list = new char[var_num + 1];
+	char* dealed_internal_id_sign = new char[var_num + 1];
 	set<string> LECF_set;
 	
-	//cout << "begin compressing !!! " << endl;
+	//ofstream log_output("log_ask_intermedidate.txt");
 	for(vector<int*>::iterator it = all_result_list->begin(); it != all_result_list->end(); it++){
-		memset(dealed_internal_id_list, '0', sizeof(bool) * var_num);
-		dealed_internal_id_list[var_num] = 0;
+		memset(dealed_internal_id_sign, '0', sizeof(bool) * var_num);
+		dealed_internal_id_sign[var_num] = 0;
 		int* result_var = *it;		
 		stringstream res_ss;
 		
 		for(int j = 0; j < var_num; j++){
 			int var_degree = basic_query->getVarDegree(j);
+			/*
+			if(result_var[j] != -1){
+				string _tmp_1;
+				if(result_var[j] < LITERAL_FIRST_ID){
+					_tmp_1 = (this->kvstore)->getEntityByID(result_var[j]);
+				}else{
+					_tmp_1 = (this->kvstore)->getLiteralByID(result_var[j]);
+				}
+				log_output << _tmp_1 << "\t";
+			}else{
+				log_output << result_var[j] << "\t";
+			}
+			*/
 			if(result_var[j] == -1)
 				continue;
+			
 			for (int i = 0; i < var_degree; i++)
 			{
 				if(result_var[j] >= LITERAL_FIRST_ID || this->internal_tag_arr.at(result_var[j]) == '1'){
-					dealed_internal_id_list[j] = '1';
+					dealed_internal_id_sign[j] = '1';
 				}else{
 					continue;
 				}
@@ -2500,10 +2692,11 @@ Database::join_pe_ask(BasicQuery* basic_query, string& res)
 				}
 			}
 		}
-		res_ss << dealed_internal_id_list << endl;
+		res_ss << dealed_internal_id_sign << endl;
+		//log_output << res_ss.str() << endl;
 		LECF_set.insert(res_ss.str());
 	}
-	delete[] dealed_internal_id_list;
+	delete[] dealed_internal_id_sign;
 	
 	stringstream all_res_ss;
 	for(set<string>::iterator it1 = LECF_set.begin(); it1 != LECF_set.end(); it1++){

@@ -1,0 +1,5 @@
+select ?a ?d ?f where {
+?a	<http://dbpedia.org/ontology/spouse>	?d.
+?f	<http://dbpedia.org/ontology/director>	?d.
+?f	<http://dbpedia.org/ontology/starring>	?a.
+}
