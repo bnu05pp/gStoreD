@@ -17,7 +17,7 @@ QueryParser::QueryParser()
 void QueryParser::sparqlParser(const string& query, QueryTree& querytree)
 {
 	//uncompress before use
-	//dfa34_Table_uncompress();
+	dfa34_Table_uncompress();
 
 	pANTLR3_INPUT_STREAM input;
 	pSparqlLexer lex;
@@ -33,7 +33,7 @@ void QueryParser::sparqlParser(const string& query, QueryTree& querytree)
 	SparqlParser_workload_return r = parser->workload(parser);
 	pANTLR3_BASE_TREE root = r.tree;
 
-	if (printNode(root) > 0)	throw "Some errors are found in the SPARQL query request.";
+	//if (printNode(root) > 0)	throw "Some errors are found in the SPARQL query request.";
 
 	parseTree(root, querytree);
 
@@ -53,8 +53,8 @@ int QueryParser::printNode(pANTLR3_BASE_TREE node, int dep)
 	int hasErrorNode = 0;
 	if (treeType == 0)	hasErrorNode = 1;
 
-	//for (int i=0; i < dep; i++)		printf("    ");
-	//printf("%d: %s\n",treeType,s);
+	for (int i=0; i < dep; i++)		printf("    ");
+	printf("%d: %s\n",treeType,s);
 
 	for (unsigned int i = 0; i < node->getChildCount(node); i++)
 	{
@@ -154,7 +154,7 @@ void QueryParser::parsePrologue(pANTLR3_BASE_TREE node)
 
 void QueryParser::parsePrefix(pANTLR3_BASE_TREE node)
 {
-	printf("parsePrefix\n");
+	//printf("parsePrefix\n");
 
 	string key;
 	string value;
@@ -184,15 +184,15 @@ void QueryParser::replacePrefix(string& str)
 		//blank node
 		if (prefix == "_:")	return;
 
-		cout << "prefix: " << prefix << endl;
+		//cout << "prefix: " << prefix << endl;
 		if (_prefix_map.find(prefix) != _prefix_map.end())
 		{
 			str=_prefix_map[prefix].substr(0, _prefix_map[prefix].length() - 1) + str.substr(sep + 1 ,str.length() - sep - 1) + ">";
-			cout << "str: " << str << endl;
+			//cout << "str: " << str << endl;
 		}
 		else
 		{
-			cout << "prefix not found..." << endl;
+			//cout << "prefix not found..." << endl;
 			throw "Some errors are found in the SPARQL query request.";
 		}
 	}

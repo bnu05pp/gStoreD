@@ -90,7 +90,7 @@ has the callable functions (rules) shown below,
       pSparqlLexer->OPTIONAL(pSparqlLexer)
  *  - 
  void
-      pSparqlLexer->GRAPH_PARSER(pSparqlLexer)
+      pSparqlLexer->GRAPH_PENG(pSparqlLexer)
  *  - 
  void
       pSparqlLexer->UNION(pSparqlLexer)
@@ -330,13 +330,13 @@ has the callable functions (rules) shown below,
       pSparqlLexer->COUNT(pSparqlLexer)
  *  - 
  void
-      pSparqlLexer->SUM_PARSER(pSparqlLexer)
+      pSparqlLexer->SUM_PENG(pSparqlLexer)
  *  - 
  void
-      pSparqlLexer->MIN_PARSER(pSparqlLexer)
+      pSparqlLexer->MIN_PENG(pSparqlLexer)
  *  - 
  void
-      pSparqlLexer->MAX_PARSER(pSparqlLexer)
+      pSparqlLexer->MAX_PENG(pSparqlLexer)
  *  - 
  void
       pSparqlLexer->AVG(pSparqlLexer)
@@ -378,13 +378,13 @@ has the callable functions (rules) shown below,
       pSparqlLexer->LANGTAG(pSparqlLexer)
  *  - 
  void
-      pSparqlLexer->INTEGER_PARSER(pSparqlLexer)
+      pSparqlLexer->INTEGER_PENG(pSparqlLexer)
  *  - 
  void
       pSparqlLexer->DECIMAL(pSparqlLexer)
  *  - 
  void
-      pSparqlLexer->DOUBLE_PARSER(pSparqlLexer)
+      pSparqlLexer->DOUBLE_PENG(pSparqlLexer)
  *  - 
  void
       pSparqlLexer->INTEGER_POSITIVE(pSparqlLexer)
@@ -625,6 +625,7 @@ typedef struct SparqlLexer_Ctx_struct SparqlLexer, * pSparqlLexer;
  * ========================
  */
 
+void dfa34_Table_uncompress();
 
 /** Context tracking structure for 
 SparqlLexer
@@ -1230,7 +1231,7 @@ lexer
 #define DISTINCT      52
 #define DIVIDE      53
 #define DOT      54
-#define DOUBLE_PARSER      55
+#define DOUBLE_PENG      55
 #define DOUBLE_NEGATIVE      56
 #define DOUBLE_POSITIVE      57
 #define DROP      58
@@ -1246,7 +1247,7 @@ lexer
 #define FLOOR      68
 #define FROM      69
 #define FUNCTION      70
-#define GRAPH_PARSER      71
+#define GRAPH_PENG      71
 #define GREATER      72
 #define GREATER_EQUAL      73
 #define GROUP      74
@@ -1258,7 +1259,7 @@ lexer
 #define IF      80
 #define IN      81
 #define INSERT      82
-#define INTEGER_PARSER      83
+#define INTEGER_PENG      83
 #define INTEGER_NEGATIVE      84
 #define INTEGER_POSITIVE      85
 #define INTO      86
@@ -1279,9 +1280,9 @@ lexer
 #define LESS_EQUAL      101
 #define LIMIT      102
 #define LOAD      103
-#define MAX_PARSER      104
+#define MAX_PENG      104
 #define MD5      105
-#define MIN_PARSER      106
+#define MIN_PENG      106
 #define MINUS      107
 #define MINUS_KEYWORD      108
 #define MINUTES      109
@@ -1355,7 +1356,7 @@ lexer
 #define SUBJECT      177
 #define SUBSELECT      178
 #define SUBSTR      179
-#define SUM_PARSER      180
+#define SUM_PENG      180
 #define TIMEZONE      181
 #define TO      182
 #define TRIPLES_BLOCK      183

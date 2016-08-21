@@ -12,16 +12,13 @@ TODO: add -h/--help for help message
 
 using namespace std;
 
-/*
- * [0]./gload [1]data_folder_path  [2]rdf_file_path
- */
+//[0]./gload [1]data_folder_path  [2]rdf_file_path
 int 
 main(int argc, char * argv[])
 {
-#ifdef DEBUG
+	//chdir(dirname(argv[0]));
 	Util util;
-#endif
-	system("clock");
+	//system("clock");
 	cout << "gload..." << endl;
 	{
 		cout << "argc: " << argc << "\t";
@@ -31,7 +28,15 @@ main(int argc, char * argv[])
 	}
 
 	string _db_path = string(argv[1]);
+	//if(_db_path[0] != '/' && _db_path[0] != '~')  //using relative path
+	//{
+		//_db_path = string("../") + _db_path;
+	//}
 	string _rdf = string(argv[2]);
+	//if(_rdf[0] != '/' && _rdf[0] != '~')  //using relative path
+	//{
+		//_rdf = string("../") + _rdf;
+	//}
 	Database _db(_db_path);
 	bool flag = _db.build(_rdf);
 	if (flag)
@@ -42,10 +47,7 @@ main(int argc, char * argv[])
 	{
 		cout << "import RDF file to database failed." << endl;
 	}
-	
-	_db.setInternalVertices(argv[3]);
-	
-	system("clock");
+	//system("clock");
 	return 0;
 }
 

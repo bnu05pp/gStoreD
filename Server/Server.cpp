@@ -7,8 +7,8 @@
 =============================================================================*/
 
 #include "Server.h"
-#include "../Database/Database.h"
-#include "../Util/Util.h"
+
+using namespace std;
 
 Server::Server()
 {
@@ -134,6 +134,12 @@ Server::listen()
                 this->importRDF(db_name, "", rdf_path, ret_msg);
                 break;
             }
+			case CMD_DROP:
+			{
+                string db_name = operation.getParameter(0);
+                this->dropDatabase(db_name, "", ret_msg);
+                break;
+			}
             case CMD_QUERY:
             {
                 string query = operation.getParameter(0);
@@ -143,9 +149,9 @@ Server::listen()
             case CMD_SHOW:
             {
                 string para = operation.getParameter(0);
-                if (para == "databases")
+                if (para == "databases" || para == "all")
                 {
-                    this->showDatabases("", ret_msg);
+                    this->showDatabases(para, "", ret_msg);
                 }
                 else
                 {
@@ -296,10 +302,20 @@ Server::createDatabase(std::string _db_name, std::string _ac_name, std::string& 
 }
 
 bool 
-Server::deleteDatabase(std::string _db_name, std::string _ac_name, std::string& _ret_msg)
+Server::dropDatabase(std::string _db_name, std::string _ac_name, std::string& _ret_msg)
 {
-    // to be implemented...
-    return false;
+	//TODO
+    if (this->database == NULL || this->database->getName() != _db_name)
+    {
+        _ret_msg = "database:" + _db_name + " is not loaded.";
+        return false;
+    }
+
+    delete this->database;
+    this->database = NULL;
+    _ret_msg = "unload database done.";
+
+    return true;
 }
 
 bool 
@@ -316,6 +332,8 @@ Server::loadDatabase(std::string _db_name, std::string _ac_name, std::string& _r
     else
     {
         _ret_msg = "load database failed.";
+		delete this->database;
+		this->database = NULL;
     }
 
     return flag;
@@ -340,14 +358,17 @@ Server::unloadDatabase(std::string _db_name, std::string _ac_name, std::string& 
 bool 
 Server::importRDF(std::string _db_name, std::string _ac_name, std::string _rdf_path, std::string& _ret_msg)
 {
-    if (this->database != NULL && this->database->getName() != _db_name)
+    //if (this->database != NULL && this->database->getName() != _db_name)
+    if (this->database != NULL)
     {
-        this->database->unload();
         delete this->database;
     }
 
     this->database = new Database(_db_name);
     bool flag = this->database->build(_rdf_path);
+
+	delete this->database;
+	this->database = NULL;
 
     if (flag)
     {
@@ -388,22 +409,19 @@ Server::insertTriple(std::string _db_name, std::string _ac_name, std::string _rd
 bool 
 Server::query(const std::string _query, std::string& _ret_msg)
 {
-    if (this->database == NULL)
+    if(this->database == NULL)
     {
         _ret_msg = "database has not been loaded.";
         return false;
     }
 
     ResultSet res_set;
-    bool flag = this->database->query(_query, res_set, stdout);
-    if (flag)
+    bool flag = this->database->query(_query, res_set);
+    if(flag)
     {
-#ifndef STREAM_ON
+		//_ret_msg = "results are too large!";
+		//BETTER: divide and transfer if too large to be placed in memory, using Stream
         _ret_msg = res_set.to_str();
-#else
-		_ret_msg = "results are too large!";
-		//TODO: divide and transfer
-#endif
     }
     else
     {
@@ -414,9 +432,14 @@ Server::query(const std::string _query, std::string& _ret_msg)
 }
 
 bool 
-Server::showDatabases(std::string _ac_name, std::string& _ret_msg)
+Server::showDatabases(string _para, string _ac_name, string& _ret_msg)
 {
-    if (this->database != NULL)
+	if(_para == "all")
+	{
+		_ret_msg = Util::getItemsFromDir(Util::db_home);
+		return true;
+	}
+    if(this->database != NULL)
     {
         _ret_msg = "\n" + this->database->getName() + "\n";
     }

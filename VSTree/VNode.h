@@ -1,22 +1,25 @@
-/*
- * VNode.h
- *
- *  Created on: 2014-6-20
- *      Author: liyouhuan
- */
+/*=============================================================================
+# Filename: VNode.h
+# Author: Bookug Lobert 
+# Mail: zengli-bookug@pku.edu.cn
+# Last Modified: 2016-04-11 14:05
+# Description: written by liyouhuan
+=============================================================================*/
 
-#ifndef VNODE_H_
-#define VNODE_H_
+#ifndef _VSTREE_VNODE_H
+#define _VSTREE_VNODE_H
 
-#include <vector>
+#include "../Util/Util.h"
 #include "../Signature/SigEntry.h"
-#include"LRUCache.h"
-#include<sstream>
+#include "LRUCache.h"
 
-class VNode{
+class VNode
+{
 public:
-    static const int MAX_CHILD_NUM = 151;
-    static const int MIN_CHILD_NUM = 60;
+    static const int MAX_CHILD_NUM = 200;
+    //static const int MAX_CHILD_NUM = 151;
+    static const int MIN_CHILD_NUM = 100;
+    //static const int MIN_CHILD_NUM = 60;
 
     //debug
 //    static const int MAX_CHILD_NUM = 50;
@@ -66,9 +69,10 @@ private:
     int self_file_line;
     int father_file_line;
     SigEntry entry;
+	//BETTER:is this necessary? too much memory?
     SigEntry child_entries[VNode::MAX_CHILD_NUM];
     int child_file_lines[VNode::MAX_CHILD_NUM];
 };
 
+#endif // _VSTREE_VNODE_H
 
-#endif /* VNODE_H_ */

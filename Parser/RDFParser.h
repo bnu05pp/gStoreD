@@ -1,7 +1,7 @@
 #ifndef gstore_parser_RDFParser
 #define gstore_parser_RDFParser
 	#include "TurtleParser.h"
-	#include "../Triple/Triple.h"
+	#include "../Util/Triple.h"
 	#include <iostream>
 	#include <fstream>
 	#include <sstream>

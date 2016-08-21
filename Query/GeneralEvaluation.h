@@ -42,8 +42,10 @@ public:
 
 	std::vector<std::vector<std::string> > getSPARQLQueryVarset();
 
+	void doQuery(const std::string &_query, int myRank, std::string &internal_tag_str, string& lpm_str);
 	void doQuery(const std::string &_query);
 	bool parseQuery(const std::string &_query);
+	bool onlyParseQuery(const std::string &_query, int& var_num, QueryTree::QueryForm& query_form);
 
 	void getBasicQuery(QueryTree::GroupPattern &grouppattern);
 
@@ -126,6 +128,7 @@ public:
 
 	int countFilterExistsGroupPattern(QueryTree::GroupPattern::FilterTreeNode& filter);
 	void doEvaluationPlan();
+	void doEvaluationPlan(int argc, char * argv[]);
 
 	class ExpansionEvaluationStackUnit
 	{

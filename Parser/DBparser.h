@@ -13,7 +13,7 @@
 #include<fstream>
 #include<stdio.h>
 #include "../Query/SPARQLquery.h"
-#include "../Triple/Triple.h"
+#include "../Util/Triple.h"
 #include "SparqlParser.h"
 #include "SparqlLexer.h"
 using namespace std;

@@ -13,42 +13,15 @@ TODO: add -h/--help for help message
 
 using namespace std;
 
-vector<string> split(string textline, string tag){
-	vector<string> res;
-	std::size_t pre_pos = 0;
-	std::size_t pos = textline.find_first_of(tag);
-	while (pos != std::string::npos){
-		string curStr = textline.substr(pre_pos, pos - pre_pos);
-		curStr.erase(0, curStr.find_first_not_of("\r\t\n "));
-		curStr.erase(curStr.find_last_not_of("\r\t\n ") + 1);
-		if(strcmp(curStr.c_str(), "") != 0)
-			res.push_back(curStr);
-		pre_pos = pos + 1;
-		pos = textline.find_first_of(tag, pre_pos);
-	}
-
-	string curStr = textline.substr(pre_pos, pos - pre_pos);
-	curStr.erase(0, curStr.find_first_not_of("\r\t\n "));
-	curStr.erase(curStr.find_last_not_of("\r\t\n ") + 1);
-	if(strcmp(curStr.c_str(), "") != 0)
-		res.push_back(curStr);
-
-	return res;
-}
-
-/*
- * [0]./gload [1]data_folder_path  [2]rdf_file_path
- */
+//[0]./gload [1]data_folder_path  [2]rdf_file_path
 int 
 main(int argc, char * argv[])
 {
-#ifdef DEBUG
+	//chdir(dirname(argv[0]));
 	Util util;
-#endif
-
+	//system("clock");
 	int myRank, p, size, i, j, k, l = 0;
-	double partialResStart, partialResEnd;
-	double schedulingStart, schedulingEnd;
+	double loadingStart, loadingEnd;
 	MPI_Status status;
 	MPI_Init(&argc, &argv);
 
@@ -57,38 +30,18 @@ main(int argc, char * argv[])
 	
 	if(myRank == 0) {
 		string _db_path = string(argv[1]);
-		printf("The name of data store: %s!\n", argv[1]); 
-
-		/*
-		char* _config_name = new char[128];
-		strcpy(_config_name, _db_path.c_str());
-		size = strlen(_config_name);
-		printf("DB_store: %s\n", _config_name);
-		for(i = 1; i < p; i++){
-			MPI_Send(&size, 1, MPI_INT, i, 10, MPI_COMM_WORLD);
-			MPI_Send(_config_name, size, MPI_CHAR, i, 10, MPI_COMM_WORLD);
+		cout << "gloadD..." << endl;
+		{
+			cout << "argc: " << argc << "\t";
+			cout << "DB_store:" << argv[1] << "\t";
+			cout << "RDF_data: " << argv[2] << "\t";
+			cout << "internal_file_name: " << argv[3] << "\t";
+			cout << endl;
 		}
-		
-		strcpy(_config_name, _rdf.c_str());
-		size = strlen(_config_name);
-		printf("RDF_data: %s\n", _config_name);
-		for(i = 1; i < p; i++){
-			MPI_Send(&size, 1, MPI_INT, i, 10, MPI_COMM_WORLD);
-			MPI_Send(_config_name, size, MPI_CHAR, i, 10, MPI_COMM_WORLD);
-		}
-		
-		strcpy(_config_name, _internal_vertices_file_path.c_str());
-		size = strlen(_config_name);
-		printf("Internal_vertices_file: %s\n", _config_name);
-		for(i = 1; i < p; i++){
-			MPI_Send(&size, 1, MPI_INT, i, 10, MPI_COMM_WORLD);
-			MPI_Send(_config_name, size, MPI_CHAR, i, 10, MPI_COMM_WORLD);
-		}
-		*/
 		stringstream* _six_tuples_ss = new stringstream[p - 1];		
 		
 		//add internal node flags to B+ tree
-		Tree* tp = new Tree(".", string("internal_nodes.dat"), "build");
+		Tree* tp = new Tree(".", string("internal_nodes_tree.dat"), "build");
 		string buff;
 		string _internal_vertices_file = string(argv[3]);
 		ifstream infile(_internal_vertices_file.c_str());
@@ -97,7 +50,7 @@ main(int argc, char * argv[])
 		}
 		
 		while(getline(infile, buff)){
-			vector<string> resVec = split(buff, "\t");
+			vector<string> resVec = Util::split(buff, "\t");
 			char* _val = new char[resVec[1].size()];
 			strcpy(_val, resVec[1].c_str());
 			tp->insert(resVec[0].c_str(), strlen(resVec[0].c_str()), _val, strlen(_val));
@@ -215,26 +168,9 @@ main(int argc, char * argv[])
 		_fin.close();
 		infile.close();
 		delete tp;
-
+		remove("internal_nodes.dat");
 	}else{
-	/*
-		MPI_Recv(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD, &status);
-		char* _db_store_name = new char[size];
-		MPI_Recv(_db_store_name, size, MPI_CHAR, 0, 10, MPI_COMM_WORLD, &status);
-		_db_store_name[size - 1] = 0;
-		
-		MPI_Recv(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD, &status);
-		char* _rdf_file_name = new char[size];
-		MPI_Recv(_rdf_file_name, size, MPI_CHAR, 0, 10, MPI_COMM_WORLD, &status);
-		_rdf_file_name[size - 1] = 0;
-		
-		MPI_Recv(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD, &status);
-		char* _internal_vertices_file = new char[size];
-		MPI_Recv(_internal_vertices_file, size, MPI_CHAR, 0, 10, MPI_COMM_WORLD, &status);
-		_internal_vertices_file[size - 1] = 0;
-		*/
-		
-		// recieve all internal vertices
+		loadingStart = MPI_Wtime();
 		
 		MPI_Recv(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD, &status);
 		char* _internal_vertices_arr = new char[size];
@@ -244,11 +180,6 @@ main(int argc, char * argv[])
 		ofstream _internal_vertices_fout("_distributed_gStore_tmp_internal_vertices.txt");
 		_internal_vertices_fout << _internal_vertices_arr;
 		_internal_vertices_fout.close();
-		
-		// recieve all triples
-		
-		string _db_path = string(argv[1]);
-		Database _db(_db_path);
 		
 		ofstream _six_tuples_fout("_distributed_gStore_tmp_rdf_triples.n3");
 		if(! _six_tuples_fout) {
@@ -275,6 +206,17 @@ main(int argc, char * argv[])
 		
 		printf("%d recieve all all tuples!\n", myRank); 
 		
+		string _db_path = string(argv[1]);
+		//if(_db_path[0] != '/' && _db_path[0] != '~')  //using relative path
+		//{
+			//_db_path = string("../") + _db_path;
+		//}
+		string _rdf = string(argv[2]);
+		//if(_rdf[0] != '/' && _rdf[0] != '~')  //using relative path
+		//{
+			//_rdf = string("../") + _rdf;
+		//}
+		Database _db(_db_path);
 		bool flag = _db.build("_distributed_gStore_tmp_rdf_triples.n3");
 		if (flag)
 		{
@@ -285,16 +227,23 @@ main(int argc, char * argv[])
 			cout << "import RDF file to database failed." << endl;
 		}
 		
-		_db.setInternalVertices("_distributed_gStore_tmp_internal_vertices.txt");
+		printf("%d begin to load internal vertices!\n", myRank); 
+		
+		//_db.setInternalVertices("_distributed_gStore_tmp_internal_vertices.txt");
+		
 		remove("_distributed_gStore_tmp_internal_vertices.txt");
 		remove("_distributed_gStore_tmp_rdf_triples.n3");
 		
-		printf("%d finish loading data!\n", myRank); 
+		loadingEnd = MPI_Wtime();
+		double time_cost_value = loadingEnd - loadingStart;
+		
+		printf("%d takes %f s and finish loading data!\n", myRank, time_cost_value); 
 		delete[] _internal_vertices_arr;
 	}
 	
 	MPI_Finalize();
-
+	
+	//system("clock");
 	return 0;
 }
 

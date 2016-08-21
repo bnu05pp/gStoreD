@@ -2523,7 +2523,7 @@ parser
 #define DISTINCT      52
 #define DIVIDE      53
 #define DOT      54
-#define DOUBLE_PARSER      55
+#define DOUBLE_PENG      55
 #define DOUBLE_NEGATIVE      56
 #define DOUBLE_POSITIVE      57
 #define DROP      58
@@ -2539,7 +2539,7 @@ parser
 #define FLOOR      68
 #define FROM      69
 #define FUNCTION      70
-#define GRAPH_PARSER      71
+#define GRAPH_PENG      71
 #define GREATER      72
 #define GREATER_EQUAL      73
 #define GROUP      74
@@ -2551,7 +2551,7 @@ parser
 #define IF      80
 #define IN      81
 #define INSERT      82
-#define INTEGER_PARSER      83
+#define INTEGER_PENG      83
 #define INTEGER_NEGATIVE      84
 #define INTEGER_POSITIVE      85
 #define INTO      86
@@ -2572,9 +2572,9 @@ parser
 #define LESS_EQUAL      101
 #define LIMIT      102
 #define LOAD      103
-#define MAX_PARSER      104
+#define MAX_PENG      104
 #define MD5      105
-#define MIN_PARSER      106
+#define MIN_PENG      106
 #define MINUS      107
 #define MINUS_KEYWORD      108
 #define MINUTES      109
@@ -2648,7 +2648,7 @@ parser
 #define SUBJECT      177
 #define SUBSELECT      178
 #define SUBSTR      179
-#define SUM_PARSER      180
+#define SUM_PENG      180
 #define TIMEZONE      181
 #define TO      182
 #define TRIPLES_BLOCK      183

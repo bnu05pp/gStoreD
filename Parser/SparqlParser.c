@@ -248,7 +248,7 @@ pANTLR3_UINT8   SparqlParserTokenNames[205+4]
         (pANTLR3_UINT8) "DISTINCT",
         (pANTLR3_UINT8) "DIVIDE",
         (pANTLR3_UINT8) "DOT",
-        (pANTLR3_UINT8) "DOUBLE_PARSER",
+        (pANTLR3_UINT8) "DOUBLE_PENG",
         (pANTLR3_UINT8) "DOUBLE_NEGATIVE",
         (pANTLR3_UINT8) "DOUBLE_POSITIVE",
         (pANTLR3_UINT8) "DROP",
@@ -264,7 +264,7 @@ pANTLR3_UINT8   SparqlParserTokenNames[205+4]
         (pANTLR3_UINT8) "FLOOR",
         (pANTLR3_UINT8) "FROM",
         (pANTLR3_UINT8) "FUNCTION",
-        (pANTLR3_UINT8) "GRAPH_PARSER",
+        (pANTLR3_UINT8) "GRAPH_PENG",
         (pANTLR3_UINT8) "GREATER",
         (pANTLR3_UINT8) "GREATER_EQUAL",
         (pANTLR3_UINT8) "GROUP",
@@ -276,7 +276,7 @@ pANTLR3_UINT8   SparqlParserTokenNames[205+4]
         (pANTLR3_UINT8) "IF",
         (pANTLR3_UINT8) "IN",
         (pANTLR3_UINT8) "INSERT",
-        (pANTLR3_UINT8) "INTEGER_PARSER",
+        (pANTLR3_UINT8) "INTEGER_PENG",
         (pANTLR3_UINT8) "INTEGER_NEGATIVE",
         (pANTLR3_UINT8) "INTEGER_POSITIVE",
         (pANTLR3_UINT8) "INTO",
@@ -297,9 +297,9 @@ pANTLR3_UINT8   SparqlParserTokenNames[205+4]
         (pANTLR3_UINT8) "LESS_EQUAL",
         (pANTLR3_UINT8) "LIMIT",
         (pANTLR3_UINT8) "LOAD",
-        (pANTLR3_UINT8) "MAX_PARSER",
+        (pANTLR3_UINT8) "MAX_PENG",
         (pANTLR3_UINT8) "MD5",
-        (pANTLR3_UINT8) "MIN_PARSER",
+        (pANTLR3_UINT8) "MIN_PENG",
         (pANTLR3_UINT8) "MINUS",
         (pANTLR3_UINT8) "MINUS_KEYWORD",
         (pANTLR3_UINT8) "MINUTES",
@@ -373,7 +373,7 @@ pANTLR3_UINT8   SparqlParserTokenNames[205+4]
         (pANTLR3_UINT8) "SUBJECT",
         (pANTLR3_UINT8) "SUBSELECT",
         (pANTLR3_UINT8) "SUBSTR",
-        (pANTLR3_UINT8) "SUM_PARSER",
+        (pANTLR3_UINT8) "SUM_PENG",
         (pANTLR3_UINT8) "TIMEZONE",
         (pANTLR3_UINT8) "TO",
         (pANTLR3_UINT8) "TRIPLES_BLOCK",
@@ -6007,11 +6007,11 @@ constructQuery(pSparqlParser ctx)
         	                case DECIMAL:
         	                case DECIMAL_NEGATIVE:
         	                case DECIMAL_POSITIVE:
-        	                case DOUBLE_PARSER:
+        	                case DOUBLE_PENG:
         	                case DOUBLE_NEGATIVE:
         	                case DOUBLE_POSITIVE:
         	                case FALSE:
-        	                case INTEGER_PARSER:
+        	                case INTEGER_PENG:
         	                case INTEGER_NEGATIVE:
         	                case INTEGER_POSITIVE:
         	                case IRI_REF:
@@ -9302,7 +9302,7 @@ limitOffsetClauses(pSparqlParser ctx)
 
 /**
  * $ANTLR start limitClause
- * Sparql.g:174:1: limitClause : LIMIT INTEGER_PARSER -> ^( LIMIT INTEGER_PARSER ) ;
+ * Sparql.g:174:1: limitClause : LIMIT INTEGER_PENG -> ^( LIMIT INTEGER_PENG ) ;
  */
 static SparqlParser_limitClause_return
 limitClause(pSparqlParser ctx)
@@ -9334,15 +9334,15 @@ limitClause(pSparqlParser ctx)
     INTEGER95_tree   = NULL;
 
     stream_INTEGER   = NULL;
-    #define CREATE_stream_INTEGER  if (stream_INTEGER == NULL) {stream_INTEGER = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token INTEGER_PARSER"); } 
+    #define CREATE_stream_INTEGER  if (stream_INTEGER == NULL) {stream_INTEGER = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token INTEGER_PENG"); } 
     stream_LIMIT   = NULL;
     #define CREATE_stream_LIMIT  if (stream_LIMIT == NULL) {stream_LIMIT = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token LIMIT"); } 
 
     retval.tree  = NULL;
 
     {
-        // Sparql.g:175:5: ( LIMIT INTEGER_PARSER -> ^( LIMIT INTEGER_PARSER ) )
-        // Sparql.g:175:7: LIMIT INTEGER_PARSER
+        // Sparql.g:175:5: ( LIMIT INTEGER_PENG -> ^( LIMIT INTEGER_PENG ) )
+        // Sparql.g:175:7: LIMIT INTEGER_PENG
         {
             LIMIT94 = (pANTLR3_COMMON_TOKEN) MATCHT(LIMIT, &FOLLOW_LIMIT_in_limitClause1159);
             if  (HASEXCEPTION())
@@ -9353,7 +9353,7 @@ limitClause(pSparqlParser ctx)
             CREATE_stream_LIMIT; stream_LIMIT->add(stream_LIMIT, LIMIT94, NULL);
 
 
-            INTEGER95 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PARSER, &FOLLOW_INTEGER_in_limitClause1161);
+            INTEGER95 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PENG, &FOLLOW_INTEGER_in_limitClause1161);
             if  (HASEXCEPTION())
             {
                 goto rulelimitClauseEx;
@@ -9363,7 +9363,7 @@ limitClause(pSparqlParser ctx)
 
 
             /* AST REWRITE
-             * elements          : INTEGER_PARSER, LIMIT
+             * elements          : INTEGER_PENG, LIMIT
              * token labels      : 
              * rule labels       : retval
              * token list labels : 
@@ -9376,9 +9376,9 @@ limitClause(pSparqlParser ctx)
 
             	root_0			    = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
             	retval.tree    = root_0;
-            	// 175:21: -> ^( LIMIT INTEGER_PARSER )
+            	// 175:21: -> ^( LIMIT INTEGER_PENG )
             	{
-            	    // Sparql.g:175:24: ^( LIMIT INTEGER_PARSER )
+            	    // Sparql.g:175:24: ^( LIMIT INTEGER_PENG )
             	    {
             	        pANTLR3_BASE_TREE root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
             	        root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->becomeRoot(ADAPTOR, 
@@ -9430,7 +9430,7 @@ limitClause(pSparqlParser ctx)
 
 /**
  * $ANTLR start offsetClause
- * Sparql.g:178:1: offsetClause : OFFSET INTEGER_PARSER -> ^( OFFSET INTEGER_PARSER ) ;
+ * Sparql.g:178:1: offsetClause : OFFSET INTEGER_PENG -> ^( OFFSET INTEGER_PENG ) ;
  */
 static SparqlParser_offsetClause_return
 offsetClause(pSparqlParser ctx)
@@ -9462,15 +9462,15 @@ offsetClause(pSparqlParser ctx)
     INTEGER97_tree   = NULL;
 
     stream_INTEGER   = NULL;
-    #define CREATE_stream_INTEGER  if (stream_INTEGER == NULL) {stream_INTEGER = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token INTEGER_PARSER"); } 
+    #define CREATE_stream_INTEGER  if (stream_INTEGER == NULL) {stream_INTEGER = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token INTEGER_PENG"); } 
     stream_OFFSET   = NULL;
     #define CREATE_stream_OFFSET  if (stream_OFFSET == NULL) {stream_OFFSET = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token OFFSET"); } 
 
     retval.tree  = NULL;
 
     {
-        // Sparql.g:179:5: ( OFFSET INTEGER_PARSER -> ^( OFFSET INTEGER_PARSER ) )
-        // Sparql.g:179:7: OFFSET INTEGER_PARSER
+        // Sparql.g:179:5: ( OFFSET INTEGER_PENG -> ^( OFFSET INTEGER_PENG ) )
+        // Sparql.g:179:7: OFFSET INTEGER_PENG
         {
             OFFSET96 = (pANTLR3_COMMON_TOKEN) MATCHT(OFFSET, &FOLLOW_OFFSET_in_offsetClause1186);
             if  (HASEXCEPTION())
@@ -9481,7 +9481,7 @@ offsetClause(pSparqlParser ctx)
             CREATE_stream_OFFSET; stream_OFFSET->add(stream_OFFSET, OFFSET96, NULL);
 
 
-            INTEGER97 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PARSER, &FOLLOW_INTEGER_in_offsetClause1188);
+            INTEGER97 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PENG, &FOLLOW_INTEGER_in_offsetClause1188);
             if  (HASEXCEPTION())
             {
                 goto ruleoffsetClauseEx;
@@ -9491,7 +9491,7 @@ offsetClause(pSparqlParser ctx)
 
 
             /* AST REWRITE
-             * elements          : OFFSET, INTEGER_PARSER
+             * elements          : OFFSET, INTEGER_PENG
              * token labels      : 
              * rule labels       : retval
              * token list labels : 
@@ -9504,9 +9504,9 @@ offsetClause(pSparqlParser ctx)
 
             	root_0			    = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
             	retval.tree    = root_0;
-            	// 179:22: -> ^( OFFSET INTEGER_PARSER )
+            	// 179:22: -> ^( OFFSET INTEGER_PENG )
             	{
-            	    // Sparql.g:179:25: ^( OFFSET INTEGER_PARSER )
+            	    // Sparql.g:179:25: ^( OFFSET INTEGER_PENG )
             	    {
             	        pANTLR3_BASE_TREE root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
             	        root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->becomeRoot(ADAPTOR, 
@@ -9924,11 +9924,11 @@ bindingValueList(pSparqlParser ctx)
                 case DECIMAL:
                 case DECIMAL_NEGATIVE:
                 case DECIMAL_POSITIVE:
-                case DOUBLE_PARSER:
+                case DOUBLE_PENG:
                 case DOUBLE_NEGATIVE:
                 case DOUBLE_POSITIVE:
                 case FALSE:
-                case INTEGER_PARSER:
+                case INTEGER_PENG:
                 case INTEGER_NEGATIVE:
                 case INTEGER_POSITIVE:
                 case IRI_REF:
@@ -10137,10 +10137,10 @@ bindingValue(pSparqlParser ctx)
             case DECIMAL:
             case DECIMAL_NEGATIVE:
             case DECIMAL_POSITIVE:
-            case DOUBLE_PARSER:
+            case DOUBLE_PENG:
             case DOUBLE_NEGATIVE:
             case DOUBLE_POSITIVE:
-            case INTEGER_PARSER:
+            case INTEGER_PENG:
             case INTEGER_NEGATIVE:
             case INTEGER_POSITIVE:
             	{
@@ -13759,7 +13759,7 @@ usingClause(pSparqlParser ctx)
 
 /**
  * $ANTLR start graphOrDefault
- * Sparql.g:258:1: graphOrDefault : ( DEFAULT | ( GRAPH_PARSER )? iriRef );
+ * Sparql.g:258:1: graphOrDefault : ( DEFAULT | ( GRAPH_PENG )? iriRef );
  */
 static SparqlParser_graphOrDefault_return
 graphOrDefault(pSparqlParser ctx)
@@ -13797,7 +13797,7 @@ graphOrDefault(pSparqlParser ctx)
 
     {
         {
-            //  Sparql.g:259:5: ( DEFAULT | ( GRAPH_PARSER )? iriRef )
+            //  Sparql.g:259:5: ( DEFAULT | ( GRAPH_PENG )? iriRef )
 
             ANTLR3_UINT32 alt57;
 
@@ -13810,7 +13810,7 @@ graphOrDefault(pSparqlParser ctx)
             		alt57=1;
             	}
                 break;
-            case GRAPH_PARSER:
+            case GRAPH_PENG:
             case IRI_REF:
             case PNAME_LN:
             case PNAME_NS:
@@ -13852,17 +13852,17 @@ graphOrDefault(pSparqlParser ctx)
         	    }
         	    break;
         	case 2:
-        	    // Sparql.g:260:7: ( GRAPH_PARSER )? iriRef
+        	    // Sparql.g:260:7: ( GRAPH_PENG )? iriRef
         	    {
         	        root_0 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
 
 
-        	        // Sparql.g:260:7: ( GRAPH_PARSER )?
+        	        // Sparql.g:260:7: ( GRAPH_PENG )?
         	        {
         	            int alt56=2;
         	            switch ( LA(1) )
         	            {
-        	                case GRAPH_PARSER:
+        	                case GRAPH_PENG:
         	                	{
         	                		alt56=1;
         	                	}
@@ -13872,9 +13872,9 @@ graphOrDefault(pSparqlParser ctx)
         	            switch (alt56)
         	            {
         	        	case 1:
-        	        	    // Sparql.g:260:7: GRAPH_PARSER
+        	        	    // Sparql.g:260:7: GRAPH_PENG
         	        	    {
-        	        	        GRAPH171 = (pANTLR3_COMMON_TOKEN) MATCHT(GRAPH_PARSER, &FOLLOW_GRAPH_in_graphOrDefault2030);
+        	        	        GRAPH171 = (pANTLR3_COMMON_TOKEN) MATCHT(GRAPH_PENG, &FOLLOW_GRAPH_in_graphOrDefault2030);
         	        	        if  (HASEXCEPTION())
         	        	        {
         	        	            goto rulegraphOrDefaultEx;
@@ -13932,7 +13932,7 @@ graphOrDefault(pSparqlParser ctx)
 
 /**
  * $ANTLR start graphRef
- * Sparql.g:263:1: graphRef : GRAPH_PARSER iriRef ;
+ * Sparql.g:263:1: graphRef : GRAPH_PENG iriRef ;
  */
 static SparqlParser_graphRef_return
 graphRef(pSparqlParser ctx)
@@ -13965,13 +13965,13 @@ graphRef(pSparqlParser ctx)
     retval.tree  = NULL;
 
     {
-        // Sparql.g:264:5: ( GRAPH_PARSER iriRef )
-        // Sparql.g:264:7: GRAPH_PARSER iriRef
+        // Sparql.g:264:5: ( GRAPH_PENG iriRef )
+        // Sparql.g:264:7: GRAPH_PENG iriRef
         {
             root_0 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
 
 
-            GRAPH173 = (pANTLR3_COMMON_TOKEN) MATCHT(GRAPH_PARSER, &FOLLOW_GRAPH_in_graphRef2060);
+            GRAPH173 = (pANTLR3_COMMON_TOKEN) MATCHT(GRAPH_PENG, &FOLLOW_GRAPH_in_graphRef2060);
             if  (HASEXCEPTION())
             {
                 goto rulegraphRefEx;
@@ -14070,7 +14070,7 @@ graphRefAll(pSparqlParser ctx)
 
             switch ( LA(1) )
             {
-            case GRAPH_PARSER:
+            case GRAPH_PENG:
             	{
             		alt58=1;
             	}
@@ -14406,11 +14406,11 @@ quads(pSparqlParser ctx)
                     case DECIMAL:
                     case DECIMAL_NEGATIVE:
                     case DECIMAL_POSITIVE:
-                    case DOUBLE_PARSER:
+                    case DOUBLE_PENG:
                     case DOUBLE_NEGATIVE:
                     case DOUBLE_POSITIVE:
                     case FALSE:
-                    case INTEGER_PARSER:
+                    case INTEGER_PENG:
                     case INTEGER_NEGATIVE:
                     case INTEGER_POSITIVE:
                     case IRI_REF:
@@ -14460,7 +14460,7 @@ quads(pSparqlParser ctx)
                 int alt62=2;
                 switch ( LA(1) )
                 {
-                case GRAPH_PARSER:
+                case GRAPH_PENG:
                 	{
                 		alt62=1;
                 	}
@@ -14525,11 +14525,11 @@ quads(pSparqlParser ctx)
             	                case DECIMAL:
             	                case DECIMAL_NEGATIVE:
             	                case DECIMAL_POSITIVE:
-            	                case DOUBLE_PARSER:
+            	                case DOUBLE_PENG:
             	                case DOUBLE_NEGATIVE:
             	                case DOUBLE_POSITIVE:
             	                case FALSE:
-            	                case INTEGER_PARSER:
+            	                case INTEGER_PENG:
             	                case INTEGER_NEGATIVE:
             	                case INTEGER_POSITIVE:
             	                case IRI_REF:
@@ -14671,7 +14671,7 @@ quads(pSparqlParser ctx)
 
 /**
  * $ANTLR start quadsNotTriples
- * Sparql.g:279:1: quadsNotTriples : GRAPH_PARSER varOrIRIref OPEN_CURLY_BRACE ( triplesTemplate )? CLOSE_CURLY_BRACE -> ^( GRAPH_PARSER varOrIRIref ( triplesTemplate )? ) ;
+ * Sparql.g:279:1: quadsNotTriples : GRAPH_PENG varOrIRIref OPEN_CURLY_BRACE ( triplesTemplate )? CLOSE_CURLY_BRACE -> ^( GRAPH_PENG varOrIRIref ( triplesTemplate )? ) ;
  */
 static SparqlParser_quadsNotTriples_return
 quadsNotTriples(pSparqlParser ctx)
@@ -14719,7 +14719,7 @@ quadsNotTriples(pSparqlParser ctx)
     CLOSE_CURLY_BRACE190_tree   = NULL;
 
     stream_GRAPH   = NULL;
-    #define CREATE_stream_GRAPH  if (stream_GRAPH == NULL) {stream_GRAPH = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token GRAPH_PARSER"); } 
+    #define CREATE_stream_GRAPH  if (stream_GRAPH == NULL) {stream_GRAPH = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token GRAPH_PENG"); } 
     stream_OPEN_CURLY_BRACE   = NULL;
     #define CREATE_stream_OPEN_CURLY_BRACE  if (stream_OPEN_CURLY_BRACE == NULL) {stream_OPEN_CURLY_BRACE = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token OPEN_CURLY_BRACE"); } 
     stream_CLOSE_CURLY_BRACE   = NULL;
@@ -14732,10 +14732,10 @@ quadsNotTriples(pSparqlParser ctx)
     retval.tree  = NULL;
 
     {
-        // Sparql.g:280:5: ( GRAPH_PARSER varOrIRIref OPEN_CURLY_BRACE ( triplesTemplate )? CLOSE_CURLY_BRACE -> ^( GRAPH_PARSER varOrIRIref ( triplesTemplate )? ) )
-        // Sparql.g:280:7: GRAPH_PARSER varOrIRIref OPEN_CURLY_BRACE ( triplesTemplate )? CLOSE_CURLY_BRACE
+        // Sparql.g:280:5: ( GRAPH_PENG varOrIRIref OPEN_CURLY_BRACE ( triplesTemplate )? CLOSE_CURLY_BRACE -> ^( GRAPH_PENG varOrIRIref ( triplesTemplate )? ) )
+        // Sparql.g:280:7: GRAPH_PENG varOrIRIref OPEN_CURLY_BRACE ( triplesTemplate )? CLOSE_CURLY_BRACE
         {
-            GRAPH186 = (pANTLR3_COMMON_TOKEN) MATCHT(GRAPH_PARSER, &FOLLOW_GRAPH_in_quadsNotTriples2185);
+            GRAPH186 = (pANTLR3_COMMON_TOKEN) MATCHT(GRAPH_PENG, &FOLLOW_GRAPH_in_quadsNotTriples2185);
             if  (HASEXCEPTION())
             {
                 goto rulequadsNotTriplesEx;
@@ -14773,11 +14773,11 @@ quadsNotTriples(pSparqlParser ctx)
                     case DECIMAL:
                     case DECIMAL_NEGATIVE:
                     case DECIMAL_POSITIVE:
-                    case DOUBLE_PARSER:
+                    case DOUBLE_PENG:
                     case DOUBLE_NEGATIVE:
                     case DOUBLE_POSITIVE:
                     case FALSE:
-                    case INTEGER_PARSER:
+                    case INTEGER_PENG:
                     case INTEGER_NEGATIVE:
                     case INTEGER_POSITIVE:
                     case IRI_REF:
@@ -14830,7 +14830,7 @@ quadsNotTriples(pSparqlParser ctx)
 
 
             /* AST REWRITE
-             * elements          : GRAPH_PARSER, triplesTemplate, varOrIRIref
+             * elements          : GRAPH_PENG, triplesTemplate, varOrIRIref
              * token labels      : 
              * rule labels       : retval
              * token list labels : 
@@ -14843,9 +14843,9 @@ quadsNotTriples(pSparqlParser ctx)
 
             	root_0			    = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
             	retval.tree    = root_0;
-            	// 280:77: -> ^( GRAPH_PARSER varOrIRIref ( triplesTemplate )? )
+            	// 280:77: -> ^( GRAPH_PENG varOrIRIref ( triplesTemplate )? )
             	{
-            	    // Sparql.g:280:80: ^( GRAPH_PARSER varOrIRIref ( triplesTemplate )? )
+            	    // Sparql.g:280:80: ^( GRAPH_PENG varOrIRIref ( triplesTemplate )? )
             	    {
             	        pANTLR3_BASE_TREE root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
             	        root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->becomeRoot(ADAPTOR, 
@@ -14986,11 +14986,11 @@ triplesTemplate(pSparqlParser ctx)
                 		case DECIMAL:
                 		case DECIMAL_NEGATIVE:
                 		case DECIMAL_POSITIVE:
-                		case DOUBLE_PARSER:
+                		case DOUBLE_PENG:
                 		case DOUBLE_NEGATIVE:
                 		case DOUBLE_POSITIVE:
                 		case FALSE:
-                		case INTEGER_PARSER:
+                		case INTEGER_PENG:
                 		case INTEGER_NEGATIVE:
                 		case INTEGER_POSITIVE:
                 		case IRI_REF:
@@ -15242,13 +15242,13 @@ groupGraphPattern(pSparqlParser ctx)
                 case DECIMAL:
                 case DECIMAL_NEGATIVE:
                 case DECIMAL_POSITIVE:
-                case DOUBLE_PARSER:
+                case DOUBLE_PENG:
                 case DOUBLE_NEGATIVE:
                 case DOUBLE_POSITIVE:
                 case FALSE:
                 case FILTER:
-                case GRAPH_PARSER:
-                case INTEGER_PARSER:
+                case GRAPH_PENG:
+                case INTEGER_PENG:
                 case INTEGER_NEGATIVE:
                 case INTEGER_POSITIVE:
                 case IRI_REF:
@@ -15471,11 +15471,11 @@ groupGraphPatternSub(pSparqlParser ctx)
                     case DECIMAL:
                     case DECIMAL_NEGATIVE:
                     case DECIMAL_POSITIVE:
-                    case DOUBLE_PARSER:
+                    case DOUBLE_PENG:
                     case DOUBLE_NEGATIVE:
                     case DOUBLE_POSITIVE:
                     case FALSE:
-                    case INTEGER_PARSER:
+                    case INTEGER_PENG:
                     case INTEGER_NEGATIVE:
                     case INTEGER_POSITIVE:
                     case IRI_REF:
@@ -15527,7 +15527,7 @@ groupGraphPatternSub(pSparqlParser ctx)
                 {
                 case BIND:
                 case FILTER:
-                case GRAPH_PARSER:
+                case GRAPH_PENG:
                 case MINUS_KEYWORD:
                 case OPEN_CURLY_BRACE:
                 case OPTIONAL:
@@ -15744,11 +15744,11 @@ groupGraphPatternSubCache(pSparqlParser ctx)
                     case DECIMAL:
                     case DECIMAL_NEGATIVE:
                     case DECIMAL_POSITIVE:
-                    case DOUBLE_PARSER:
+                    case DOUBLE_PENG:
                     case DOUBLE_NEGATIVE:
                     case DOUBLE_POSITIVE:
                     case FALSE:
-                    case INTEGER_PARSER:
+                    case INTEGER_PENG:
                     case INTEGER_NEGATIVE:
                     case INTEGER_POSITIVE:
                     case IRI_REF:
@@ -15936,11 +15936,11 @@ triplesBlock(pSparqlParser ctx)
                 		case DECIMAL:
                 		case DECIMAL_NEGATIVE:
                 		case DECIMAL_POSITIVE:
-                		case DOUBLE_PARSER:
+                		case DOUBLE_PENG:
                 		case DOUBLE_NEGATIVE:
                 		case DOUBLE_POSITIVE:
                 		case FALSE:
-                		case INTEGER_PARSER:
+                		case INTEGER_PENG:
                 		case INTEGER_NEGATIVE:
                 		case INTEGER_POSITIVE:
                 		case IRI_REF:
@@ -16193,7 +16193,7 @@ graphPatternNotTriples(pSparqlParser ctx)
             		alt73=3;
             	}
                 break;
-            case GRAPH_PARSER:
+            case GRAPH_PENG:
             	{
             		alt73=4;
             	}
@@ -16517,7 +16517,7 @@ optionalGraphPattern(pSparqlParser ctx)
 
 /**
  * $ANTLR start graphGraphPattern
- * Sparql.g:311:1: graphGraphPattern : GRAPH_PARSER varOrIRIref groupGraphPattern -> ^( GRAPH_PARSER varOrIRIref groupGraphPattern ) ;
+ * Sparql.g:311:1: graphGraphPattern : GRAPH_PENG varOrIRIref groupGraphPattern -> ^( GRAPH_PENG varOrIRIref groupGraphPattern ) ;
  */
 static SparqlParser_graphGraphPattern_return
 graphGraphPattern(pSparqlParser ctx)
@@ -16555,7 +16555,7 @@ graphGraphPattern(pSparqlParser ctx)
     GRAPH217_tree   = NULL;
 
     stream_GRAPH   = NULL;
-    #define CREATE_stream_GRAPH  if (stream_GRAPH == NULL) {stream_GRAPH = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token GRAPH_PARSER"); } 
+    #define CREATE_stream_GRAPH  if (stream_GRAPH == NULL) {stream_GRAPH = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token GRAPH_PENG"); } 
     stream_varOrIRIref   = NULL;
     #define CREATE_stream_varOrIRIref  if (stream_varOrIRIref == NULL) {stream_varOrIRIref = antlr3RewriteRuleSubtreeStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"rule varOrIRIref"); }
     stream_groupGraphPattern   = NULL;
@@ -16564,10 +16564,10 @@ graphGraphPattern(pSparqlParser ctx)
     retval.tree  = NULL;
 
     {
-        // Sparql.g:312:5: ( GRAPH_PARSER varOrIRIref groupGraphPattern -> ^( GRAPH_PARSER varOrIRIref groupGraphPattern ) )
-        // Sparql.g:312:7: GRAPH_PARSER varOrIRIref groupGraphPattern
+        // Sparql.g:312:5: ( GRAPH_PENG varOrIRIref groupGraphPattern -> ^( GRAPH_PENG varOrIRIref groupGraphPattern ) )
+        // Sparql.g:312:7: GRAPH_PENG varOrIRIref groupGraphPattern
         {
-            GRAPH217 = (pANTLR3_COMMON_TOKEN) MATCHT(GRAPH_PARSER, &FOLLOW_GRAPH_in_graphGraphPattern2474);
+            GRAPH217 = (pANTLR3_COMMON_TOKEN) MATCHT(GRAPH_PENG, &FOLLOW_GRAPH_in_graphGraphPattern2474);
             if  (HASEXCEPTION())
             {
                 goto rulegraphGraphPatternEx;
@@ -16599,7 +16599,7 @@ graphGraphPattern(pSparqlParser ctx)
             CREATE_stream_groupGraphPattern; stream_groupGraphPattern->add(stream_groupGraphPattern, groupGraphPattern219.tree, NULL);
 
             /* AST REWRITE
-             * elements          : varOrIRIref, groupGraphPattern, GRAPH_PARSER
+             * elements          : varOrIRIref, groupGraphPattern, GRAPH_PENG
              * token labels      : 
              * rule labels       : retval
              * token list labels : 
@@ -16612,9 +16612,9 @@ graphGraphPattern(pSparqlParser ctx)
 
             	root_0			    = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
             	retval.tree    = root_0;
-            	// 312:43: -> ^( GRAPH_PARSER varOrIRIref groupGraphPattern )
+            	// 312:43: -> ^( GRAPH_PENG varOrIRIref groupGraphPattern )
             	{
-            	    // Sparql.g:312:46: ^( GRAPH_PARSER varOrIRIref groupGraphPattern )
+            	    // Sparql.g:312:46: ^( GRAPH_PENG varOrIRIref groupGraphPattern )
             	    {
             	        pANTLR3_BASE_TREE root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
             	        root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->becomeRoot(ADAPTOR, 
@@ -18023,7 +18023,7 @@ argList(pSparqlParser ctx)
             		case DECIMAL_NEGATIVE:
             		case DECIMAL_POSITIVE:
             		case DISTINCT:
-            		case DOUBLE_PARSER:
+            		case DOUBLE_PENG:
             		case DOUBLE_NEGATIVE:
             		case DOUBLE_POSITIVE:
             		case ENCODE_FOR_URI:
@@ -18033,7 +18033,7 @@ argList(pSparqlParser ctx)
             		case GROUP_CONCAT:
             		case HOURS:
             		case IF:
-            		case INTEGER_PARSER:
+            		case INTEGER_PENG:
             		case INTEGER_NEGATIVE:
             		case INTEGER_POSITIVE:
             		case IRI:
@@ -18046,9 +18046,9 @@ argList(pSparqlParser ctx)
             		case LANG:
             		case LANGMATCHES:
             		case LCASE:
-            		case MAX_PARSER:
+            		case MAX_PENG:
             		case MD5:
-            		case MIN_PARSER:
+            		case MIN_PENG:
             		case MINUS:
             		case MINUTES:
             		case MONTH:
@@ -18081,7 +18081,7 @@ argList(pSparqlParser ctx)
             		case STRLEN:
             		case STRSTARTS:
             		case SUBSTR:
-            		case SUM_PARSER:
+            		case SUM_PENG:
             		case TIMEZONE:
             		case TRUE:
             		case TZ:
@@ -18464,7 +18464,7 @@ expressionList(pSparqlParser ctx)
                 		case DECIMAL:
                 		case DECIMAL_NEGATIVE:
                 		case DECIMAL_POSITIVE:
-                		case DOUBLE_PARSER:
+                		case DOUBLE_PENG:
                 		case DOUBLE_NEGATIVE:
                 		case DOUBLE_POSITIVE:
                 		case ENCODE_FOR_URI:
@@ -18474,7 +18474,7 @@ expressionList(pSparqlParser ctx)
                 		case GROUP_CONCAT:
                 		case HOURS:
                 		case IF:
-                		case INTEGER_PARSER:
+                		case INTEGER_PENG:
                 		case INTEGER_NEGATIVE:
                 		case INTEGER_POSITIVE:
                 		case IRI:
@@ -18487,9 +18487,9 @@ expressionList(pSparqlParser ctx)
                 		case LANG:
                 		case LANGMATCHES:
                 		case LCASE:
-                		case MAX_PARSER:
+                		case MAX_PENG:
                 		case MD5:
-                		case MIN_PARSER:
+                		case MIN_PENG:
                 		case MINUS:
                 		case MINUTES:
                 		case MONTH:
@@ -18522,7 +18522,7 @@ expressionList(pSparqlParser ctx)
                 		case STRLEN:
                 		case STRSTARTS:
                 		case SUBSTR:
-                		case SUM_PARSER:
+                		case SUM_PENG:
                 		case TIMEZONE:
                 		case TRUE:
                 		case TZ:
@@ -18825,11 +18825,11 @@ constructTemplate(pSparqlParser ctx)
                     case DECIMAL:
                     case DECIMAL_NEGATIVE:
                     case DECIMAL_POSITIVE:
-                    case DOUBLE_PARSER:
+                    case DOUBLE_PENG:
                     case DOUBLE_NEGATIVE:
                     case DOUBLE_POSITIVE:
                     case FALSE:
-                    case INTEGER_PARSER:
+                    case INTEGER_PENG:
                     case INTEGER_NEGATIVE:
                     case INTEGER_POSITIVE:
                     case IRI_REF:
@@ -19034,11 +19034,11 @@ constructTriples(pSparqlParser ctx)
                 		case DECIMAL:
                 		case DECIMAL_NEGATIVE:
                 		case DECIMAL_POSITIVE:
-                		case DOUBLE_PARSER:
+                		case DOUBLE_PENG:
                 		case DOUBLE_NEGATIVE:
                 		case DOUBLE_POSITIVE:
                 		case FALSE:
-                		case INTEGER_PARSER:
+                		case INTEGER_PENG:
                 		case INTEGER_NEGATIVE:
                 		case INTEGER_POSITIVE:
                 		case IRI_REF:
@@ -19270,11 +19270,11 @@ triplesSameSubject(pSparqlParser ctx)
             case DECIMAL:
             case DECIMAL_NEGATIVE:
             case DECIMAL_POSITIVE:
-            case DOUBLE_PARSER:
+            case DOUBLE_PENG:
             case DOUBLE_NEGATIVE:
             case DOUBLE_POSITIVE:
             case FALSE:
-            case INTEGER_PARSER:
+            case INTEGER_PENG:
             case INTEGER_NEGATIVE:
             case INTEGER_POSITIVE:
             case IRI_REF:
@@ -19338,11 +19338,11 @@ triplesSameSubject(pSparqlParser ctx)
             		case DECIMAL:
             		case DECIMAL_NEGATIVE:
             		case DECIMAL_POSITIVE:
-            		case DOUBLE_PARSER:
+            		case DOUBLE_PENG:
             		case DOUBLE_NEGATIVE:
             		case DOUBLE_POSITIVE:
             		case FALSE:
-            		case INTEGER_PARSER:
+            		case INTEGER_PENG:
             		case INTEGER_NEGATIVE:
             		case INTEGER_POSITIVE:
             		case IRI_REF:
@@ -20267,11 +20267,11 @@ triplesSameSubjectPath(pSparqlParser ctx)
             case DECIMAL:
             case DECIMAL_NEGATIVE:
             case DECIMAL_POSITIVE:
-            case DOUBLE_PARSER:
+            case DOUBLE_PENG:
             case DOUBLE_NEGATIVE:
             case DOUBLE_POSITIVE:
             case FALSE:
-            case INTEGER_PARSER:
+            case INTEGER_PENG:
             case INTEGER_NEGATIVE:
             case INTEGER_POSITIVE:
             case IRI_REF:
@@ -20335,11 +20335,11 @@ triplesSameSubjectPath(pSparqlParser ctx)
             		case DECIMAL:
             		case DECIMAL_NEGATIVE:
             		case DECIMAL_POSITIVE:
-            		case DOUBLE_PARSER:
+            		case DOUBLE_PENG:
             		case DOUBLE_NEGATIVE:
             		case DOUBLE_POSITIVE:
             		case FALSE:
-            		case INTEGER_PARSER:
+            		case INTEGER_PENG:
             		case INTEGER_NEGATIVE:
             		case INTEGER_POSITIVE:
             		case IRI_REF:
@@ -21767,7 +21767,7 @@ pathElt(pSparqlParser ctx)
 
 /**
  * $ANTLR start pathMod
- * Sparql.g:418:1: pathMod : ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER_PARSER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PARSER CLOSE_CURLY_BRACE ) ) ;
+ * Sparql.g:418:1: pathMod : ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER_PENG ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PENG CLOSE_CURLY_BRACE ) ) ;
  */
 static SparqlParser_pathMod_return
 pathMod(pSparqlParser ctx)
@@ -21844,13 +21844,13 @@ pathMod(pSparqlParser ctx)
     retval.tree  = NULL;
 
     {
-        // Sparql.g:419:5: ( ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER_PARSER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PARSER CLOSE_CURLY_BRACE ) ) )
-        // Sparql.g:419:7: ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER_PARSER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PARSER CLOSE_CURLY_BRACE ) )
+        // Sparql.g:419:5: ( ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER_PENG ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PENG CLOSE_CURLY_BRACE ) ) )
+        // Sparql.g:419:7: ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER_PENG ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PENG CLOSE_CURLY_BRACE ) )
         {
             root_0 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
 
 
-            // Sparql.g:419:7: ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER_PARSER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PARSER CLOSE_CURLY_BRACE ) )
+            // Sparql.g:419:7: ( ASTERISK | QUESTION_MARK | PLUS | OPEN_CURLY_BRACE ( INTEGER_PENG ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PENG CLOSE_CURLY_BRACE ) )
             {
                 int alt103=4;
                 switch ( LA(1) )
@@ -21936,7 +21936,7 @@ pathMod(pSparqlParser ctx)
             	    }
             	    break;
             	case 4:
-            	    // Sparql.g:419:42: OPEN_CURLY_BRACE ( INTEGER_PARSER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PARSER CLOSE_CURLY_BRACE )
+            	    // Sparql.g:419:42: OPEN_CURLY_BRACE ( INTEGER_PENG ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PENG CLOSE_CURLY_BRACE )
             	    {
             	        OPEN_CURLY_BRACE300 = (pANTLR3_COMMON_TOKEN) MATCHT(OPEN_CURLY_BRACE, &FOLLOW_OPEN_CURLY_BRACE_in_pathMod3401);
             	        if  (HASEXCEPTION())
@@ -21948,12 +21948,12 @@ pathMod(pSparqlParser ctx)
             	        ADAPTOR->addChild(ADAPTOR, root_0, OPEN_CURLY_BRACE300_tree);
 
 
-            	        // Sparql.g:419:59: ( INTEGER_PARSER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PARSER CLOSE_CURLY_BRACE )
+            	        // Sparql.g:419:59: ( INTEGER_PENG ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE ) | COMMA INTEGER_PENG CLOSE_CURLY_BRACE )
             	        {
             	            int alt102=2;
             	            switch ( LA(1) )
             	            {
-            	            case INTEGER_PARSER:
+            	            case INTEGER_PENG:
             	            	{
             	            		alt102=1;
             	            	}
@@ -21979,9 +21979,9 @@ pathMod(pSparqlParser ctx)
             	            switch (alt102)
             	            {
             	        	case 1:
-            	        	    // Sparql.g:419:60: INTEGER_PARSER ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE )
+            	        	    // Sparql.g:419:60: INTEGER_PENG ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE )
             	        	    {
-            	        	        INTEGER301 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PARSER, &FOLLOW_INTEGER_in_pathMod3404);
+            	        	        INTEGER301 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PENG, &FOLLOW_INTEGER_in_pathMod3404);
             	        	        if  (HASEXCEPTION())
             	        	        {
             	        	            goto rulepathModEx;
@@ -21991,7 +21991,7 @@ pathMod(pSparqlParser ctx)
             	        	        ADAPTOR->addChild(ADAPTOR, root_0, INTEGER301_tree);
 
 
-            	        	        // Sparql.g:419:68: ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE )
+            	        	        // Sparql.g:419:68: ( COMMA ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE ) | CLOSE_CURLY_BRACE )
             	        	        {
             	        	            int alt101=2;
             	        	            switch ( LA(1) )
@@ -22022,7 +22022,7 @@ pathMod(pSparqlParser ctx)
             	        	            switch (alt101)
             	        	            {
             	        	        	case 1:
-            	        	        	    // Sparql.g:419:69: COMMA ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE )
+            	        	        	    // Sparql.g:419:69: COMMA ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE )
             	        	        	    {
             	        	        	        COMMA302 = (pANTLR3_COMMON_TOKEN) MATCHT(COMMA, &FOLLOW_COMMA_in_pathMod3407);
             	        	        	        if  (HASEXCEPTION())
@@ -22034,7 +22034,7 @@ pathMod(pSparqlParser ctx)
             	        	        	        ADAPTOR->addChild(ADAPTOR, root_0, COMMA302_tree);
 
 
-            	        	        	        // Sparql.g:419:75: ( CLOSE_CURLY_BRACE | INTEGER_PARSER CLOSE_CURLY_BRACE )
+            	        	        	        // Sparql.g:419:75: ( CLOSE_CURLY_BRACE | INTEGER_PENG CLOSE_CURLY_BRACE )
             	        	        	        {
             	        	        	            int alt100=2;
             	        	        	            switch ( LA(1) )
@@ -22044,7 +22044,7 @@ pathMod(pSparqlParser ctx)
             	        	        	            		alt100=1;
             	        	        	            	}
             	        	        	                break;
-            	        	        	            case INTEGER_PARSER:
+            	        	        	            case INTEGER_PENG:
             	        	        	            	{
             	        	        	            		alt100=2;
             	        	        	            	}
@@ -22080,9 +22080,9 @@ pathMod(pSparqlParser ctx)
             	        	        	        	    }
             	        	        	        	    break;
             	        	        	        	case 2:
-            	        	        	        	    // Sparql.g:419:96: INTEGER_PARSER CLOSE_CURLY_BRACE
+            	        	        	        	    // Sparql.g:419:96: INTEGER_PENG CLOSE_CURLY_BRACE
             	        	        	        	    {
-            	        	        	        	        INTEGER304 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PARSER, &FOLLOW_INTEGER_in_pathMod3414);
+            	        	        	        	        INTEGER304 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PENG, &FOLLOW_INTEGER_in_pathMod3414);
             	        	        	        	        if  (HASEXCEPTION())
             	        	        	        	        {
             	        	        	        	            goto rulepathModEx;
@@ -22132,7 +22132,7 @@ pathMod(pSparqlParser ctx)
             	        	    }
             	        	    break;
             	        	case 2:
-            	        	    // Sparql.g:419:146: COMMA INTEGER_PARSER CLOSE_CURLY_BRACE
+            	        	    // Sparql.g:419:146: COMMA INTEGER_PENG CLOSE_CURLY_BRACE
             	        	    {
             	        	        COMMA307 = (pANTLR3_COMMON_TOKEN) MATCHT(COMMA, &FOLLOW_COMMA_in_pathMod3426);
             	        	        if  (HASEXCEPTION())
@@ -22144,7 +22144,7 @@ pathMod(pSparqlParser ctx)
             	        	        ADAPTOR->addChild(ADAPTOR, root_0, COMMA307_tree);
 
 
-            	        	        INTEGER308 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PARSER, &FOLLOW_INTEGER_in_pathMod3428);
+            	        	        INTEGER308 = (pANTLR3_COMMON_TOKEN) MATCHT(INTEGER_PENG, &FOLLOW_INTEGER_in_pathMod3428);
             	        	        if  (HASEXCEPTION())
             	        	        {
             	        	            goto rulepathModEx;
@@ -23214,11 +23214,11 @@ triplesNode(pSparqlParser ctx)
         	        	case DECIMAL:
         	        	case DECIMAL_NEGATIVE:
         	        	case DECIMAL_POSITIVE:
-        	        	case DOUBLE_PARSER:
+        	        	case DOUBLE_PENG:
         	        	case DOUBLE_NEGATIVE:
         	        	case DOUBLE_POSITIVE:
         	        	case FALSE:
-        	        	case INTEGER_PARSER:
+        	        	case INTEGER_PENG:
         	        	case INTEGER_NEGATIVE:
         	        	case INTEGER_POSITIVE:
         	        	case IRI_REF:
@@ -23506,11 +23506,11 @@ graphNode(pSparqlParser ctx)
             case DECIMAL:
             case DECIMAL_NEGATIVE:
             case DECIMAL_POSITIVE:
-            case DOUBLE_PARSER:
+            case DOUBLE_PENG:
             case DOUBLE_NEGATIVE:
             case DOUBLE_POSITIVE:
             case FALSE:
-            case INTEGER_PARSER:
+            case INTEGER_PENG:
             case INTEGER_NEGATIVE:
             case INTEGER_POSITIVE:
             case IRI_REF:
@@ -23574,11 +23574,11 @@ graphNode(pSparqlParser ctx)
             		case DECIMAL:
             		case DECIMAL_NEGATIVE:
             		case DECIMAL_POSITIVE:
-            		case DOUBLE_PARSER:
+            		case DOUBLE_PENG:
             		case DOUBLE_NEGATIVE:
             		case DOUBLE_POSITIVE:
             		case FALSE:
-            		case INTEGER_PARSER:
+            		case INTEGER_PENG:
             		case INTEGER_NEGATIVE:
             		case INTEGER_POSITIVE:
             		case IRI_REF:
@@ -23748,11 +23748,11 @@ varOrTerm(pSparqlParser ctx)
             case DECIMAL:
             case DECIMAL_NEGATIVE:
             case DECIMAL_POSITIVE:
-            case DOUBLE_PARSER:
+            case DOUBLE_PENG:
             case DOUBLE_NEGATIVE:
             case DOUBLE_POSITIVE:
             case FALSE:
-            case INTEGER_PARSER:
+            case INTEGER_PENG:
             case INTEGER_NEGATIVE:
             case INTEGER_POSITIVE:
             case IRI_REF:
@@ -24160,10 +24160,10 @@ graphTerm(pSparqlParser ctx)
             case DECIMAL:
             case DECIMAL_NEGATIVE:
             case DECIMAL_POSITIVE:
-            case DOUBLE_PARSER:
+            case DOUBLE_PENG:
             case DOUBLE_NEGATIVE:
             case DOUBLE_POSITIVE:
-            case INTEGER_PARSER:
+            case INTEGER_PENG:
             case INTEGER_NEGATIVE:
             case INTEGER_POSITIVE:
             	{
@@ -27057,7 +27057,7 @@ unaryExpression(pSparqlParser ctx)
             case DECIMAL:
             case DECIMAL_NEGATIVE:
             case DECIMAL_POSITIVE:
-            case DOUBLE_PARSER:
+            case DOUBLE_PENG:
             case DOUBLE_NEGATIVE:
             case DOUBLE_POSITIVE:
             case ENCODE_FOR_URI:
@@ -27067,7 +27067,7 @@ unaryExpression(pSparqlParser ctx)
             case GROUP_CONCAT:
             case HOURS:
             case IF:
-            case INTEGER_PARSER:
+            case INTEGER_PENG:
             case INTEGER_NEGATIVE:
             case INTEGER_POSITIVE:
             case IRI:
@@ -27080,9 +27080,9 @@ unaryExpression(pSparqlParser ctx)
             case LANG:
             case LANGMATCHES:
             case LCASE:
-            case MAX_PARSER:
+            case MAX_PENG:
             case MD5:
-            case MIN_PARSER:
+            case MIN_PENG:
             case MINUTES:
             case MONTH:
             case NOT:
@@ -27112,7 +27112,7 @@ unaryExpression(pSparqlParser ctx)
             case STRLEN:
             case STRSTARTS:
             case SUBSTR:
-            case SUM_PARSER:
+            case SUM_PENG:
             case TIMEZONE:
             case TRUE:
             case TZ:
@@ -27583,10 +27583,10 @@ primaryExpression(pSparqlParser ctx)
             case DECIMAL:
             case DECIMAL_NEGATIVE:
             case DECIMAL_POSITIVE:
-            case DOUBLE_PARSER:
+            case DOUBLE_PENG:
             case DOUBLE_NEGATIVE:
             case DOUBLE_POSITIVE:
-            case INTEGER_PARSER:
+            case INTEGER_PENG:
             case INTEGER_NEGATIVE:
             case INTEGER_POSITIVE:
             	{
@@ -27608,10 +27608,10 @@ primaryExpression(pSparqlParser ctx)
             case AVG:
             case COUNT:
             case GROUP_CONCAT:
-            case MAX_PARSER:
-            case MIN_PARSER:
+            case MAX_PENG:
+            case MIN_PENG:
             case SAMPLE:
-            case SUM_PARSER:
+            case SUM_PENG:
             	{
             		alt124=8;
             	}
@@ -29925,7 +29925,7 @@ builtInCall(pSparqlParser ctx)
         	            		case DECIMAL:
         	            		case DECIMAL_NEGATIVE:
         	            		case DECIMAL_POSITIVE:
-        	            		case DOUBLE_PARSER:
+        	            		case DOUBLE_PENG:
         	            		case DOUBLE_NEGATIVE:
         	            		case DOUBLE_POSITIVE:
         	            		case ENCODE_FOR_URI:
@@ -29935,7 +29935,7 @@ builtInCall(pSparqlParser ctx)
         	            		case GROUP_CONCAT:
         	            		case HOURS:
         	            		case IF:
-        	            		case INTEGER_PARSER:
+        	            		case INTEGER_PENG:
         	            		case INTEGER_NEGATIVE:
         	            		case INTEGER_POSITIVE:
         	            		case IRI:
@@ -29948,9 +29948,9 @@ builtInCall(pSparqlParser ctx)
         	            		case LANG:
         	            		case LANGMATCHES:
         	            		case LCASE:
-        	            		case MAX_PARSER:
+        	            		case MAX_PENG:
         	            		case MD5:
-        	            		case MIN_PARSER:
+        	            		case MIN_PENG:
         	            		case MINUS:
         	            		case MINUTES:
         	            		case MONTH:
@@ -29983,7 +29983,7 @@ builtInCall(pSparqlParser ctx)
         	            		case STRLEN:
         	            		case STRSTARTS:
         	            		case SUBSTR:
-        	            		case SUM_PARSER:
+        	            		case SUM_PENG:
         	            		case TIMEZONE:
         	            		case TRUE:
         	            		case TZ:
@@ -34190,7 +34190,7 @@ notExistsFunction(pSparqlParser ctx)
 
 /**
  * $ANTLR start aggregate
- * Sparql.g:606:1: aggregate : ( COUNT OPEN_BRACE ( DISTINCT )? ( ASTERISK | expression ) CLOSE_BRACE -> ^( COUNT ( DISTINCT )* ( ASTERISK )* ( expression )* ) | SUM_PARSER OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( SUM_PARSER ( DISTINCT )* expression ) | MIN_PARSER OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( MIN_PARSER ( DISTINCT )* expression ) | MAX_PARSER OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( MAX_PARSER ( DISTINCT )* expression ) | AVG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( AVG ( DISTINCT )* expression ) | SAMPLE OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( SAMPLE ( DISTINCT )? expression ) | GROUP_CONCAT OPEN_BRACE ( DISTINCT )? expression ( SEMICOLON SEPARATOR EQUAL string )? CLOSE_BRACE -> ^( GROUP_CONCAT ( DISTINCT )* expression ( string )* ) );
+ * Sparql.g:606:1: aggregate : ( COUNT OPEN_BRACE ( DISTINCT )? ( ASTERISK | expression ) CLOSE_BRACE -> ^( COUNT ( DISTINCT )* ( ASTERISK )* ( expression )* ) | SUM_PENG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( SUM_PENG ( DISTINCT )* expression ) | MIN_PENG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( MIN_PENG ( DISTINCT )* expression ) | MAX_PENG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( MAX_PENG ( DISTINCT )* expression ) | AVG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( AVG ( DISTINCT )* expression ) | SAMPLE OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( SAMPLE ( DISTINCT )? expression ) | GROUP_CONCAT OPEN_BRACE ( DISTINCT )? expression ( SEMICOLON SEPARATOR EQUAL string )? CLOSE_BRACE -> ^( GROUP_CONCAT ( DISTINCT )* expression ( string )* ) );
  */
 static SparqlParser_aggregate_return
 aggregate(pSparqlParser ctx)
@@ -34409,7 +34409,7 @@ aggregate(pSparqlParser ctx)
     stream_GROUP_CONCAT   = NULL;
     #define CREATE_stream_GROUP_CONCAT  if (stream_GROUP_CONCAT == NULL) {stream_GROUP_CONCAT = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token GROUP_CONCAT"); } 
     stream_MAX   = NULL;
-    #define CREATE_stream_MAX  if (stream_MAX == NULL) {stream_MAX = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token MAX_PARSER"); } 
+    #define CREATE_stream_MAX  if (stream_MAX == NULL) {stream_MAX = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token MAX_PENG"); } 
     stream_COUNT   = NULL;
     #define CREATE_stream_COUNT  if (stream_COUNT == NULL) {stream_COUNT = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token COUNT"); } 
     stream_SEMICOLON   = NULL;
@@ -34419,9 +34419,9 @@ aggregate(pSparqlParser ctx)
     stream_CLOSE_BRACE   = NULL;
     #define CREATE_stream_CLOSE_BRACE  if (stream_CLOSE_BRACE == NULL) {stream_CLOSE_BRACE = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token CLOSE_BRACE"); } 
     stream_MIN   = NULL;
-    #define CREATE_stream_MIN  if (stream_MIN == NULL) {stream_MIN = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token MIN_PARSER"); } 
+    #define CREATE_stream_MIN  if (stream_MIN == NULL) {stream_MIN = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token MIN_PENG"); } 
     stream_SUM   = NULL;
-    #define CREATE_stream_SUM  if (stream_SUM == NULL) {stream_SUM = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token SUM_PARSER"); } 
+    #define CREATE_stream_SUM  if (stream_SUM == NULL) {stream_SUM = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token SUM_PENG"); } 
     stream_DISTINCT   = NULL;
     #define CREATE_stream_DISTINCT  if (stream_DISTINCT == NULL) {stream_DISTINCT = antlr3RewriteRuleTOKENStreamNewAE(ADAPTOR, RECOGNIZER, (pANTLR3_UINT8)"token DISTINCT"); } 
     stream_OPEN_BRACE   = NULL;
@@ -34437,7 +34437,7 @@ aggregate(pSparqlParser ctx)
 
     {
         {
-            //  Sparql.g:607:5: ( COUNT OPEN_BRACE ( DISTINCT )? ( ASTERISK | expression ) CLOSE_BRACE -> ^( COUNT ( DISTINCT )* ( ASTERISK )* ( expression )* ) | SUM_PARSER OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( SUM_PARSER ( DISTINCT )* expression ) | MIN_PARSER OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( MIN_PARSER ( DISTINCT )* expression ) | MAX_PARSER OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( MAX_PARSER ( DISTINCT )* expression ) | AVG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( AVG ( DISTINCT )* expression ) | SAMPLE OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( SAMPLE ( DISTINCT )? expression ) | GROUP_CONCAT OPEN_BRACE ( DISTINCT )? expression ( SEMICOLON SEPARATOR EQUAL string )? CLOSE_BRACE -> ^( GROUP_CONCAT ( DISTINCT )* expression ( string )* ) )
+            //  Sparql.g:607:5: ( COUNT OPEN_BRACE ( DISTINCT )? ( ASTERISK | expression ) CLOSE_BRACE -> ^( COUNT ( DISTINCT )* ( ASTERISK )* ( expression )* ) | SUM_PENG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( SUM_PENG ( DISTINCT )* expression ) | MIN_PENG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( MIN_PENG ( DISTINCT )* expression ) | MAX_PENG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( MAX_PENG ( DISTINCT )* expression ) | AVG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( AVG ( DISTINCT )* expression ) | SAMPLE OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE -> ^( SAMPLE ( DISTINCT )? expression ) | GROUP_CONCAT OPEN_BRACE ( DISTINCT )? expression ( SEMICOLON SEPARATOR EQUAL string )? CLOSE_BRACE -> ^( GROUP_CONCAT ( DISTINCT )* expression ( string )* ) )
 
             ANTLR3_UINT32 alt138;
 
@@ -34450,17 +34450,17 @@ aggregate(pSparqlParser ctx)
             		alt138=1;
             	}
                 break;
-            case SUM_PARSER:
+            case SUM_PENG:
             	{
             		alt138=2;
             	}
                 break;
-            case MIN_PARSER:
+            case MIN_PENG:
             	{
             		alt138=3;
             	}
                 break;
-            case MAX_PARSER:
+            case MAX_PENG:
             	{
             		alt138=4;
             	}
@@ -34572,7 +34572,7 @@ aggregate(pSparqlParser ctx)
         	            case DECIMAL:
         	            case DECIMAL_NEGATIVE:
         	            case DECIMAL_POSITIVE:
-        	            case DOUBLE_PARSER:
+        	            case DOUBLE_PENG:
         	            case DOUBLE_NEGATIVE:
         	            case DOUBLE_POSITIVE:
         	            case ENCODE_FOR_URI:
@@ -34582,7 +34582,7 @@ aggregate(pSparqlParser ctx)
         	            case GROUP_CONCAT:
         	            case HOURS:
         	            case IF:
-        	            case INTEGER_PARSER:
+        	            case INTEGER_PENG:
         	            case INTEGER_NEGATIVE:
         	            case INTEGER_POSITIVE:
         	            case IRI:
@@ -34595,9 +34595,9 @@ aggregate(pSparqlParser ctx)
         	            case LANG:
         	            case LANGMATCHES:
         	            case LCASE:
-        	            case MAX_PARSER:
+        	            case MAX_PENG:
         	            case MD5:
-        	            case MIN_PARSER:
+        	            case MIN_PENG:
         	            case MINUS:
         	            case MINUTES:
         	            case MONTH:
@@ -34630,7 +34630,7 @@ aggregate(pSparqlParser ctx)
         	            case STRLEN:
         	            case STRSTARTS:
         	            case SUBSTR:
-        	            case SUM_PARSER:
+        	            case SUM_PENG:
         	            case TIMEZONE:
         	            case TRUE:
         	            case TZ:
@@ -34775,9 +34775,9 @@ aggregate(pSparqlParser ctx)
         	    }
         	    break;
         	case 2:
-        	    // Sparql.g:608:7: SUM_PARSER OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE
+        	    // Sparql.g:608:7: SUM_PENG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE
         	    {
-        	        SUM599 = (pANTLR3_COMMON_TOKEN) MATCHT(SUM_PARSER, &FOLLOW_SUM_in_aggregate6258);
+        	        SUM599 = (pANTLR3_COMMON_TOKEN) MATCHT(SUM_PENG, &FOLLOW_SUM_in_aggregate6258);
         	        if  (HASEXCEPTION())
         	        {
         	            goto ruleaggregateEx;
@@ -34848,7 +34848,7 @@ aggregate(pSparqlParser ctx)
 
 
         	        /* AST REWRITE
-        	         * elements          : SUM_PARSER, expression, DISTINCT
+        	         * elements          : SUM_PENG, expression, DISTINCT
         	         * token labels      : 
         	         * rule labels       : retval
         	         * token list labels : 
@@ -34861,9 +34861,9 @@ aggregate(pSparqlParser ctx)
 
         	        	root_0			    = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
         	        	retval.tree    = root_0;
-        	        	// 608:55: -> ^( SUM_PARSER ( DISTINCT )* expression )
+        	        	// 608:55: -> ^( SUM_PENG ( DISTINCT )* expression )
         	        	{
-        	        	    // Sparql.g:608:58: ^( SUM_PARSER ( DISTINCT )* expression )
+        	        	    // Sparql.g:608:58: ^( SUM_PENG ( DISTINCT )* expression )
         	        	    {
         	        	        pANTLR3_BASE_TREE root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
         	        	        root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->becomeRoot(ADAPTOR, 
@@ -34899,9 +34899,9 @@ aggregate(pSparqlParser ctx)
         	    }
         	    break;
         	case 3:
-        	    // Sparql.g:609:7: MIN_PARSER OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE
+        	    // Sparql.g:609:7: MIN_PENG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE
         	    {
-        	        MIN604 = (pANTLR3_COMMON_TOKEN) MATCHT(MIN_PARSER, &FOLLOW_MIN_in_aggregate6286);
+        	        MIN604 = (pANTLR3_COMMON_TOKEN) MATCHT(MIN_PENG, &FOLLOW_MIN_in_aggregate6286);
         	        if  (HASEXCEPTION())
         	        {
         	            goto ruleaggregateEx;
@@ -34972,7 +34972,7 @@ aggregate(pSparqlParser ctx)
 
 
         	        /* AST REWRITE
-        	         * elements          : DISTINCT, expression, MIN_PARSER
+        	         * elements          : DISTINCT, expression, MIN_PENG
         	         * token labels      : 
         	         * rule labels       : retval
         	         * token list labels : 
@@ -34985,9 +34985,9 @@ aggregate(pSparqlParser ctx)
 
         	        	root_0			    = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
         	        	retval.tree    = root_0;
-        	        	// 609:55: -> ^( MIN_PARSER ( DISTINCT )* expression )
+        	        	// 609:55: -> ^( MIN_PENG ( DISTINCT )* expression )
         	        	{
-        	        	    // Sparql.g:609:58: ^( MIN_PARSER ( DISTINCT )* expression )
+        	        	    // Sparql.g:609:58: ^( MIN_PENG ( DISTINCT )* expression )
         	        	    {
         	        	        pANTLR3_BASE_TREE root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
         	        	        root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->becomeRoot(ADAPTOR, 
@@ -35023,9 +35023,9 @@ aggregate(pSparqlParser ctx)
         	    }
         	    break;
         	case 4:
-        	    // Sparql.g:610:7: MAX_PARSER OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE
+        	    // Sparql.g:610:7: MAX_PENG OPEN_BRACE ( DISTINCT )? expression CLOSE_BRACE
         	    {
-        	        MAX609 = (pANTLR3_COMMON_TOKEN) MATCHT(MAX_PARSER, &FOLLOW_MAX_in_aggregate6314);
+        	        MAX609 = (pANTLR3_COMMON_TOKEN) MATCHT(MAX_PENG, &FOLLOW_MAX_in_aggregate6314);
         	        if  (HASEXCEPTION())
         	        {
         	            goto ruleaggregateEx;
@@ -35096,7 +35096,7 @@ aggregate(pSparqlParser ctx)
 
 
         	        /* AST REWRITE
-        	         * elements          : DISTINCT, MAX_PARSER, expression
+        	         * elements          : DISTINCT, MAX_PENG, expression
         	         * token labels      : 
         	         * rule labels       : retval
         	         * token list labels : 
@@ -35109,9 +35109,9 @@ aggregate(pSparqlParser ctx)
 
         	        	root_0			    = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
         	        	retval.tree    = root_0;
-        	        	// 610:55: -> ^( MAX_PARSER ( DISTINCT )* expression )
+        	        	// 610:55: -> ^( MAX_PENG ( DISTINCT )* expression )
         	        	{
-        	        	    // Sparql.g:610:58: ^( MAX_PARSER ( DISTINCT )* expression )
+        	        	    // Sparql.g:610:58: ^( MAX_PENG ( DISTINCT )* expression )
         	        	    {
         	        	        pANTLR3_BASE_TREE root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
         	        	        root_1 = (pANTLR3_BASE_TREE)(ADAPTOR->becomeRoot(ADAPTOR, 
@@ -36144,8 +36144,8 @@ numericLiteral(pSparqlParser ctx)
             switch ( LA(1) )
             {
             case DECIMAL:
-            case DOUBLE_PARSER:
-            case INTEGER_PARSER:
+            case DOUBLE_PENG:
+            case INTEGER_PENG:
             	{
             		alt141=1;
             	}
@@ -36265,7 +36265,7 @@ numericLiteral(pSparqlParser ctx)
 
 /**
  * $ANTLR start numericLiteralUnsigned
- * Sparql.g:631:1: numericLiteralUnsigned : ( INTEGER_PARSER | DECIMAL | DOUBLE_PARSER );
+ * Sparql.g:631:1: numericLiteralUnsigned : ( INTEGER_PENG | DECIMAL | DOUBLE_PENG );
  */
 static SparqlParser_numericLiteralUnsigned_return
 numericLiteralUnsigned(pSparqlParser ctx)
@@ -36294,7 +36294,7 @@ numericLiteralUnsigned(pSparqlParser ctx)
     retval.tree  = NULL;
 
     {
-        // Sparql.g:632:5: ( INTEGER_PARSER | DECIMAL | DOUBLE_PARSER )
+        // Sparql.g:632:5: ( INTEGER_PENG | DECIMAL | DOUBLE_PENG )
         // Sparql.g:
         {
             root_0 = (pANTLR3_BASE_TREE)(ADAPTOR->nilNode(ADAPTOR));
@@ -36302,7 +36302,7 @@ numericLiteralUnsigned(pSparqlParser ctx)
 
             set643=(pANTLR3_COMMON_TOKEN)LT(1);
 
-            if ( LA(1) == DECIMAL || LA(1) == DOUBLE_PARSER || LA(1) == INTEGER_PARSER )
+            if ( LA(1) == DECIMAL || LA(1) == DOUBLE_PENG || LA(1) == INTEGER_PENG )
             {
                 CONSUME();
                 ADAPTOR->addChild(ADAPTOR, root_0, 
