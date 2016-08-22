@@ -394,7 +394,7 @@ main(int argc, char * argv[])
 			//}
 			Database _db(db_folder);
 			_db.load();
-			printf("Client %d finish loading!\n", myRank);
+			//cout << "finish loading" << endl;
 	
 			MPI_Recv(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD, &status);
 			queryCharArr = new char[size];
