@@ -338,7 +338,7 @@ BasicQuery::updateObjSig(int _obj_id, int _pre_id, int _sub_id, string _sub,int 
     bool sub_is_str = (_sub_id == -1) && (_sub.at(0) != '?');
     if(sub_is_str)
     {
-        cout << "str2entity" << endl;
+        //cout << "str2entity" << endl;
         Signature::encodeStr2Entity(_sub.c_str(), this->var_sig[_obj_id]);
     }
 
@@ -358,20 +358,14 @@ BasicQuery::updateObjSig(int _obj_id, int _pre_id, int _sub_id, string _sub,int 
     this->var_degree[_obj_id] ++;
 }
 
-void
-BasicQuery::setRetrievalTag()
-{
-	for(int i = 0; i < BasicQuery::MAX_VAR_NUM; ++i)
-    {
-        this->need_retrieve[i] = true;
-	}
-}
-
-
 // encode relative signature data of the query graph
 bool
 BasicQuery::encodeBasicQuery(KVstore* _p_kvstore, const vector<string>& _query_var)
 {
+	//WARN:?p is ok to exist in both s/o or p position
+	//return only the entity ID, not the predicate ID
+	//so the _query_var mix all the variables, not considering the order
+	//
 	//TODO:the third parameter should be selected predicate variables
 	//(ordered, and merged with selected s/o in upper level)
 	//we append the candidates for selected pre_var to original select_var_num columns
@@ -461,9 +455,11 @@ BasicQuery::encodeBasicQuery(KVstore* _p_kvstore, const vector<string>& _query_v
 			}
 			if(pre_id == -1)
 			{
-				//BETTER:this is too robust, not only one query, try return false
+				//TODO:end this query, otherwise maybe error later
 				//cerr << "invalid query because the pre is not found: " << pre << endl;
+				//BETTER:this is too robust, not only one query, try return false
 				//exit(1);
+				//printf("invalid query because the pre is not found %s\n", pre.c_str());
 				//return false;
 			}
 		}
@@ -865,7 +861,6 @@ BasicQuery::getVarID_FirstProcessWhenJoin()
 		else{
 			//cout<<"var "<<i<<" is ready!"<<endl;
 		}
-		
 		int tmp_size = (this->candidate_list[i]).size();
 		//if(this->isLiteralVariable(i))
 		//{
@@ -995,3 +990,12 @@ string BasicQuery::to_str()
     return _ss.str();
 }
 
+
+void
+BasicQuery::setRetrievalTag()
+{
+	for(int i = 0; i < BasicQuery::MAX_VAR_NUM; ++i)
+    {
+        this->need_retrieve[i] = true;
+	}
+}

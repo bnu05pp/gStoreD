@@ -74,19 +74,25 @@ main(int argc, char * argv[])
         if(myRank == 0) {
 			double schedulingStart, schedulingEnd;
 			
-			//ofstream log_output("log_all.txt");
-			
 			string _query_str = Util::getQueryFromFile(argv[2]);
 			queryCharArr = new char[1024];
 			strcpy(queryCharArr, _query_str.c_str());
 			size = strlen(queryCharArr);
 			cout << "query : " << queryCharArr << endl;
+			
+			string query_file_str = string(argv[2]);
+			query_file_str = query_file_str.substr(query_file_str.find("/") + 1);
+			query_file_str = "log_" + query_file_str;
+			ofstream log_output(query_file_str.c_str());
+			string partial_res_str;
+			//printf("%s\n", query_file_str.c_str());
 
 			for(i = 1; i < p; i++){
 				MPI_Send(&size, 1, MPI_INT, i, 10, MPI_COMM_WORLD);
 				MPI_Send(queryCharArr, size, MPI_CHAR, i, 10, MPI_COMM_WORLD);
 			}
 			partialResStart = MPI_Wtime();
+			printf("The query has been sent!\n");
 			
 			ResultSet _result_set;
 			int PPQueryVertexCount = -1;
@@ -166,7 +172,6 @@ main(int argc, char * argv[])
 						if(intermediate_results_vec[j].CrossingEdgeMappings.size() == 0){
 							continue;
 						}
-						//printf("~~~~ %d %d %d\n", i, j, checkJoinable(intermediate_results_vec[i], intermediate_results_vec[j]));
 						if(Util::checkJoinable(intermediate_results_vec[i], intermediate_results_vec[j])){
 							if(query_adjacent_list.count(i) == 0){
 								vector<int> vec1;
@@ -253,7 +258,7 @@ main(int argc, char * argv[])
 				for(i = 0; i < partialResVec.size(); i++){
 					partialResVec[i].match_pos = i;
 				}
-				ofstream log_output("log.txt");
+				//ofstream log_output("log.txt");
 
 				for(int pInt = 1; pInt < p; pInt++){
 					MPI_Recv(&size, 1, MPI_INT, pInt, 10, MPI_COMM_WORLD, &status);
@@ -263,8 +268,9 @@ main(int argc, char * argv[])
 					partialResArr[size] = 0;
 					
 					//printf("++++++++++++ %d ++++++++++++\n%s\n", pInt, partialResArr);
-					log_output << "++++++++++++ " << pInt << " ++++++++++++" << endl;
-					log_output << partialResArr << endl;
+					//log_output << "++++++++++++ " << pInt << " ++++++++++++" << endl;
+					//log_output << partialResArr << endl;
+					//partial_res_str = string(partialResArr);
 					aResNum = 0;
 					
 					string textline(partialResArr);
@@ -372,6 +378,7 @@ main(int argc, char * argv[])
 				time_cost_value = schedulingEnd - partialResStart;
 				printf("Total cost %f s!\n", time_cost_value);
 				
+				//log_output << partial_res_str << endl;
 				ofstream res_output("finalRes.txt");
 				set< vector<int> >::iterator iter = finalPartialResSet.begin();
 				while(iter != finalPartialResSet.end()){
@@ -394,7 +401,7 @@ main(int argc, char * argv[])
 			//}
 			Database _db(db_folder);
 			_db.load();
-			//cout << "finish loading" << endl;
+			printf("Client %d finish loading!\n", myRank);
 	
 			MPI_Recv(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD, &status);
 			queryCharArr = new char[size];

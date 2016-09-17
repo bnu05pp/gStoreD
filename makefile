@@ -3,6 +3,13 @@
 #https://segmentfault.com/a/1190000000349917
 #http://blog.csdn.net/cuiyifang/article/details/7910268
 
+#to use gprof to analyse efficience of the program:
+#http://blog.chinaunix.net/uid-25194149-id-3215487.html
+#to use doxygen+graphviz+htmlhelp to generate document from source code:
+#http://www.doxygen.nl/
+#(also include good comments norm)
+#http://blog.csdn.net/u010740725/article/details/51387810
+
 #TODO:the dependences are not complete!
 
 #compile parameters
@@ -15,8 +22,8 @@ MPICC = mpicxx
 #NOTICE: -O2 is recommended, while -O3 is dangerous
 #when developing, not use -O because it will disturb the normal 
 #routine. use it for test and release.
-CFLAGS = -c -Wall -g #-O2
-EXEFLAG = -g #-O2
+CFLAGS = -c -Wall -g #-pg #-O2
+EXEFLAG = -g #-pg #-O2
 
 # paths
 
@@ -65,7 +72,7 @@ library = -ltermcap -lreadline -L./lib -lantlr
 def64IO = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
 
 #gtest
-all: $(exedir)gload $(exedir)gloadD $(exedir)gserver $(exedir)gclient $(exedir)gquery $(exedir)gqueryD $(exedir)gconsole $(api_java) 
+all: $(exedir)gload $(exedir)gloadD $(exedir)gserver $(exedir)gclient $(exedir)gquery $(exedir)gqueryD $(exedir)gconsole $(api_java) $(exedir)gadd $(exedir)gsub
 
 test_index: test_index.cpp
 	$(CC) $(EXEFLAG) -o test_index test_index.cpp $(objfile) $(library)
@@ -79,11 +86,11 @@ $(exedir)gload: $(lib_antlr) $(objdir)gload.o $(objfile)
 $(exedir)gloadD: $(lib_antlr) $(objdir)gloadD.o $(objfile) 
 	$(MPICC) $(EXEFLAG) -o $(exedir)gloadD $(objdir)gloadD.o $(objfile) $(library)
 
-$(exedir)gquery: $(lib_antlr) $(objdir)gquery.o $(objfile) 
-	$(CC) $(EXEFLAG) -o $(exedir)gquery $(objdir)gquery.o $(objfile) $(library)
-
 $(exedir)gqueryD: $(lib_antlr) $(objdir)gqueryD.o $(objfile) 
 	$(MPICC) $(EXEFLAG) -o $(exedir)gqueryD $(objdir)gqueryD.o $(objfile) $(library)
+
+$(exedir)gquery: $(lib_antlr) $(objdir)gquery.o $(objfile) 
+	$(CC) $(EXEFLAG) -o $(exedir)gquery $(objdir)gquery.o $(objfile) $(library)
 
 $(exedir)gserver: $(lib_antlr) $(objdir)gserver.o $(objfile) 
 	$(CC) $(EXEFLAG) -o $(exedir)gserver $(objdir)gserver.o $(objfile) $(library)
@@ -104,11 +111,11 @@ $(objdir)gload.o: Main/gload.cpp Database/Database.h Util/Util.h
 	
 $(objdir)gloadD.o: Main/gloadD.cpp Database/Database.h Util/Util.h
 	$(MPICC) $(CFLAGS) Main/gloadD.cpp $(inc) -o $(objdir)gloadD.o 
-	
+
 $(objdir)gquery.o: Main/gquery.cpp Database/Database.h Util/Util.h
 	$(CC) $(CFLAGS) Main/gquery.cpp $(inc) -o $(objdir)gquery.o  #-DREADLINE_ON
 	#add -DREADLINE_ON if using readline
-	
+
 $(objdir)gqueryD.o: Main/gqueryD.cpp Database/Database.h Util/Util.h
 	$(MPICC) $(CFLAGS) Main/gqueryD.cpp $(inc) -o $(objdir)gqueryD.o  #-DREADLINE_ON
 	#add -DREADLINE_ON if using readline
@@ -347,7 +354,7 @@ $(api_cpp): $(objdir)Socket.o
 $(api_java):
 	$(MAKE) -C api/java/src
 
-.PHONY: clean dist tarball api_example gtest sumlines gmod
+.PHONY: clean dist tarball api_example gtest sumlines
 
 clean:
 	$(MAKE) -C api/cpp/src clean
@@ -373,16 +380,22 @@ APIexample: $(api_cpp) $(api_java)
 	$(MAKE) -C api/java/example
 
 gtest: $(objdir)gtest.o $(objfile)
-	$(CC) -g -o $(exedir)gtest $(objdir)gtest.o $(objfile) lib/libantlr.a $(library)
+	$(CC) $(EXEFLAG) -o $(exedir)gtest $(objdir)gtest.o $(objfile) lib/libantlr.a $(library)
 
 $(objdir)gtest.o: test/gtest.cpp
 	$(CC) $(CFLAGS) test/gtest.cpp $(inc) -o $(objdir)gtest.o
 	
-gmod: $(objdir)gmod.o $(objfile)
-	$(CC) -g -o $(exedir)gmod $(objdir)gmod.o $(objfile) lib/libantlr.a $(library)
+$(exedir)gadd: $(objdir)gadd.o $(objfile)
+	$(CC) $(EXEFLAG) -o $(exedir)gadd $(objdir)gadd.o $(objfile) lib/libantlr.a $(library)
 
-$(objdir)gmod.o: test/gmod.cpp
-	$(CC) $(CFLAGS) test/gmod.cpp $(inc) -o $(objdir)gmod.o
+$(objdir)gadd.o: Main/gadd.cpp
+	$(CC) $(CFLAGS) Main/gadd.cpp $(inc) -o $(objdir)gadd.o
+
+$(exedir)gsub: $(objdir)gsub.o $(objfile)
+	$(CC) $(EXEFLAG) -o $(exedir)gsub $(objdir)gsub.o $(objfile) lib/libantlr.a $(library)
+
+$(objdir)gsub.o: Main/gsub.cpp
+	$(CC) $(CFLAGS) Main/gsub.cpp $(inc) -o $(objdir)gsub.o
 
 sumlines:
 	bash test/sumline.sh

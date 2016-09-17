@@ -36,14 +36,8 @@ void GeneralEvaluation::doQuery(const string &_query, int myRank, string &intern
 		//cout << "=====================" << endl;
 
 		this->getBasicQuery(this->query_tree.getGroupPattern());
-
-		//vector< vector<string> > tmp;
-		//tmp.push_back(this->query_tree.getProjection());
-		//this->sparql_query.encodeQuery(this->kvstore, this->getProjection());
-		//cout << "before Encode! " << endl;
 		this->sparql_query.encodeQuery(this->kvstore, this->getSPARQLQueryVarset());
 		
-		//NOTICE: use this strategy instead of default filter-join way
 		Strategy stra(this->kvstore, this->vstree);
 		stra.handle(this->sparql_query, myRank, internal_tag_str);
 		long tv_handle = Util::get_cur_time();
@@ -1145,69 +1139,6 @@ int GeneralEvaluation::countFilterExistsGroupPattern(QueryTree::GroupPattern::Fi
         if (filter.child[i].type == 't')
             count += countFilterExistsGroupPattern(filter.child[i].node);
     return count;
-}
-
-void GeneralEvaluation::doEvaluationPlan(int argc, char * argv[]){
-	for (int i = 0; i < (int)this->semantic_evaluation_plan.size(); i++)
-    {
-        if (semantic_evaluation_plan[i].getType() == 'r')
-            this->semantic_evaluation_result_stack.push((TempResultSet*)semantic_evaluation_plan[i].getPointer());
-        if (semantic_evaluation_plan[i].getType() == 'j' || semantic_evaluation_plan[i].getType() == 'o' || semantic_evaluation_plan[i].getType() == 'm' || semantic_evaluation_plan[i].getType() == 'u')
-        {
-            TempResultSet* b = semantic_evaluation_result_stack.top();
-            semantic_evaluation_result_stack.pop();
-            TempResultSet* a = semantic_evaluation_result_stack.top();
-            semantic_evaluation_result_stack.pop();
-            TempResultSet* r = new TempResultSet();
-
-            if (semantic_evaluation_plan[i].getType() == 'j')
-                a->doJoin(*b, *r);
-            if (semantic_evaluation_plan[i].getType() == 'o')
-                a->doOptional(*b, *r);
-            if (semantic_evaluation_plan[i].getType() == 'm')
-                a->doMinus(*b, *r);
-            if (semantic_evaluation_plan[i].getType() == 'u')
-                a->doUnion(*b, *r);
-
-            a->release();
-            b->release();
-            delete a;
-            delete b;
-
-            semantic_evaluation_result_stack.push(r);
-        }
-
-        if (semantic_evaluation_plan[i].getType() == 'f')
-        {
-            int filter_exists_grouppattern_size = countFilterExistsGroupPattern(*(QueryTree::GroupPattern::FilterTreeNode *)semantic_evaluation_plan[i].getPointer());
-
-            if (filter_exists_grouppattern_size > 0)
-                for (int i = 0; i < filter_exists_grouppattern_size; i++)
-                {
-                    this->filter_exists_grouppattern_resultset_record.resultset.push_back(semantic_evaluation_result_stack.top());
-                    semantic_evaluation_result_stack.pop();
-                }
-
-            TempResultSet* a = semantic_evaluation_result_stack.top();
-            semantic_evaluation_result_stack.pop();
-
-            TempResultSet * r = new TempResultSet();
-
-            a->doFilter(*(QueryTree::GroupPattern::FilterTreeNode *)semantic_evaluation_plan[i].getPointer(), this->filter_exists_grouppattern_resultset_record, *r, this->kvstore);
-
-            if (filter_exists_grouppattern_size > 0)
-            {
-                for (int i = 0; i < filter_exists_grouppattern_size; i++)
-                    this->filter_exists_grouppattern_resultset_record.resultset[i]->release();
-                this->filter_exists_grouppattern_resultset_record.resultset.clear();
-            }
-
-            a->release();
-            delete a;
-
-            semantic_evaluation_result_stack.push(r);
-        }
-    }
 }
 
 void GeneralEvaluation::doEvaluationPlan()

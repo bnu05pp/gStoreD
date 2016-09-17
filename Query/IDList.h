@@ -37,10 +37,9 @@ public:
 	int unionList(const IDList&, bool only_literal=false);
 	int bsearch_uporder(int _key);
 	static IDList* intersect(const IDList&, const int*, int);
-	
-	int erase(int i);
 private:
 	std::vector<int> id_list;
+	int erase(int i);
 };
 
 #endif //_QUERY_IDLIST_H

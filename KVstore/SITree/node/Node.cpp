@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void 
+void
 SINode::AllocKeys()
 {
 	keys = new Bstr[MAX_KEY_NUM];
@@ -20,7 +20,7 @@ SINode::AllocKeys()
 void
 SINode::FreeKeys()
 {
-	delete[] keys;
+delete[] keys;
 }
 */
 
@@ -34,7 +34,7 @@ SINode::SINode()
 SINode::SINode(bool isVirtual)
 {
 	store = flag = 0;
-	if(!isVirtual)
+	if (!isVirtual)
 	{
 		flag |= NF_IM;
 		AllocKeys();
@@ -44,8 +44,8 @@ SINode::SINode(bool isVirtual)
 /*
 SINode::Node(Storage* TSM)
 {
-	AllocKeys();
-	TSM->readSINode(this, Storage::OVER);	
+AllocKeys();
+TSM->readSINode(this, Storage::OVER);
 }
 */
 bool
@@ -72,7 +72,7 @@ SINode::delDirty()
 	this->flag &= ~NF_ID;
 }
 
-bool 
+bool
 SINode::inMem() const
 {
 	return this->flag & NF_IM;
@@ -94,19 +94,19 @@ SINode::delMem()
 bool
 SINode::isVirtual() const
 {
-	return this->flag & NF_IV;
+return this->flag & NF_IV;
 }
 
 void
 SINode::setVirtual()
 {
-	this->flag |= NF_IV;
+this->flag |= NF_IV;
 }
 
 void
 SINode::delVirtual()
 {
-	this->flag &= ~NF_IV;
+this->flag &= ~NF_IV;
 }
 */
 
@@ -116,7 +116,7 @@ SINode::getRank() const
 	return this->flag & NF_RK;
 }
 
-void 
+void
 SINode::setRank(unsigned _rank)
 {
 	this->flag &= ~NF_RK;
@@ -126,56 +126,56 @@ SINode::setRank(unsigned _rank)
 unsigned
 SINode::getHeight() const
 {
-	return (this->flag & NF_HT)>>20;
+	return (this->flag & NF_HT) >> 20;
 }
 
 void
 SINode::setHeight(unsigned _h)
 {
 	this->flag &= ~NF_HT;
-	this->flag |= (_h<<20);
+	this->flag |= (_h << 20);
 }
 
-unsigned 
+unsigned
 SINode::getNum() const
 {
-	return (this->flag & NF_KN)>>12;
+	return (this->flag & NF_KN) >> 12;
 }
 
-bool 
+bool
 SINode::setNum(int _num)
 {
-	if(_num < 0 || (unsigned)_num > MAX_KEY_NUM)
+	if (_num < 0 || (unsigned)_num > MAX_KEY_NUM)
 	{
 		print(string("error in setNum: Invalid num ") + Util::int2string(_num));
 		return false;
 	}
 	this->flag &= ~NF_KN;
-	this->flag |= (_num<<12); 
+	this->flag |= (_num << 12);
 	return true;
 }
 
 bool
 SINode::addNum()
 {
-	if(this->getNum() + 1 > MAX_KEY_NUM)
+	if (this->getNum() + 1 > MAX_KEY_NUM)
 	{
 		print("error in addNum: Invalid!");
 		return false;
 	}
-	this->flag += (1<<12);
+	this->flag += (1 << 12);
 	return true;
 }
 
 bool
 SINode::subNum()
 {
-	if(this->getNum() < 1)
+	if (this->getNum() < 1)
 	{
 		print("error in subNum: Invalid!");
 		return false;
 	}
-	this->flag -= (1<<12);
+	this->flag -= (1 << 12);
 	return true;
 }
 
@@ -198,16 +198,16 @@ SINode::getFlag() const
 }
 
 void
-SINode::setFlag(unsigned _flag) 
+SINode::setFlag(unsigned _flag)
 {
 	this->flag = _flag;
 }
 
-const Bstr* 
+const Bstr*
 SINode::getKey(int _index) const
 {
 	int num = this->getNum();
-	if(_index < 0 || _index >= num)
+	if (_index < 0 || _index >= num)
 	{
 		//print(string("error in getKey: Invalid index ") + Util::int2string(_index));    
 		printf("error in getKey: Invalid index\n");
@@ -221,12 +221,12 @@ bool
 SINode::setKey(const Bstr* _key, int _index, bool ifcopy)
 {
 	int num = this->getNum();
-	if(_index < 0 || _index >= num)
+	if (_index < 0 || _index >= num)
 	{
 		print(string("error in setKey: Invalid index ") + Util::int2string(_index));
 		return false;
 	}
-	if(ifcopy)
+	if (ifcopy)
 		keys[_index].copy(_key);
 	else
 		keys[_index] = *_key;
@@ -237,7 +237,7 @@ bool
 SINode::addKey(const Bstr* _key, int _index, bool ifcopy)
 {
 	int num = this->getNum();
-	if(_index < 0 || _index > num)
+	if (_index < 0 || _index > num)
 	{
 		print(string("error in addKey: Invalid index ") + Util::int2string(_index));
 		return false;
@@ -245,9 +245,9 @@ SINode::addKey(const Bstr* _key, int _index, bool ifcopy)
 	int i;
 	//NOTICE: if num == MAX_KEY_NUM, will visit keys[MAX_KEY_NUM], not legal!!!
 	//however. tree operations ensure that: when node is full, not add but split first!
-	for(i = num - 1; i >= _index; --i)
-		keys[i+1] = keys[i];
-	if(ifcopy)
+	for (i = num - 1; i >= _index; --i)
+		keys[i + 1] = keys[i];
+	if (ifcopy)
 		keys[_index].copy(_key);
 	else
 		keys[_index] = *_key;
@@ -258,16 +258,16 @@ bool
 SINode::subKey(int _index, bool ifdel)
 {
 	int num = this->getNum();
-	if(_index < 0 || _index >= num)	
+	if (_index < 0 || _index >= num)
 	{
 		print(string("error in subKey: Invalid index ") + Util::int2string(_index));
 		return false;
 	}
 	int i;
-	if(ifdel)
+	if (ifdel)
 		keys[_index].release();
-	for(i = _index; i < num - 1; ++i)
-		keys[i] = keys[i+1];
+	for (i = _index; i < num - 1; ++i)
+		keys[i] = keys[i + 1];
 	return true;
 }
 
@@ -276,16 +276,16 @@ SINode::searchKey_less(const Bstr& _bstr) const
 {
 	int num = this->getNum();
 	//for(i = 0; i < num; ++i)
-		//if(bstr < *(p->getKey(i)))
-			//break;
+	//if(bstr < *(p->getKey(i)))
+	//break;
 
 	int low = 0, high = num - 1, mid = -1;
-	while(low <= high)
+	while (low <= high)
 	{
 		mid = (low + high) / 2;
-		if(this->keys[mid] > _bstr)
+		if (this->keys[mid] > _bstr)
 		{
-			if(low == mid)
+			if (low == mid)
 				break;
 			high = mid;
 		}
@@ -306,7 +306,7 @@ SINode::searchKey_equal(const Bstr& _bstr) const
 	//	{
 
 	int ret = this->searchKey_less(_bstr);
-	if(ret > 0 && this->keys[ret-1] == _bstr)
+	if (ret > 0 && this->keys[ret - 1] == _bstr)
 		return ret - 1;
 	else
 		return num;
@@ -315,15 +315,14 @@ SINode::searchKey_equal(const Bstr& _bstr) const
 int
 SINode::searchKey_lessEqual(const Bstr& _bstr) const
 {
-	int num = this->getNum();
+	//int num = this->getNum();
 	//for(i = 0; i < num; ++i)
-		//if(bstr <= *(p->getKey(i)))
-			//break;
+	//if(bstr <= *(p->getKey(i)))
+	//break;
 
 	int ret = this->searchKey_less(_bstr);
-	if(ret > 0 && this->keys[ret-1] == _bstr)
+	if (ret > 0 && this->keys[ret - 1] == _bstr)
 		return ret - 1;
 	else
 		return ret;
 }
-

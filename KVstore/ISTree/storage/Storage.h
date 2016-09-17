@@ -55,7 +55,7 @@ public:
 	ISStorage();
 	ISStorage(std::string& _filepath, std::string& _mode, unsigned* _height);//create a fixed-size file or open an existence
 	bool preRead(ISNode*& _root, ISNode*& _leaves_head, ISNode*& _leaves_tail);		//read and build all nodes, only root in memory
-	bool readNode(ISNode* _np, int* _request);	//read, if virtual 
+	bool readNode(ISNode* _np, long long* _request);	//read, if virtual 
 	bool createNode(ISNode*& _np);		//use fp to create a new node
 	//NOTICE(if children and child not exist, build children's Nodes)
 	bool writeNode(ISNode* _np);
@@ -63,8 +63,8 @@ public:
 	bool writeBstr(const Bstr* _bp, unsigned* _curnum, bool& _SpecialBlock);
 	bool writeTree(ISNode* _np);
 	void updateHeap(ISNode* _np, unsigned _rank, bool _inheap) const;
-	void request(int _needmem);			//deal with memory request
-	bool handler(unsigned _needmem);	//swap some nodes out
+	void request(long long _needmem);			//deal with memory request
+	bool handler(unsigned long long _needmem);	//swap some nodes out
 	//bool update();				//update InMem Node's rank, with clock
 	~ISStorage();	
 	void print(std::string s);				//DEBUG

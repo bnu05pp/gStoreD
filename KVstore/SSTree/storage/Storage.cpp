@@ -166,7 +166,7 @@ Storage::preRead(Node*& _root, Node*& _leaves_head, Node*& _leaves_tail)		//pre-
 		p = p->getChild(p->getNum());
 	}
 	_leaves_tail = p;
-	int memory = 0;
+	long long memory = 0;
 	this->readNode(_root, &memory);
 	this->request(memory);
 	return true;
@@ -247,7 +247,7 @@ Storage::WriteAlign(unsigned* _curnum, bool& _SpecialBlock)
 }
 
 bool
-Storage::readNode(Node* _np, int* _request)
+Storage::readNode(Node* _np, long long* _request)
 {			
 	if(_np == NULL || _np->inMem())
 		return false;	//can't read or needn't
@@ -556,9 +556,9 @@ Storage::updateHeap(Node* _np, unsigned _rank, bool _inheap) const
 }
 
 void 
-Storage::request(int _needmem)	//aligned to byte
+Storage::request(long long _needmem)	//aligned to byte
 {	//NOTICE: <0 means release
-	if(_needmem > 0 && this->freemem < (unsigned)_needmem)
+	if(_needmem > 0 && this->freemem < (unsigned long long)_needmem)
 		if(!this->handler(_needmem - freemem))	//disaster in buffer memory
 		{
 			print(string("error in request: out of buffer-mem, now to exit"));
@@ -568,10 +568,10 @@ Storage::request(int _needmem)	//aligned to byte
 }
 
 bool
-Storage::handler(unsigned _needmem)	//>0
+Storage::handler(unsigned long long _needmem)	//>0
 {
 	Node* p;
-	unsigned size;
+	unsigned long long size;
 	//if(_needmem < SET_BUFFER_SIZE)		//to recover to SET_BUFFER_SIZE buffer
 	//	_needmem = SET_BUFFER_SIZE;
 	while(1)

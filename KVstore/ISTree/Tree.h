@@ -42,7 +42,7 @@ protected:
 	//tree's operations should be atom(if read nodes)
 	//sum the request and send to ISStorage at last
 	//ensure that all nodes operated are in memory
-	int request;
+	long long request;
 	void prepare(ISNode* _np);
 
 	std::string storepath;

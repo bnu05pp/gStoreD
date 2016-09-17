@@ -54,7 +54,7 @@ public:
 	SIStorage();
 	SIStorage(std::string& _filepath, std::string& _mode, unsigned* _height);//create a fixed-size file or open an existence
 	bool preRead(SINode*& _root, SINode*& _leaves_head, SINode*& _leaves_tail);		//read and build all nodes, only root in memory
-	bool readNode(SINode* _np, int* _request);	//read, if virtual 
+	bool readNode(SINode* _np, long long* _request);	//read, if virtual 
 	bool createNode(SINode*& _np);		//use fp to create a new node
 	//NOTICE(if children and child not exist, build children's Nodes)
 	bool writeNode(SINode* _np);
@@ -62,8 +62,8 @@ public:
 	bool writeBstr(const Bstr* _bp, unsigned* _curnum, bool& _SpecialBlock);
 	bool writeTree(SINode* _np);
 	void updateHeap(SINode* _np, unsigned _rank, bool _inheap) const;
-	void request(int _needmem);			//deal with memory request
-	bool handler(unsigned _needmem);	//swap some nodes out
+	void request(long long _needmem);			//deal with memory request
+	bool handler(unsigned long long _needmem);	//swap some nodes out
 	//bool update();				//update InMem Node's rank, with clock
 	~SIStorage();	
 	void print(std::string s);				//DEBUG

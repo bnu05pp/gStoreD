@@ -166,7 +166,7 @@ SIStorage::preRead(SINode*& _root, SINode*& _leaves_head, SINode*& _leaves_tail)
 		p = p->getChild(p->getNum());
 	}
 	_leaves_tail = p;
-	int memory = 0;
+	long long memory = 0;
 	this->readNode(_root, &memory);
 	this->request(memory);
 	return true;
@@ -247,7 +247,7 @@ SIStorage::WriteAlign(unsigned* _curnum, bool& _SpecialBlock)
 }
 
 bool
-SIStorage::readNode(SINode* _np, int* _request)
+SIStorage::readNode(SINode* _np, long long* _request)
 {			
 	if(_np == NULL || _np->inMem())
 		return false;	//can't read or needn't
@@ -570,9 +570,9 @@ SIStorage::updateHeap(SINode* _np, unsigned _rank, bool _inheap) const
 }
 
 void 
-SIStorage::request(int _needmem)	//aligned to byte
+SIStorage::request(long long _needmem)	//aligned to byte
 {	//NOTICE: <0 means release
-	if(_needmem > 0 && this->freemem < (unsigned)_needmem)
+	if(_needmem > 0 && this->freemem < (unsigned long long)_needmem)
 		if(!this->handler(_needmem - freemem))	//disaster in buffer memory
 		{
 			print(string("error in request: out of buffer-mem, now to exit"));
@@ -582,10 +582,10 @@ SIStorage::request(int _needmem)	//aligned to byte
 }
 
 bool
-SIStorage::handler(unsigned _needmem)	//>0
+SIStorage::handler(unsigned long long _needmem)	//>0
 {
 	SINode* p;
-	unsigned size;
+	unsigned long long size;
 	//if(_needmem < SET_BUFFER_SIZE)		//to recover to SET_BUFFER_SIZE buffer
 	//	_needmem = SET_BUFFER_SIZE;
 	while(1)

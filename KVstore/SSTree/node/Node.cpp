@@ -316,7 +316,7 @@ Node::searchKey_equal(const Bstr& _bstr) const
 int
 Node::searchKey_lessEqual(const Bstr& _bstr) const
 {
-	int num = this->getNum();
+	//int num = this->getNum();
 	//for(i = 0; i < num; ++i)
 		//if(bstr <= *(p->getKey(i)))
 			//break;

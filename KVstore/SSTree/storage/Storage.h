@@ -55,7 +55,7 @@ public:
 	Storage();
 	Storage(std::string& _filepath, std::string& _mode, unsigned* _height);//create a fixed-size file or open an existence
 	bool preRead(Node*& _root, Node*& _leaves_head, Node*& _leaves_tail);		//read and build all nodes, only root in memory
-	bool readNode(Node* _np, int* _request);	//read, if virtual 
+	bool readNode(Node* _np, long long* _request);	//read, if virtual 
 	bool createNode(Node*& _np);		//use fp to create a new node
 	//NOTICE(if children and child not exist, build children's Nodes)
 	bool writeNode(Node* _np);
@@ -63,8 +63,8 @@ public:
 	bool writeBstr(const Bstr* _bp, unsigned* _curnum, bool& _SpecialBlock);
 	bool writeTree(Node* _np);
 	void updateHeap(Node* _np, unsigned _rank, bool _inheap) const;
-	void request(int _needmem);			//deal with memory request
-	bool handler(unsigned _needmem);	//swap some nodes out
+	void request(long long _needmem);			//deal with memory request
+	bool handler(unsigned long long _needmem);	//swap some nodes out
 	//bool update();				//update InMem Node's rank, with clock
 	~Storage();	
 	void print(std::string s);				//DEBUG

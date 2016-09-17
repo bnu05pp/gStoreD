@@ -166,7 +166,7 @@ ISStorage::preRead(ISNode*& _root, ISNode*& _leaves_head, ISNode*& _leaves_tail)
 		p = p->getChild(p->getNum());
 	}
 	_leaves_tail = p;
-	int memory = 0;
+	long long memory = 0;
 	this->readNode(_root, &memory);
 	this->request(memory);
 	return true;
@@ -247,7 +247,7 @@ ISStorage::WriteAlign(unsigned* _curnum, bool& _SpecialBlock)
 }
 
 bool
-ISStorage::readNode(ISNode* _np, int* _request)
+ISStorage::readNode(ISNode* _np, long long* _request)
 {			
 	if(_np == NULL || _np->inMem())
 		return false;	//can't read or needn't
@@ -570,9 +570,10 @@ ISStorage::updateHeap(ISNode* _np, unsigned _rank, bool _inheap) const
 }
 
 void 
-ISStorage::request(int _needmem)	//aligned to byte
+ISStorage::request(long long _needmem)	//aligned to byte
 {	//NOTICE: <0 means release
-	if(_needmem > 0 && this->freemem < (unsigned)_needmem)
+	//cout<<"freemem: "<<this->freemem<<" needmem: "<<_needmem<<endl;
+	if(_needmem > 0 && this->freemem < (unsigned long long)_needmem)
 		if(!this->handler(_needmem - freemem))	//disaster in buffer memory
 		{
 			print(string("error in request: out of buffer-mem, now to exit"));
@@ -582,30 +583,47 @@ ISStorage::request(int _needmem)	//aligned to byte
 }
 
 bool
-ISStorage::handler(unsigned _needmem)	//>0
+ISStorage::handler(unsigned long long _needmem)	//>0
 {
+	//cout<<"swap happen"<<endl;
 	ISNode* p;
-	unsigned size;
+	unsigned long long size;
 	//if(_needmem < SET_BUFFER_SIZE)		//to recover to SET_BUFFER_SIZE buffer
 	//	_needmem = SET_BUFFER_SIZE;
+	//cout<<"ISStorage::handler() - now to loop to release nodes"<<endl;
 	while(1)
 	{
 		p = this->minheap->getTop();
+		//cout<<"get heap top"<<endl;
 		if(p == NULL)
+		{
+			cout<<"the heap top is null"<<endl;
 			return false;	//can't satisfy or can't recover to SET_BUFFER_SIZE
+		}
+
 		this->minheap->remove();
+		//cout<<"node removed in heap"<<endl;
 		size = p->getSize();
 		this->freemem += size;
 		this->writeNode(p);
+		//cout<<"node write back"<<endl;
 		if(p->getNum() > 0)
 			p->Virtual();
 		else
 			delete p;	//non-sense node
+		//cout<<"node memory released"<<endl;
 		if(_needmem > size)
+		{
+			//cout<<"reduce the request"<<endl;
 			_needmem -= size;
+		}
 		else
+		{
+			//cout<<"ok to break"<<endl;
 			break;
+		}
 	}
+	//cout<<"ISStorage::handler() -- finished"<<endl;
 	return true;
 }
 

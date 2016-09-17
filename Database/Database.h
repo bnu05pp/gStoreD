@@ -23,7 +23,6 @@
 #include "../Parser/RDFParser.h"
 #include "../Parser/SparqlParser.h"
 #include "../Query/GeneralEvaluation.h"
-#include "../Query/DistributedGeneralEvaluation.h"
 
 class Database
 {
@@ -73,6 +72,8 @@ public:
     /* root Path of this DB + DBInfoFile */
     string getDBInfoFile();
 
+	bool loadInternalVertices(const string _in_file);
+
 private:
 	string name;
 	bool is_active;
@@ -95,10 +96,13 @@ private:
 	string six_tuples_file;
 	 //B means binary 
 	string signature_binary_file;
-	
+
 	/* internal vertices string */
 	string internal_tag_str;
 	
+	//triple num per group for insert/delete
+	//can not be too high, otherwise the heap will over
+	static const int GROUP_SIZE = 1000;
 	//manage the ID allocate and garbage
 	static const int START_ID_NUM = 1000;
 	/////////////////////////////////////////////////////////////////////////////////
@@ -142,7 +146,7 @@ private:
 	 //encode Triple into Object EntityBitSet 
     bool encodeTriple2ObjEntityBitSet(EntityBitSet& _bitset, const Triple* _p_triple);
 
-	bool calculateEntityBitSet(int _sub_id, EntityBitSet & _bitset);
+	bool calculateEntityBitSet(int _entity_id, EntityBitSet & _bitset);
 
 	 //check whether the relative 3-tuples exist
 	 //usually, through sp2olist 
@@ -165,8 +169,10 @@ private:
     int insertTriple(const TripleWithObjType& _triple);
     bool removeTriple(const TripleWithObjType& _triple);
 	//NOTICE:one by one is too costly, sort and insert/delete at a time will be better
-	bool insert(vector<TripleWithObjType>& _triples, vector<int>& _vertices, vector<int>& _predicates);
-	bool remove(vector<TripleWithObjType>& _triples, vector<int>& _vertices, vector<int>& _predicates);
+	bool insert(const TripleWithObjType* _triples, int _triple_num, vector<int>& _vertices, vector<int>& _predicates);
+	//bool insert(const vector<TripleWithObjType>& _triples, vector<int>& _vertices, vector<int>& _predicates);
+	bool remove(const TripleWithObjType* _triples, int _triple_num, vector<int>& _vertices, vector<int>& _predicates);
+	//bool remove(const vector<TripleWithObjType>& _triples, vector<int>& _vertices, vector<int>& _predicates);
 
 	bool sub2id_pre2id_obj2id_RDFintoSignature(const string _rdf_file, int**& _p_id_tuples, int & _id_tuples_max);
 	bool literal2id_RDFintoSignature(const string _rdf_file, int** _p_id_tuples, int _id_tuples_max);

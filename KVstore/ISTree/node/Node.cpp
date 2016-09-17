@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void 
+void
 ISNode::AllocKeys()
 {
 	keys = new int[MAX_KEY_NUM];
@@ -20,7 +20,7 @@ ISNode::AllocKeys()
 void
 ISNode::FreeKeys()
 {
-	delete[] keys;
+delete[] keys;
 }
 */
 
@@ -34,7 +34,7 @@ ISNode::ISNode()
 ISNode::ISNode(bool isVirtual)
 {
 	store = flag = 0;
-	if(!isVirtual)
+	if (!isVirtual)
 	{
 		flag |= NF_IM;
 		AllocKeys();
@@ -44,8 +44,8 @@ ISNode::ISNode(bool isVirtual)
 /*
 ISNode::Node(Storage* TSM)
 {
-	AllocKeys();
-	TSM->readISNode(this, Storage::OVER);	
+AllocKeys();
+TSM->readISNode(this, Storage::OVER);
 }
 */
 bool
@@ -72,7 +72,7 @@ ISNode::delDirty()
 	this->flag &= ~NF_ID;
 }
 
-bool 
+bool
 ISNode::inMem() const
 {
 	return this->flag & NF_IM;
@@ -94,19 +94,19 @@ ISNode::delMem()
 bool
 ISNode::isVirtual() const
 {
-	return this->flag & NF_IV;
+return this->flag & NF_IV;
 }
 
 void
 ISNode::setVirtual()
 {
-	this->flag |= NF_IV;
+this->flag |= NF_IV;
 }
 
 void
 ISNode::delVirtual()
 {
-	this->flag &= ~NF_IV;
+this->flag &= ~NF_IV;
 }
 */
 
@@ -116,7 +116,7 @@ ISNode::getRank() const
 	return this->flag & NF_RK;
 }
 
-void 
+void
 ISNode::setRank(unsigned _rank)
 {
 	this->flag &= ~NF_RK;
@@ -126,56 +126,56 @@ ISNode::setRank(unsigned _rank)
 unsigned
 ISNode::getHeight() const
 {
-	return (this->flag & NF_HT)>>20;
+	return (this->flag & NF_HT) >> 20;
 }
 
 void
 ISNode::setHeight(unsigned _h)
 {
 	this->flag &= ~NF_HT;
-	this->flag |= (_h<<20);
+	this->flag |= (_h << 20);
 }
 
-unsigned 
+unsigned
 ISNode::getNum() const
 {
-	return (this->flag & NF_KN)>>12;
+	return (this->flag & NF_KN) >> 12;
 }
 
-bool 
+bool
 ISNode::setNum(int _num)
 {
-	if(_num < 0 || (unsigned)_num > MAX_KEY_NUM)
+	if (_num < 0 || (unsigned)_num > MAX_KEY_NUM)
 	{
 		print(string("error in setNum: Invalid num ") + Util::int2string(_num));
 		return false;
 	}
 	this->flag &= ~NF_KN;
-	this->flag |= (_num<<12); 
+	this->flag |= (_num << 12);
 	return true;
 }
 
 bool
 ISNode::addNum()
 {
-	if(this->getNum() + 1 > MAX_KEY_NUM)
+	if (this->getNum() + 1 > MAX_KEY_NUM)
 	{
 		print("error in addNum: Invalid!");
 		return false;
 	}
-	this->flag += (1<<12);
+	this->flag += (1 << 12);
 	return true;
 }
 
 bool
 ISNode::subNum()
 {
-	if(this->getNum() < 1)
+	if (this->getNum() < 1)
 	{
 		print("error in subNum: Invalid!");
 		return false;
 	}
-	this->flag -= (1<<12);
+	this->flag -= (1 << 12);
 	return true;
 }
 
@@ -198,7 +198,7 @@ ISNode::getFlag() const
 }
 
 void
-ISNode::setFlag(unsigned _flag) 
+ISNode::setFlag(unsigned _flag)
 {
 	this->flag = _flag;
 }
@@ -207,7 +207,7 @@ int
 ISNode::getKey(int _index) const
 {
 	int num = this->getNum();
-	if(_index < 0 || _index >= num)
+	if (_index < 0 || _index >= num)
 	{
 		//print(string("error in getKey: Invalid index ") + Util::int2string(_index));    
 		printf("error in getKey: Invalid index\n");
@@ -221,7 +221,7 @@ bool
 ISNode::setKey(int _key, int _index)
 {
 	int num = this->getNum();
-	if(_index < 0 || _index >= num)
+	if (_index < 0 || _index >= num)
 	{
 		print(string("error in setKey: Invalid index ") + Util::int2string(_index));
 		return false;
@@ -234,7 +234,7 @@ bool
 ISNode::addKey(int _key, int _index)
 {
 	int num = this->getNum();
-	if(_index < 0 || _index > num)
+	if (_index < 0 || _index > num)
 	{
 		print(string("error in addKey: Invalid index ") + Util::int2string(_index));
 		return false;
@@ -242,8 +242,8 @@ ISNode::addKey(int _key, int _index)
 	int i;
 	//NOTICE: if num == MAX_KEY_NUM, will visit keys[MAX_KEY_NUM], not legal!!!
 	//however. tree operations ensure that: when node is full, not add but split first!
-	for(i = num - 1; i >= _index; --i)
-		keys[i+1] = keys[i];
+	for (i = num - 1; i >= _index; --i)
+		keys[i + 1] = keys[i];
 	keys[_index] = _key;
 	return true;
 }
@@ -252,14 +252,14 @@ bool
 ISNode::subKey(int _index)
 {
 	int num = this->getNum();
-	if(_index < 0 || _index >= num)	
+	if (_index < 0 || _index >= num)
 	{
 		print(string("error in subKey: Invalid index ") + Util::int2string(_index));
 		return false;
 	}
 	int i;
-	for(i = _index; i < num - 1; ++i)
-		keys[i] = keys[i+1];
+	for (i = _index; i < num - 1; ++i)
+		keys[i] = keys[i + 1];
 	return true;
 }
 
@@ -268,16 +268,16 @@ ISNode::searchKey_less(int _key) const
 {
 	int num = this->getNum();
 	//for(i = 0; i < num; ++i)
-		//if(bstr < *(p->getKey(i)))
-			//break;
+	//if(bstr < *(p->getKey(i)))
+	//break;
 
 	int low = 0, high = num - 1, mid = -1;
-	while(low <= high)
+	while (low <= high)
 	{
 		mid = (low + high) / 2;
-		if(this->keys[mid] > _key)
+		if (this->keys[mid] > _key)
 		{
-			if(low == mid)
+			if (low == mid)
 				break;
 			high = mid;
 		}
@@ -298,7 +298,7 @@ ISNode::searchKey_equal(int _key) const
 	//	{
 
 	int ret = this->searchKey_less(_key);
-	if(ret > 0 && this->keys[ret-1] == _key)
+	if (ret > 0 && this->keys[ret - 1] == _key)
 		return ret - 1;
 	else
 		return num;
@@ -307,15 +307,14 @@ ISNode::searchKey_equal(int _key) const
 int
 ISNode::searchKey_lessEqual(int _key) const
 {
-	int num = this->getNum();
+	//int num = this->getNum();
 	//for(i = 0; i < num; ++i)
-		//if(bstr <= *(p->getKey(i)))
-			//break;
+	//if(bstr <= *(p->getKey(i)))
+	//break;
 
 	int ret = this->searchKey_less(_key);
-	if(ret > 0 && this->keys[ret-1] == _key)
+	if (ret > 0 && this->keys[ret - 1] == _key)
 		return ret - 1;
 	else
 		return ret;
 }
-

@@ -171,6 +171,9 @@ main(int argc, char * argv[])
 		remove("internal_nodes.dat");
 	}else{
 		loadingStart = MPI_Wtime();
+
+		remove("_distributed_gStore_tmp_internal_vertices.txt");
+		remove("_distributed_gStore_tmp_rdf_triples.n3");
 		
 		MPI_Recv(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD, &status);
 		char* _internal_vertices_arr = new char[size];
@@ -230,6 +233,10 @@ main(int argc, char * argv[])
 		printf("%d begin to load internal vertices!\n", myRank); 
 		
 		//_db.setInternalVertices("_distributed_gStore_tmp_internal_vertices.txt");
+		Database _db1(_db_path);
+        _db1.load();
+        string _in_file = "_distributed_gStore_tmp_internal_vertices.txt";
+        _db1.loadInternalVertices(_in_file);
 		
 		remove("_distributed_gStore_tmp_internal_vertices.txt");
 		remove("_distributed_gStore_tmp_rdf_triples.n3");

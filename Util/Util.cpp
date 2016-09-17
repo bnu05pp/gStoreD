@@ -163,7 +163,7 @@ Util::config_setting()
     if((fp = fopen(profile.c_str(), "r")) == NULL)  //NOTICE: this is not a binary file
     {
 #ifdef DEBUG
-        fprintf(stderr, "openfile [%s] error [%s]\n", profile.c_str(), strerror(errno));
+        //fprintf(stderr, "openfile [%s] error [%s]\n", profile.c_str(), strerror(errno));
 #endif
         return false;
     }
@@ -669,30 +669,6 @@ Util::showtime()
     return string("\n\n") + ctime(&now);
 }
 
-vector<string> 
-Util::split(string textline, string tag){
-	vector<string> res;
-	std::size_t pre_pos = 0;
-	std::size_t pos = textline.find_first_of(tag);
-	while (pos != std::string::npos){
-		string curStr = textline.substr(pre_pos, pos - pre_pos);
-		curStr.erase(0, curStr.find_first_not_of("\r\t\n "));
-		curStr.erase(curStr.find_last_not_of("\r\t\n ") + 1);
-		if(strcmp(curStr.c_str(), "") != 0)
-			res.push_back(curStr);
-		pre_pos = pos + 1;
-		pos = textline.find_first_of(tag, pre_pos);
-	}
-
-	string curStr = textline.substr(pre_pos, pos - pre_pos);
-	curStr.erase(0, curStr.find_first_not_of("\r\t\n "));
-	curStr.erase(curStr.find_last_not_of("\r\t\n ") + 1);
-	if(strcmp(curStr.c_str(), "") != 0)
-		res.push_back(curStr);
-
-	return res;
-}
-
 string
 Util::getQueryFromFile(const char* _file_path)
 {
@@ -823,7 +799,8 @@ Util::getExactPath(const char *str)
     string cmd = "realpath ";
     cmd += string(str);
 
-    return string(str);
+    //return getSystemOutput(cmd);
+	return string(str);
 }
 
 void
@@ -1221,6 +1198,77 @@ Util::intersect(int*& _id_list, int& _id_list_len, const int* _list1, int _len1,
 	delete[] _list2;
 }
 
+int
+Util::compIIpair(int _a1, int _b1, int _a2, int _b2)
+{
+	if(_a1 == _a2 && _b1 == _b2)
+		return 0;
+	else if(_a1 < _a2 || (_a1 == _a2 && _b1 <= _b2))
+		return -1;
+	else
+		return 1;
+}
+
+bool 
+Util::isValidPort(string str) 
+{
+	//valid port number: 0 - 65535
+	if(str.length() < 1 || str.length() > 5) 
+	{
+		return false;
+	}
+
+	unsigned i;
+	for(i = 0; i < str.length(); i++) 
+	{
+		if(str[i] < '0' || str[i] > '9') 
+		{
+			return false;
+		}
+	}
+
+	int port = Util::string2int(str);
+	if(port < 0 || port>65535) 
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool 
+Util::isValidIP(string str) 
+{
+	if(str == "localhost") 
+	{
+		return true;
+	}
+	return (Util::isValidIPV4(str) || Util::isValidIPV6(str));
+}
+
+bool 
+Util::isValidIPV4(string str) 
+{
+	regex_t reg;
+	char pattern[] = "^(([01]?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\\.){3}([01]?[0-9][0-9]?|2[0-4][0-9]|25[0-5])$";
+	regcomp(&reg, pattern, REG_EXTENDED | REG_NOSUB);
+	regmatch_t pm[1];
+	int status = regexec(&reg, str.c_str(), 1, pm, 0);
+	regfree(&reg);
+	if(status == REG_NOMATCH) 
+	{
+		return false;
+	}
+	return true;
+}
+
+bool 
+Util::isValidIPV6(string str) 
+{
+	//TO BE IMPLEMENTED
+	return false;
+}
+
 bool operator<(const CrossingEdgeMapping& node1, const CrossingEdgeMapping& node2)
 {
 	if(node1.head_query_id < node2.head_query_id)
@@ -1413,4 +1461,28 @@ Util::HashLECFJoin(CrossingEdgeMappingVec& final_res, CrossingEdgeMappingVec& re
 		}
 	}
 	//printf("+++--- %d \n", final_res.CrossingEdgeMappings.size());
+}
+
+vector<string> 
+Util::split(string textline, string tag){
+	vector<string> res;
+	std::size_t pre_pos = 0;
+	std::size_t pos = textline.find_first_of(tag);
+	while (pos != std::string::npos){
+		string curStr = textline.substr(pre_pos, pos - pre_pos);
+		curStr.erase(0, curStr.find_first_not_of("\r\t\n "));
+		curStr.erase(curStr.find_last_not_of("\r\t\n ") + 1);
+		if(strcmp(curStr.c_str(), "") != 0)
+			res.push_back(curStr);
+		pre_pos = pos + 1;
+		pos = textline.find_first_of(tag, pre_pos);
+	}
+
+	string curStr = textline.substr(pre_pos, pos - pre_pos);
+	curStr.erase(0, curStr.find_first_not_of("\r\t\n "));
+	curStr.erase(curStr.find_last_not_of("\r\t\n ") + 1);
+	if(strcmp(curStr.c_str(), "") != 0)
+		res.push_back(curStr);
+
+	return res;
 }

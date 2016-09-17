@@ -48,7 +48,7 @@ private:
 	//tree's operations should be atom(if read nodes)
 	//sum the request and send to Storage at last
 	//ensure that all nodes operated are in memory
-	int request;
+	long long request;
 	void prepare(SINode* _np);
 
 public:

@@ -328,7 +328,7 @@ SILeafNode::print(string s)
 		for(i = 0; i < num; ++i)
 		{
 			this->keys[i].print("BSTR");
-			this->values[i].print("BSTR");
+			//this->values[i].print("BSTR");
 		}
 	}
 	else if(s == "node")
