@@ -158,12 +158,10 @@ private:
 	void toStartJoin();
 
 	bool filter_before_join();
-	bool distributed_filter_before_join();
 	bool constant_edge_filter(int _var_i);
 	void preid_filter(int _var_i);
 	bool only_pre_filter_after_join();
 	void add_literal_candidate();
-	void distributed_add_literal_candidate();
 	bool pre_var_handler();
 	//bool filterBySatellites(int _var, int _ele);
 	bool filterBySatellites(int _var);
@@ -188,12 +186,13 @@ private:
 	bool if_prepare_idlist(int _can_list_size, bool _is_literal);
 	bool new_join_with_multi_vars_prepared(IdLists& _id_lists, IdListsLen& _id_lists_len, vector<int>& _edges, IDList& _can_list, int _can_list_size);
 	bool new_join_with_multi_vars_not_prepared(vector<int>& _edges, IDList& _can_list, int _can_list_size, int _id, bool _is_literal);
-	bool new_join_with_multi_vars_not_prepared(vector<int>& _edges, set<int>& _can_list, int _can_list_size, int _id, bool _is_literal, string &internal_tag_str, vector<int> dealed_id);
 
-	bool multi_join(string &internal_tag_str, vector< set<int> >& can_set_list);
 	bool multi_join();
-
-
+	
+	bool multi_join(string &internal_tag_str, vector< set<int> >& can_set_list);
+	bool new_join_with_multi_vars_not_prepared(vector<int>& _edges, set<int>& _can_list, int _can_list_size, int _id, bool _is_literal, string &internal_tag_str, vector<int> dealed_id);
+	bool distributed_filter_before_join();
+	void distributed_add_literal_candidate();
 
 //================================================================================================
 	//The index join method saves the memory cost because 2m+2mn < 3mn,

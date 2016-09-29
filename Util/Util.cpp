@@ -158,12 +158,12 @@ Util::config_setting()
     int status = 0; // 1 AppName 2 KeyName
 
 #ifdef DEBUG
-	//fprintf(stderr, "profile: %s\n", profile.c_str());
+	fprintf(stderr, "profile: %s\n", profile.c_str());
 #endif
     if((fp = fopen(profile.c_str(), "r")) == NULL)  //NOTICE: this is not a binary file
     {
 #ifdef DEBUG
-        //fprintf(stderr, "openfile [%s] error [%s]\n", profile.c_str(), strerror(errno));
+        fprintf(stderr, "openfile [%s] error [%s]\n", profile.c_str(), strerror(errno));
 #endif
         return false;
     }
@@ -171,7 +171,7 @@ Util::config_setting()
 	memset(appname, 0, sizeof(appname));
 	sprintf(appname,"[%s]", AppName);
 #ifdef DEBUG
-	//fprintf(stderr, "appname: %s\n", appname);
+	fprintf(stderr, "appname: %s\n", appname);
 #endif
 
     while(!feof(fp) && fgets(buf_i, len2, fp) != NULL)
@@ -191,7 +191,7 @@ Util::config_setting()
             if(strncmp(buf, appname, strlen(appname)) == 0)
             {
 #ifdef DEBUG
-				//fprintf(stderr, "app found!\n");
+				fprintf(stderr, "app found!\n");
 #endif
                 status = 1;
                 continue;
@@ -211,12 +211,12 @@ Util::config_setting()
                 memset(keyname, 0, sizeof(keyname));
                 sscanf(buf, "%[^=|^ |^\t]", keyname);
 #ifdef DEBUG
-				//fprintf(stderr, "keyname: %s\n", keyname);
+				fprintf(stderr, "keyname: %s\n", keyname);
 #endif
                 if(strcmp(keyname, KeyName) == 0) 
 				{
 #ifdef DEBUG
-					//fprintf(stderr, "key found!\n");
+					fprintf(stderr, "key found!\n");
 #endif
                     sscanf(++c, "%[^\n]", KeyVal);
                     char *KeyVal_o = (char *)calloc(strlen(KeyVal) + 1, sizeof(char));
@@ -224,7 +224,7 @@ Util::config_setting()
 					{
                         Util::a_trim(KeyVal_o, KeyVal);
 #ifdef DEBUG
-						//fprintf(stderr, "KeyVal: %s\n", KeyVal_o);
+						fprintf(stderr, "KeyVal: %s\n", KeyVal_o);
 #endif
                         if(KeyVal_o && strlen(KeyVal_o) > 0)
                             strcpy(KeyVal, KeyVal_o);
@@ -799,8 +799,8 @@ Util::getExactPath(const char *str)
     string cmd = "realpath ";
     cmd += string(str);
 
-    //return getSystemOutput(cmd);
 	return string(str);
+    //return getSystemOutput(cmd);
 }
 
 void
@@ -1268,6 +1268,7 @@ Util::isValidIPV6(string str)
 	//TO BE IMPLEMENTED
 	return false;
 }
+
 
 bool operator<(const CrossingEdgeMapping& node1, const CrossingEdgeMapping& node2)
 {

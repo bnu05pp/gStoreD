@@ -459,7 +459,6 @@ BasicQuery::encodeBasicQuery(KVstore* _p_kvstore, const vector<string>& _query_v
 				//cerr << "invalid query because the pre is not found: " << pre << endl;
 				//BETTER:this is too robust, not only one query, try return false
 				//exit(1);
-				//printf("invalid query because the pre is not found %s\n", pre.c_str());
 				//return false;
 			}
 		}
@@ -536,7 +535,14 @@ BasicQuery::encodeBasicQuery(KVstore* _p_kvstore, const vector<string>& _query_v
 	}
 
     //cout << "OUT encodeBasicQuery" << endl;
+    this->encode_result = true;
 	return true;
+}
+
+bool
+BasicQuery::getEncodeBasicQueryResult() const
+{
+	return this->encode_result;
 }
 
 int
@@ -577,7 +583,17 @@ BasicQuery::getPreVarByID(unsigned _id) const
 int
 BasicQuery::getIDByVarName(const string& _name)
 {
-	return this->var_str2id[_name];
+	map<string,int>::iterator it = this->var_str2id.find(_name);
+	if(it != this->var_str2id.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		//WARN:if return var_str2id[_name] directly, this will be 0
+		//maybe conflict with valid ID 0
+		return -1;
+	}
 }
 
 void 
@@ -622,6 +638,7 @@ BasicQuery::initial()
 	//this->null_initial();
 	//initial 
     this->encode_method = BasicQuery::NOT_JUST_SELECT;
+    this->encode_result = false;
     this->graph_var_num = 0;
     this->var_degree = new int[BasicQuery::MAX_VAR_NUM];
     this->var_sig = new EntityBitSet[BasicQuery::MAX_VAR_NUM];
@@ -861,6 +878,7 @@ BasicQuery::getVarID_FirstProcessWhenJoin()
 		else{
 			//cout<<"var "<<i<<" is ready!"<<endl;
 		}
+
 		int tmp_size = (this->candidate_list[i]).size();
 		//if(this->isLiteralVariable(i))
 		//{
@@ -989,7 +1007,6 @@ string BasicQuery::to_str()
 
     return _ss.str();
 }
-
 
 void
 BasicQuery::setRetrievalTag()

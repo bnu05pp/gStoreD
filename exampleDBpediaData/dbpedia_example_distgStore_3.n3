@@ -1,0 +1,9 @@
+<http://dbpedia.org/resource/Nancy_Kelly>	<http://xmlns.com/foaf/0.1/name>	"Nancy Kelly"@en.
+<http://dbpedia.org/resource/Edmond_O%27Brien>	<http://dbpedia.org/ontology/spouse>	<http://dbpedia.org/resource/Nancy_Kelly>.
+<http://dbpedia.org/resource/Small_Time_Crooks>	<http://dbpedia.org/ontology/starring>	<http://dbpedia.org/resource/Hugh_Grant>.
+<http://dbpedia.org/resource/Man-Trap>	<http://dbpedia.org/ontology/starring>	<http://dbpedia.org/resource/Nancy_Kelly>.
+<http://dbpedia.org/resource/Hugh_Grant>	<http://xmlns.com/foaf/0.1/name>	"Hugh Grant"@en.
+<http://dbpedia.org/resource/Hugh_Grant>	<http://www.w3.org/2004/02/skos/core#subject>	<http://dbpedia.org/resource/Category:C%C3%A9sar_Award_winners>.
+<http://dbpedia.org/resource/Woody_Allen>	<http://www.w3.org/2004/02/skos/core#subject>	<http://dbpedia.org/resource/Category:C%C3%A9sar_Award_winners>.
+<http://dbpedia.org/resource/Category:C%C3%A9sar_Award_winners>		<http://xmlns.com/foaf/0.1/name>	"Cesar Award Winner"@en.
+<http://dbpedia.org/resource/A_Very_Young_Lady>	<http://dbpedia.org/ontology/starring>	<http://dbpedia.org/resource/Nancy_Kelly>.
