@@ -187,7 +187,9 @@ Join::join_pe(BasicQuery* _basic_query, string &internal_tag_str)
 		int i = 0;
 		for(RecordIterator it1 = it0->begin(); it1 != it0->end(); ++it1, ++i){
 			tmp_res[i] = *it1;
+			//cout << tmp_res[i] << " ";
 		}
+		//cout << endl;
 		res_pointer->push_back(tmp_res);
 	}
 	//printf("res_pointer->size() = %d\n", res_pointer->size());

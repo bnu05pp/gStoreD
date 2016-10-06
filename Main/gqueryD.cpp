@@ -104,7 +104,7 @@ main(int argc, char * argv[])
 			
 				int fullTag = 0, sizeSum = 0, partialResNum = 0;
 				fullTag = (1 << PPQueryVertexCount) - 1;
-				printf("fullTag = %d\n", fullTag);
+				printf("PPQueryVertexCount = %d and fullTag = %d\n", PPQueryVertexCount, fullTag);
 				vector<CrossingEdgeMappingVec> intermediate_results_vec(fullTag + 1);
 				for(int i = 0; i < intermediate_results_vec.size(); i++){
 					intermediate_results_vec[i].tag = i;
@@ -118,7 +118,7 @@ main(int argc, char * argv[])
 					partialResArr[size] = 0;
 					
 					//log_output << "++++++++++++ " << pInt << " ++++++++++++" << endl;
-					//log_output << partialResArr << endl;
+					//cout << partialResArr << endl;
 					
 					string textline(partialResArr);
 					vector<string> resVec = Util::split(textline, "\n");

@@ -30,7 +30,8 @@ bool GeneralEvaluation::onlyParseQuery(const string &_query, int& var_num, Query
         return false;
     }
 	
-	var_num = this->query_tree.getProjectionNum();
+	this->query_tree.getGroupPattern().getVarset();
+	var_num = this->query_tree.getGroupPattern().grouppattern_resultset_maximal_varset.varset.size();
 	if(this->query_tree.getQueryForm() == QueryTree::Ask_Query){
 		query_form = QueryTree::Ask_Query;
 	}else{
@@ -121,8 +122,10 @@ void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& interna
 					//answer[current_result][v] = "";
 					//printf("ans_id = %d \n", ans_id);
 					if (ans_id != -1)
-					{						
-						if(ans_id >= Util::LITERAL_FIRST_ID || internal_tag_str.at(ans_id) == 1){
+					{	
+						if(ans_id >= Util::LITERAL_FIRST_ID){
+							lpm_ss << "1" << _kvstore->getLiteralByID(ans_id) << "\t";
+						}else if(internal_tag_str.at(ans_id) == 1){
 							lpm_ss << "1" << _kvstore->getEntityByID(ans_id) << "\t";
 						}else{
 							if(_basicquery.getVarDegree(v) != 1){
@@ -143,21 +146,77 @@ void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& interna
 	}
 	else if (this->query_tree.getQueryForm() == QueryTree::Ask_Query)
 	{
-		int select_var_num = 1;
-		//result_str.setVar(vector<string>(1, "__ask_retval"));
-		int ansNum = 1;
-
-		string** answer = new string* [ansNum];
-		answer[0] = new string[select_var_num];
-
-		answer[0][0] = "false";
-		for (int i = 0; i < (int)results_id->results.size(); i++)
-			if ((int)results_id->results[i].res.size() > 0)
-				answer[0][0] = "true";
+		vector<BasicQuery*>& queryList = this->sparql_query.getBasicQueryVec();
+		vector<BasicQuery*>::iterator iter = queryList.begin();
+		for(; iter != queryList.end(); iter++)
+		{
+			vector<int*>& all_result_list = (*iter)->getResultList();
+			int var_num = (*iter)->getVarNum();
+			
+			char* dealed_internal_id_sign = new char[var_num + 1];
+			set<string> LECF_set;
+			
+			for(vector<int*>::iterator it = all_result_list.begin(); it != all_result_list.end(); it++){
+				memset(dealed_internal_id_sign, '0', sizeof(bool) * var_num);
+				dealed_internal_id_sign[var_num] = 0;
+				int* result_var = *it;		
+				stringstream res_ss;
+				
+				for(int j = 0; j < var_num; j++){
+					int var_degree = (*iter)->getVarDegree(j);
+					
+					if(result_var[j] == -1)
+						continue;
+					
+					for (int i = 0; i < var_degree; i++)
+					{
+						if(result_var[j] >= Util::LITERAL_FIRST_ID || internal_tag_str.at(result_var[j]) == '1'){
+							dealed_internal_id_sign[j] = '1';
+						}else{
+							continue;
+						}
+						// each triple/edge need to be processed only once.
+						int edge_id = (*iter)->getEdgeID(j, i);				
+						int var_id2 = (*iter)->getEdgeNeighborID(j, i);
+						if (var_id2 == -1)
+						{
+							continue;
+						}
+						
+						if(result_var[var_id2] != -1){
+							if(result_var[var_id2] < Util::LITERAL_FIRST_ID && internal_tag_str.at(result_var[var_id2]) == '0' && (*iter)->getVarDegree(var_id2) != 1){
+								string _tmp_1, _tmp_2;
+								if(result_var[j] < Util::LITERAL_FIRST_ID){
+									_tmp_1 = (this->kvstore)->getEntityByID(result_var[j]);
+								}else{
+									_tmp_1 = (this->kvstore)->getLiteralByID(result_var[j]);
+								}
+								
+								if(result_var[var_id2] < Util::LITERAL_FIRST_ID){
+									_tmp_2 = (this->kvstore)->getEntityByID(result_var[var_id2]);
+								}else{
+									_tmp_2 = (this->kvstore)->getLiteralByID(result_var[var_id2]);
+								}
+								if(j < var_id2){
+									res_ss << j << "\t" << var_id2 << "\t" << _tmp_1 << "\t" << _tmp_2 << "\t";
+								}else{
+									res_ss << var_id2 << "\t" << j << "\t" << _tmp_2 << "\t" << _tmp_1 << "\t";
+								}
+							}
+						}
+					}
+				}
+				res_ss << dealed_internal_id_sign << endl;
+				//log_output << res_ss.str() << endl;
+				LECF_set.insert(res_ss.str());
+			}
+			delete[] dealed_internal_id_sign;
+			
+			for(set<string>::iterator it1 = LECF_set.begin(); it1 != LECF_set.end(); it1++){
+				lpm_ss << *it1 << endl;
+			}
+		}
 	}
-
-	results_id->release();
-	delete results_id;
 	
 	lpm_str = lpm_ss.str();
 }
@@ -172,7 +231,7 @@ void GeneralEvaluation::doQuery(string& internal_tag_str)
 	}
 
 	this->strategy = Strategy(this->kvstore, this->vstree);
-	if (this->query_tree.getQueryForm() == QueryTree::Select_Query && this->query_tree.checkWellDesigned() && this->checkExpantionRewritingConnectivity(0))
+	if ((this->query_tree.getQueryForm() == QueryTree::Select_Query) && this->query_tree.checkWellDesigned() && this->checkExpantionRewritingConnectivity(0))
 	{
 		//cout << "=================" << endl;
 		//cout << "||well-designed||" << endl;
@@ -183,26 +242,17 @@ void GeneralEvaluation::doQuery(string& internal_tag_str)
 	}
 	else
 	{
-		cout << "=====================" << endl;
-		cout << "||not well-designed||" << endl;
-		cout << "=====================" << endl;
+		//cout << "=====================" << endl;
+		//cout << "||not well-designed||" << endl;
+		//cout << "=====================" << endl;
 
 		this->getBasicQuery(this->query_tree.getGroupPattern());
-		long tv_getbq = Util::get_cur_time();
 
 		this->sparql_query.encodeQuery(this->kvstore, this->getSPARQLQueryVarset());
-		//cout << "sparqlSTR:\t" << this->sparql_query.to_str() << endl;
-		long tv_encode = Util::get_cur_time();
-		cout << "after Encode, used " << (tv_encode - tv_getbq) << "ms." << endl;
-
 		this->strategy.handle(this->sparql_query, internal_tag_str);
-		long tv_handle = Util::get_cur_time();
-		//cout << "after Handle, used " << (tv_handle - tv_encode) << "ms." << endl;
-
+		
 		this->generateEvaluationPlan(this->query_tree.getGroupPattern());
 		this->doEvaluationPlan();
-		long tv_postproc = Util::get_cur_time();
-		//cout << "after Postprocessing, used " << (tv_postproc - tv_handle) << "ms." << endl;
 	}
 }
 
