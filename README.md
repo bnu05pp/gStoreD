@@ -16,7 +16,7 @@ You can install gStoreD v0.3.0-D in one command. Just run
 to compile the gStore code and build executable "gloadD", "gqueryD".
 
 ### Usage
-gStoreD v0.3.0-D currently includes four executables and others.
+gStore v0.3.0-D currently includes four executables and others.
 
 ####1. gloadD
 gloadD is used to build a new database from a RDF triple format file.
@@ -38,7 +38,7 @@ gqueryD is used to query an exsisting database with SPARQL files.
 
 When the program finish answering the query, the SPARQL matches are written in the file named `finalRes.txt`.
 
-*gStoreD 1.1 support simple "select" queries and "ask" queries now.*
+*gStorev0.3.0-D only support simple "select" queries and "ask" queries of BGP now.*
 
 We also take dbpedia_example_distgStore.n3 as an example.
 
