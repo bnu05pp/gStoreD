@@ -7,7 +7,7 @@ gStoreD is a distributed RDF data management system (or what is commonly called 
 
 ### Install Steps
 System Requirement: 64-bit linux server with GCC, mpich-3.0.4, make, readline installed.
-*We have tested on linux server with CentOS 6.2 x86_64 and CentOS 6.6 x86_64. The version of GCC should be 4.4.7 or later.*
+*We have tested on linux server with CentOS 6.2 x86_64. The version of GCC should be 4.4.7 or later.*
 
 You can install gStoreD v0.3.0-D in one command. Just run
 
