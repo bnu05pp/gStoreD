@@ -326,7 +326,7 @@ Strategy::handle(SPARQLquery& _query, ResultFilter* _result_filter)
 			cerr << "not support this method" << endl;
 
 		}
-		cerr << "Final result size: " << (*iter)->getResultList().size() << endl;
+		//cerr << "Final result size: " << (*iter)->getResultList().size() << endl;
 		//BETTER: use function pointer array in C++ class
 	}
 #else
@@ -341,7 +341,7 @@ Strategy::handle(SPARQLquery& _query, ResultFilter* _result_filter)
 	delete this->join;
 
 	long tv_join = Util::get_cur_time();
-	cout << "after Join, used " << (tv_join - tv_retrieve) << "ms." << endl;
+	//cout << "after Join, used " << (tv_join - tv_retrieve) << "ms." << endl;
 #endif
 	Util::logging("OUT Strategy::handle");
 	return true;
@@ -359,6 +359,7 @@ Strategy::handler0_0(BasicQuery* _bq, string& internal_tag_str, vector<int*>& _r
 	int varNum = _bq->getVarNum();  //the num of vars needing to be joined
 	for (int i = 0; i < varNum; ++i)
 	{
+		//printf("%d variable is %s\n", i, _bq->getVarName(i).c_str());
 		if (_bq->if_need_retrieve(i) == false)
 			continue;
 		bool flag = _bq->isLiteralVariable(i);
@@ -384,11 +385,8 @@ Strategy::handler0_0(BasicQuery* _bq, string& internal_tag_str, vector<int*>& _r
     	_result_filter->candFilterWithResultHashTable(*_bq);
 		
 	Join *join = new Join(kvstore);
-	if(star_flag == 1){
-		join->join_basic(_bq);
-	}else{
-		join->join_pe(_bq, internal_tag_str);
-	}
+	join->join_pe(_bq, internal_tag_str);
+		
 	delete join;
 
 	long tv_join = Util::get_cur_time();
@@ -399,7 +397,7 @@ void
 Strategy::handler0(BasicQuery* _bq, vector<int*>& _result_list, ResultFilter* _result_filter)
 {
 	//long before_filter = Util::get_cur_time();
-	cerr << "this BasicQuery use query strategy 0" << endl;
+	//cerr << "this BasicQuery use query strategy 0" << endl;
 
 	//BETTER:not all vars in join filtered by vstree
 	//(A)-B-c: B should by vstree, then by c, but A should be generated in join(first set A as not)
@@ -439,7 +437,7 @@ Strategy::handler0(BasicQuery* _bq, vector<int*>& _result_list, ResultFilter* _r
 	//TODO:end directly if one is empty!
 
 	long tv_retrieve = Util::get_cur_time();
-	cout << "after Retrieve, used " << (tv_retrieve - tv_handle) << "ms." << endl;
+	//cout << "after Retrieve, used " << (tv_retrieve - tv_handle) << "ms." << endl;
 
     //between retrieve and join
     if (_result_filter != NULL)
@@ -450,14 +448,14 @@ Strategy::handler0(BasicQuery* _bq, vector<int*>& _result_list, ResultFilter* _r
 	delete join;
 
 	long tv_join = Util::get_cur_time();
-	cout << "after Join, used " << (tv_join - tv_retrieve) << "ms." << endl;
+	//cout << "after Join, used " << (tv_join - tv_retrieve) << "ms." << endl;
 }
 
 void
 Strategy::handler1(BasicQuery* _bq, vector<int*>& _result_list)
 {
 	long before_filter = Util::get_cur_time();
-	cerr << "this BasicQuery use query strategy 1" << endl;
+	//cerr << "this BasicQuery use query strategy 1" << endl;
 	//int neighbor_id = (*_bq->getEdgeNeighborID(0, 0);  //constant, -1
 	char edge_type = _bq->getEdgeType(0, 0);
 	int triple_id = _bq->getEdgeID(0, 0);
@@ -482,7 +480,7 @@ Strategy::handler1(BasicQuery* _bq, vector<int*>& _result_list)
 	}
 
 	long after_filter = Util::get_cur_time();
-	cerr << "after filter, used " << (after_filter - before_filter) << "ms" << endl;
+	//cerr << "after filter, used " << (after_filter - before_filter) << "ms" << endl;
 	_result_list.clear();
 	//cerr<<"now to copy result to list"<<endl;
 	for (int i = 0; i < id_list_len; ++i)
@@ -493,16 +491,16 @@ Strategy::handler1(BasicQuery* _bq, vector<int*>& _result_list)
 		_result_list.push_back(record);
 	}
 	long after_copy = Util::get_cur_time();
-	cerr << "after copy to result list: used " << (after_copy - after_filter) << " ms" << endl;
+	//cerr << "after copy to result list: used " << (after_copy - after_filter) << " ms" << endl;
 	delete[] id_list;
-	cerr << "Final result size: " << _result_list.size() << endl;
+	//cerr << "Final result size: " << _result_list.size() << endl;
 }
 
 void
 Strategy::handler2(BasicQuery* _bq, vector<int*>& _result_list)
 {
 	long before_filter = Util::get_cur_time();
-	cerr << "this BasicQuery use query strategy 2" << endl;
+	//cerr << "this BasicQuery use query strategy 2" << endl;
 	int triple_id = _bq->getEdgeID(0, 0);
 	Triple triple = _bq->getTriple(triple_id);
 	int pre_id = _bq->getEdgePreID(0, 0);
@@ -525,10 +523,10 @@ Strategy::handler2(BasicQuery* _bq, vector<int*>& _result_list)
 	}
 	else
 	{
-		cerr << "ERROR in Database::handle(): no selected var!" << endl;
+		//cerr << "ERROR in Database::handle(): no selected var!" << endl;
 	}
 	long after_filter = Util::get_cur_time();
-	cerr << "after filter, used " << (after_filter - before_filter) << "ms" << endl;
+	//cerr << "after filter, used " << (after_filter - before_filter) << "ms" << endl;
 	_result_list.clear();
 	for (int i = 0; i < id_list_len; ++i)
 	{
@@ -537,16 +535,16 @@ Strategy::handler2(BasicQuery* _bq, vector<int*>& _result_list)
 		_result_list.push_back(record);
 	}
 	long after_copy = Util::get_cur_time();
-	cerr << "after copy to result list: used " << (after_copy - after_filter) << " ms" << endl;
+	//cerr << "after copy to result list: used " << (after_copy - after_filter) << " ms" << endl;
 	delete[] id_list;
-	cerr << "Final result size: " << _result_list.size() << endl;
+	//cerr << "Final result size: " << _result_list.size() << endl;
 }
 
 void
 Strategy::handler3(BasicQuery* _bq, vector<int*>& _result_list)
 {
 	long before_filter = Util::get_cur_time();
-	cerr << "this BasicQuery use query strategy 3" << endl;
+	//cerr << "this BasicQuery use query strategy 3" << endl;
 	int triple_id = _bq->getEdgeID(0, 0);
 	Triple triple = _bq->getTriple(triple_id);
 	int pre_id = _bq->getEdgePreID(0, 0);
@@ -565,7 +563,7 @@ Strategy::handler3(BasicQuery* _bq, vector<int*>& _result_list)
 	}
 
 	long after_filter = Util::get_cur_time();
-	cerr << "after filter, used " << (after_filter - before_filter) << "ms" << endl;
+	//cerr << "after filter, used " << (after_filter - before_filter) << "ms" << endl;
 
 	for (int i = 0; i < id_list_len; i += 2)
 	{
@@ -576,7 +574,7 @@ Strategy::handler3(BasicQuery* _bq, vector<int*>& _result_list)
 	}
 
 	long after_copy = Util::get_cur_time();
-	cerr << "after copy to result list: used " << (after_copy - after_filter) << " ms" << endl;
+	//cerr << "after copy to result list: used " << (after_copy - after_filter) << " ms" << endl;
 	delete[] id_list;
-	cerr << "Final result size: " << _result_list.size() << endl;
+	//cerr << "Final result size: " << _result_list.size() << endl;
 }

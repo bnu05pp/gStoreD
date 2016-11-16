@@ -108,7 +108,7 @@ ISTree::search(int _key, char*& _str, int& _len)
 {
 	if (_key < 0)
 	{
-		printf("error in ISTree-search: empty string\n");
+		//printf("error in ISTree-search: empty string\n");
 		return false;
 	}
 

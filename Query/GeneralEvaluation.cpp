@@ -18,7 +18,7 @@ vector<vector<string> > GeneralEvaluation::getSPARQLQueryVarset()
 	return res;
 }
 
-bool GeneralEvaluation::onlyParseQuery(const string &_query, int& var_num, QueryTree::QueryForm& query_form)
+bool GeneralEvaluation::onlyParseQuery(const string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag)
 {
     try
     {
@@ -31,12 +31,13 @@ bool GeneralEvaluation::onlyParseQuery(const string &_query, int& var_num, Query
     }
 	
 	this->query_tree.getGroupPattern().getVarset();
-	var_num = this->query_tree.getGroupPattern().grouppattern_resultset_maximal_varset.varset.size();
+	var_num = this->query_tree.getGroupPattern().grouppattern_subject_object_maximal_varset.varset.size();
 	if(this->query_tree.getQueryForm() == QueryTree::Ask_Query){
 		query_form = QueryTree::Ask_Query;
 	}else{
 		query_form = QueryTree::Select_Query;
 	}
+	star_tag = this->query_tree.checkStar();
 	
     return true;
 }
@@ -60,7 +61,7 @@ QueryTree& GeneralEvaluation::getQueryTree()
 	return this->query_tree;
 }
 
-void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& internal_tag_str, string &lpm_str)
+void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& internal_tag_str, vector<string> &lpm_str_vec)
 {
 	if (this->semantic_evaluation_result_stack.empty())		return;
 
@@ -94,11 +95,11 @@ void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& interna
 		//int var_num = proj.varset.size();
 		//int select_var_num = var_num;
 		int ansNum = 0;
-		//result_str.setVar(proj.varset);
-
+		
 		for (int i = 0; i < (int)results_id->results.size(); i++){
 			ansNum += (int)results_id->results[i].res.size();
 		}
+		//printf("ansNum == %d\n", ansNum);
 		
 		BasicQuery &_basicquery = this->expansion_evaluation_stack[0].sparql_query.getBasicQuery(0);
 		
@@ -117,7 +118,7 @@ void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& interna
 					int ans_id = -1;
 					//printf("result_str2id[v] = %d and results_id->results[i].res[j].size() = %d\n", result_str2id[v], results_id->results[i].res[j]);
 					if (result_str2id[v] != -1)
-						ans_id =  results_id->results[i].res[j][result_str2id[v]];
+						ans_id = results_id->results[i].res[j][result_str2id[v]];
 						
 					//answer[current_result][v] = "";
 					//printf("ans_id = %d \n", ans_id);
@@ -141,6 +142,12 @@ void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& interna
 				}
 				lpm_ss << endl;
 				current_result++;
+				
+				//if(lpm_ss.str().size() > 50000){
+				if(lpm_ss.str().size() > 1600000000){
+					lpm_str_vec.push_back(lpm_ss.str());
+					lpm_ss.str("");
+				}
 			}
 		}
 	}
@@ -214,11 +221,16 @@ void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& interna
 			
 			for(set<string>::iterator it1 = LECF_set.begin(); it1 != LECF_set.end(); it1++){
 				lpm_ss << *it1 << endl;
+				if(lpm_ss.str().size() > 1600000000){
+					lpm_str_vec.push_back(lpm_ss.str());
+					lpm_ss.str("");
+				}
 			}
 		}
 	}
 	
-	lpm_str = lpm_ss.str();
+	lpm_str_vec.push_back(lpm_ss.str());
+	//printf("lpm_str.size() == %d\n", lpm_str.size());
 }
 
 void GeneralEvaluation::doQuery(string& internal_tag_str)
@@ -268,9 +280,9 @@ void GeneralEvaluation::doQuery()
 	this->strategy = Strategy(this->kvstore, this->vstree);
 	if (this->query_tree.getQueryForm() == QueryTree::Select_Query && this->query_tree.checkWellDesigned() && this->checkExpantionRewritingConnectivity(0))
 	{
-		cout << "=================" << endl;
-		cout << "||well-designed||" << endl;
-		cout << "=================" << endl;
+		//cout << "=================" << endl;
+		//cout << "||well-designed||" << endl;
+		//cout << "=================" << endl;
 
 		this->queryRewriteEncodeRetrieveJoin(0);
 		this->semantic_evaluation_result_stack.push(this->expansion_evaluation_stack[0].result);
@@ -2306,9 +2318,9 @@ void GeneralEvaluation::queryRewriteEncodeRetrieveJoin(int dep)
 		QueryTree::GroupPattern &grouppattern = this->expansion_evaluation_stack[dep].grouppattern;
 		grouppattern.getVarset();
 
-		for (int j = 0; j < 80; j++)			printf("=");	printf("\n");
-		grouppattern.print(dep);
-		for (int j = 0; j < 80; j++)			printf("=");	printf("\n");
+		//for (int j = 0; j < 80; j++)			printf("=");	printf("\n");
+		//grouppattern.print(dep);
+		//for (int j = 0; j < 80; j++)			printf("=");	printf("\n");
 
 		TempResultSet *temp = new TempResultSet();
 		//get the result of grouppattern
@@ -2364,8 +2376,8 @@ void GeneralEvaluation::queryRewriteEncodeRetrieveJoin(int dep)
 				varset = varset * useful;
 			}
 
-			printf("select vars : ");
-			varset.print();
+			//printf("select vars : ");
+			//varset.print();
 
 			this->expansion_evaluation_stack[dep].sparql_query.encodeQuery(this->kvstore, vector<vector<string> >(1, varset.varset));
 			long tv_encode = Util::get_cur_time();

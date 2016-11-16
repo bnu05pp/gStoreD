@@ -179,7 +179,7 @@ Join::join_pe(BasicQuery* _basic_query, string &internal_tag_str)
 		return false;
 	}
 	
-	this->pre_var_handler();
+	//this->pre_var_handler();
 	
 	vector<int*>* res_pointer = this->basic_query->getResultListPointer();
 	for(TableIterator it0 = this->current_table.begin(); it0 != this->current_table.end(); it0++){
@@ -192,7 +192,6 @@ Join::join_pe(BasicQuery* _basic_query, string &internal_tag_str)
 		//cout << endl;
 		res_pointer->push_back(tmp_res);
 	}
-	//printf("res_pointer->size() = %d\n", res_pointer->size());
 	
 	this->clear();
 	return true;
@@ -316,7 +315,7 @@ Join::join_basic(BasicQuery* _basic_query)
 	bool ret1 = this->filter_before_join();
 	long after_constant_filter = Util::get_cur_time();
 	//fprintf(stderr, "after filter_before_join: used %ld ms\n", after_filter - begin);
-	cerr << "after filter_before_join: used " << (after_constant_filter - begin) << " ms" << endl;
+	//cerr << "after filter_before_join: used " << (after_constant_filter - begin) << " ms" << endl;
 	if (!ret1)
 	{
 		this->clear();
@@ -325,13 +324,13 @@ Join::join_basic(BasicQuery* _basic_query)
 
 	this->add_literal_candidate();
 	long after_add_literal = Util::get_cur_time();
-	cerr << "after add_literal_candidate: used " << (after_add_literal - after_constant_filter) << " ms" << endl;
+	//cerr << "after add_literal_candidate: used " << (after_add_literal - after_constant_filter) << " ms" << endl;
 
 	//NOTICE+WARN+DEBUG:thsi cause error when multiple insertion/deletion in small.db
 	bool ret2 = this->allFilterByPres();
 	//bool ret2 = true;
 	long after_pre_filter = Util::get_cur_time();
-	cerr << "after allFilterByPres: used " << (after_pre_filter - after_add_literal) << " ms" << endl;
+	//cerr << "after allFilterByPres: used " << (after_pre_filter - after_add_literal) << " ms" << endl;
 	if (!ret2)
 	{
 		this->clear();
@@ -340,7 +339,7 @@ Join::join_basic(BasicQuery* _basic_query)
 
 	bool ret3 = this->join();
 	long after_joinbasic = Util::get_cur_time();
-	cerr << "after join_basic: used " << (after_joinbasic - after_pre_filter) << " ms" << endl;
+	//cerr << "after join_basic: used " << (after_joinbasic - after_pre_filter) << " ms" << endl;
 	if (!ret3)
 	{
 		this->clear();
@@ -362,13 +361,13 @@ Join::join_basic(BasicQuery* _basic_query)
 	this->pre_var_handler();
 	//TODO+BETTER:maybe also reduce to empty, return false
 	long after_pre_var = Util::get_cur_time();
-	cerr << "after pre var: used " << (after_pre_var - after_joinbasic) << " ms" << endl;
+	//cerr << "after pre var: used " << (after_pre_var - after_joinbasic) << " ms" << endl;
 
 	this->copyToResult();
 	long after_copy = Util::get_cur_time();
-	cerr << "after copy to result list: used " << (after_copy - after_pre_var) << " ms" << endl;
+	//cerr << "after copy to result list: used " << (after_copy - after_pre_var) << " ms" << endl;
 
-	cerr << "Final result size: " << this->basic_query->getResultList().size() << endl;
+	//cerr << "Final result size: " << this->basic_query->getResultList().size() << endl;
 	this->clear();
 	return true;
 }
@@ -878,7 +877,7 @@ Join::join()
 	{
 	case 0:
 		//printf("use multi-join here!\n");
-		cerr << "use multi-join here!" << endl;
+		//cerr << "use multi-join here!" << endl;
 		ret = this->multi_join();
 		break;
 	case 1:
@@ -2008,49 +2007,25 @@ bool
 Join::filter_before_join()
 {
 	//fprintf(stderr, "*****IIIIIIN filter_before_join\n");
-	cerr << "*****IN filter_before_join" << endl;
+	//cerr << "*****IN filter_before_join" << endl;
 
 	for (int i = 0; i < this->var_num; i++)
 	{
 		bool flag = this->basic_query->isLiteralVariable(i);
-		//fprintf(stderr, "\tVar%d %s\n", i, this->basic_query->getVarName(i).c_str());
-		cerr << "\tVar" << i << " " << this->basic_query->getVarName(i) << endl;
 		IDList &can_list = this->basic_query->getCandidateList(i);
-		//fprintf(stderr, "\t\tsize of canlist before filter: %d\n", can_list.size());
-		cerr << "\t\tsize of canlist before filter: " << can_list.size() << endl;
 		//NOTICE:must sort before using binary search.
 		can_list.sort();
 
 		long begin = Util::get_cur_time();
 		bool ret = this->constant_edge_filter(i);
 		long after_constant_edge_filter = Util::get_cur_time();
-		//fprintf(stderr, "\t\tconstant_edge_filter: used %ld ms\n", after_constant_edge_filter - begin);
-		cerr << "\t\tconstant_edge_filter: used " << (after_constant_edge_filter - begin) << " ms" << endl;
-		//		this->preid_filter(this->basic_query, i);
-		//		long after_preid_filter = Util::get_cur_time();
-		//cout << "\t\tafter_preid_filter: used " << (after_preid_filter-after_literal_edge_filter) << " ms" << endl;
-		//fprintf(stderr, "\t\t[%d] after filter, candidate size = %d\n\n\n", i, can_list.size());
-		cerr << "\t\t[" << i << "] after filter, candidate size= " << can_list.size() << endl << endl << endl;
-
-		//debug
-		//		{
-		//			stringstream _ss;
-		//			for(int i = 0; i < can_list.size(); i ++)
-		//			{
-		//				string _can = this->kvstore->getEntityByID(can_list[i]);
-		//				_ss << "[" << _can << ", " << can_list[i] << "]\t";
-		//			}
-		//			_ss << endl;
-		//			Util::logging(_ss.str());
-		//			cout << can_list.to_str() << endl;
-		//		}
+		
 		if (!flag && !ret)   //already empty
 		{
 			return false;
 		}
 	}
-	//fprintf(stderr, "OOOOOOUT filter_before_join\n");
-	cerr << "OUT filter_before_join" << endl;
+	
 	return true;
 }
 
@@ -2812,14 +2787,15 @@ Join::join(string &internal_tag_str)
 		set<int> cur_can_set;
 		IDList& cur_table = this->basic_query->getCandidateList(j);
 		int cur_size = this->basic_query->getCandidateSize(j);
+		//printf("variable %d has %d internal and extended candidates.\n", j, cur_size);
 		for(int i = cur_size - 1; i >= 0; i--)
 		{
 			int ele = cur_table.getID(i);
 			if(ele >= Util::LITERAL_FIRST_ID || internal_tag_str.at(ele) == '1'){
 				cur_can_set.insert(ele);
 			}
-			//printf("variable %d has candidate %d.\n", j, ele);
 		}
+		//printf("variable %d has %d internal candidates.\n", j, cur_can_set.size());
 		can_set_list.push_back(cur_can_set);
 	}
 
@@ -2919,9 +2895,11 @@ Join::multi_join(string &internal_tag_str, vector< set<int> >& can_set_list)
 			}
 
 			bool flag = false;
-			//printf("before new_join_with_multi_vars_not_prepared, dealed_id.size() = %d and id2 = %d and can_list_size = %d and can_list.size() = %d and edges.size() = %d, and this->current_table.size() = %d\n", dealed_id.size(), id2, can_list_size, can_list.size(), edges.size(), this->current_table.size());
+			//printf("before new_join_with_multi_vars_not_prepared, id = %d and dealed_id.size() = %d and id2 = %d and can_list_size = %d and can_list.size() = %d and edges.size() = %d, and this->current_table.size() = %d\n", id, dealed_id.size(), id2, can_list_size, can_list.size(), edges.size(), this->current_table.size());
 			
 			flag = this->new_join_with_multi_vars_not_prepared(edges, can_list, can_list_size, id2, is_literal, internal_tag_str, dealed_id);
+			
+			//printf("after new_join_with_multi_vars_not_prepared, this->current_table.size() = %d\n", this->current_table.size());
 
 			for(int i = 0; i < dealed_id.size(); ++i)
 			{
@@ -2938,7 +2916,7 @@ Join::multi_join(string &internal_tag_str, vector< set<int> >& can_set_list)
 		}
 		cur_partial_matches.insert(this->current_table.begin(), this->current_table.end());
 		
-		//printf("after multi-join, _start_idx = %d and current_table.size() = %d and cur_partial_matches.size() = %d\n", _start_idx, this->current_table.size(), cur_partial_matches.size());
+		//printf("---------------after multi-join, _start_idx = %d and current_table.size() = %d and cur_partial_matches.size() = %d\n", _start_idx, this->current_table.size(), cur_partial_matches.size());
 		
 		this->current_table.clear();
 		
@@ -2947,6 +2925,7 @@ Join::multi_join(string &internal_tag_str, vector< set<int> >& can_set_list)
 		}
 	}
 	this->current_table.assign(cur_partial_matches.begin(), cur_partial_matches.end());
+	//printf("~~~~~~~~~~~~~after multi-join, current_table.size() = %d\n", cur_partial_matches.size());
 	
     return true;
 }

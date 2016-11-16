@@ -48,7 +48,7 @@ class GeneralEvaluation
 		bool parseQuery(const std::string &_query);
 		QueryTree& getQueryTree();
 		
-		bool onlyParseQuery(const std::string &_query, int& var_num, QueryTree::QueryForm& query_form);
+		bool onlyParseQuery(const std::string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag);
 
 		void doQuery();
 		void doQuery(string &internal_tag_str);
@@ -231,7 +231,7 @@ class GeneralEvaluation
 		bool checkExpantionRewritingConnectivity(int dep);
 		void queryRewriteEncodeRetrieveJoin(int dep);
 		void distributed_queryRewriteEncodeRetrieveJoin(int dep, string& internal_tag_str);
-		void getLocalPartialResult(KVstore *_kvstore, string& internal_tag_str, string& lpm_str);
+		void getLocalPartialResult(KVstore *_kvstore, string& internal_tag_str, vector<string>& lpm_str_vec);
 
 		bool needOutputAnswer();
 		void setNeedOutputAnswer();

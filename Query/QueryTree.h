@@ -209,8 +209,8 @@ class QueryTree
 			GroupPattern& getInsertPatterns();
 			GroupPattern& getDeletePatterns();
 
-
 			bool checkWellDesigned();
+			int checkStar();
 
 			void print();
 };

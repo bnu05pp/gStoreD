@@ -48,7 +48,7 @@ public:
 	bool load();
 	bool unload();
 	bool query(const string _query, ResultSet& _result_set, FILE* _fp = stdout);
-	bool query(const string _query, ResultSet& _result_set, string& partialResStr, int myRank, FILE* _fp = stdout);
+	bool query(const string _query, ResultSet& _result_set, vector<string>& partialResStrVec, int myRank, FILE* _fp = stdout);
 	
 	 //1. if subject of _triple doesn't exist,
 		//then assign a new subid, and insert a new SigEntry

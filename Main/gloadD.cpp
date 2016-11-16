@@ -234,7 +234,7 @@ main(int argc, char * argv[])
 		
 		//_db.setInternalVertices("_distributed_gStore_tmp_internal_vertices.txt");
 		Database _db1(_db_path);
-        _db1.load();
+        //_db1.load();
         string _in_file = "_distributed_gStore_tmp_internal_vertices.txt";
         _db1.loadInternalVertices(_in_file);
 		

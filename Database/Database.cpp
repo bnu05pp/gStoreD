@@ -132,6 +132,7 @@ Database::readIDinfo()
 	int t = -1;
 	BlockInfo* bp = NULL;
 
+	//printf("this->free_id_file_entity.c_str() = %s\n", this->free_id_file_entity.c_str());
 	fp = fopen(this->free_id_file_entity.c_str(), "r");
 	if (fp == NULL)
 	{
@@ -473,6 +474,26 @@ Database::load()
 bool
 Database::loadInternalVertices(const string _in_file)
 {
+	bool flag = (this->vstree)->loadTree();
+	if (!flag)
+	{
+		cerr << "load tree error. @Database::load()" << endl;
+		return false;
+	}
+
+	flag = this->loadDBInfoFile();
+	if (!flag)
+	{
+		cerr << "load database info error. @Database::load()" << endl;
+		return false;
+	}
+
+	(this->kvstore)->open();
+
+    this->stringindex->load();
+	
+	this->readIDinfo();
+	
     string buff;
     ifstream infile;
 
@@ -540,14 +561,8 @@ Database::getName()
 }
 
 bool
-Database::query(const string _query, ResultSet& _result_set, string& partialResStr, int myRank, FILE* _fp)
+Database::query(const string _query, ResultSet& _result_set, vector<string>& partialResStrVec, int myRank, FILE* _fp)
 {
-/*
-	for(int i = 0; i < this->internal_tag_str.size(); i++){
-		printf("%s is %d, tag = %c\n", this->kvstore->getEntityByID(i).c_str(), i, this->internal_tag_str.at(i));
-	}
-	printf("%s\n", this->internal_tag_str.c_str());
-	*/
     GeneralEvaluation general_evaluation(this->vstree, this->kvstore, this->stringindex);
 
     long tv_begin = Util::get_cur_time();
@@ -560,15 +575,17 @@ Database::query(const string _query, ResultSet& _result_set, string& partialResS
     //Query
     if (general_evaluation.getQueryTree().getUpdateType() == QueryTree::Not_Update)
     {
-    	general_evaluation.doQuery(this->internal_tag_str);
+		if(general_evaluation.getQueryTree().checkStar() == 0){
+			general_evaluation.doQuery(this->internal_tag_str);
 
-        long tv_bfget = Util::get_cur_time();
-		//printf("general_evaluation.getLocalPartialResult(this->internal_tag_str, partialResStr);\n");
-        general_evaluation.getLocalPartialResult(this->kvstore, this->internal_tag_str, partialResStr);
-        long tv_afget = Util::get_cur_time();
-        //cout << "after getFinalResult, used " << (tv_afget - tv_bfget) << "ms." << endl;
-
-        //general_evaluation.setNeedOutputAnswer();
+			//printf("general_evaluation.getLocalPartialResult(this->internal_tag_str, partialResStrVec);\n");
+			general_evaluation.getLocalPartialResult(this->kvstore, this->internal_tag_str, partialResStrVec);
+		}else{
+			general_evaluation.doQuery();
+			general_evaluation.getFinalResult(_result_set);
+			string final_res_str = _result_set.to_str();
+			partialResStrVec.push_back(final_res_str.substr(final_res_str.find("\n") + 1));
+		}
     }
     //Update
     else
@@ -621,29 +638,7 @@ Database::query(const string _query, ResultSet& _result_set, string& partialResS
     	general_evaluation.releaseResultStack();
     	delete[] update_triple;
     }
-/*
-    long tv_final = Util::get_cur_time();
-    //cout << "Total time used: " << (tv_final - tv_begin) << "ms." << endl;
 
-	if (general_evaluation.needOutputAnswer())
-	{
-
-		cout << "There has answer: " << _result_set.ansNum << endl;
-		cout << "final result is : " << endl;
-		if (!_result_set.checkUseStream())
-		{
-
-			cout << _result_set.to_str() << endl;
-		}
-		else
-		{
-			_result_set.output(_fp);
-			//cout<<endl;		//empty the buffer;print an empty line
-			fprintf(_fp, "\n");
-			fflush(_fp);       //to empty the output buffer in C (fflush(stdin) not work in GCC)
-		}
-	}
-		*/
 #ifdef DEBUG_PRECISE
 	fprintf(stderr, "the query function exits!\n");
 #endif
