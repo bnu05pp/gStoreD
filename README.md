@@ -48,4 +48,4 @@ Notice:
 
 All results are output into finalRes.txt.
 
-If you encounter any problems, please send emails to me (email address: hnu16pp@hnu.edu.cn).
+If you encounter any problems, please send emails to me (email address: hnu16pp@foxmail.com).
