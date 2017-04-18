@@ -22,8 +22,8 @@ MPICC = mpicxx
 #NOTICE: -O2 is recommended, while -O3 is dangerous
 #when developing, not use -O because it will disturb the normal 
 #routine. use it for test and release.
-CFLAGS = -c -Wall -g #-pg #-O2
-EXEFLAG = -g #-pg #-O2
+CFLAGS = -c -Wall -O2 #-pg #-O2
+EXEFLAG = -O2 #-pg #-O2
 
 # paths
 
