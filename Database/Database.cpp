@@ -570,12 +570,12 @@ Database::query(const string _query, ResultSet& _result_set, vector<string>& par
 	if (!general_evaluation.parseQuery(_query))
 		return false;
     long tv_parse = Util::get_cur_time();
-    //cout << "after Parsing, used " << (tv_parse - tv_begin) << "ms." << endl;
-
+	
     //Query
+	vector< vector<int> > _query_adjacent_list;
     if (general_evaluation.getQueryTree().getUpdateType() == QueryTree::Not_Update)
     {
-		if(general_evaluation.getQueryTree().checkStar() == 0){
+		if(general_evaluation.getQueryTree().checkStar(_query_adjacent_list) == 0){
 			general_evaluation.doQuery(this->internal_tag_str);
 
 			//printf("general_evaluation.getLocalPartialResult(this->internal_tag_str, partialResStrVec);\n");

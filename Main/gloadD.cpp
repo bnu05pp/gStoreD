@@ -36,6 +36,7 @@ main(int argc, char * argv[])
 			cout << "DB_store:" << argv[1] << "\t";
 			cout << "RDF_data: " << argv[2] << "\t";
 			cout << "internal_file_name: " << argv[3] << "\t";
+			cout << "host number: " << p << "\t";
 			cout << endl;
 		}
 		stringstream* _six_tuples_ss = new stringstream[p - 1];		
@@ -49,6 +50,7 @@ main(int argc, char * argv[])
 			cout << "import internal vertices failed." << endl;
 		}
 		
+		int count = 0;
 		while(getline(infile, buff)){
 			vector<string> resVec = Util::split(buff, "\t");
 			char* _val = new char[resVec[1].size()];
@@ -67,6 +69,7 @@ main(int argc, char * argv[])
 			strcpy(_internal_vertices_arr, _six_tuples_ss[i - 1].str().c_str());
 			size = strlen(_internal_vertices_arr);
 			
+			printf("Sending the internal vertices to site %d.\n", i);
 			MPI_Send(&size, 1, MPI_INT, i, 10, MPI_COMM_WORLD);
 			MPI_Send(_internal_vertices_arr, size, MPI_CHAR, i, 10, MPI_COMM_WORLD);
 			
@@ -92,7 +95,7 @@ main(int argc, char * argv[])
 
 			_parser.parseFile(triple_array, parse_triple_num);
 
-			//printf("parse %d triples!\n", parse_triple_num);
+			printf("parse and communicate %d triples!\n", parse_triple_num);
 			if(parse_triple_num == 0) {
 				for(i = 1; i < p; i++){
 					char* _finished_tag = new char[32];

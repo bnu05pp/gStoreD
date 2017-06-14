@@ -269,6 +269,7 @@ public:
 	static bool myfunction0(PPPartialResVec v1, PPPartialResVec v2);
 	static int checkJoinable(CrossingEdgeMappingVec& vec1, CrossingEdgeMappingVec& vec2);
 	static void HashLECFJoin(CrossingEdgeMappingVec& final_res, CrossingEdgeMappingVec& res1, CrossingEdgeMappingVec& res2);
+	static std::vector<int> findJoinOrder(std::vector<PPPartialResVec>& textline, std::vector< std::vector<int> > tag);
 
 private:
 	static bool isValidIPV4(std::string);

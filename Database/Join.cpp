@@ -202,6 +202,7 @@ Join::distributed_add_literal_candidate()
 {
 	for (int i = 0; i < this->var_num; i++)
 	{
+		//printf("before distributed_add_literal_candidate, variable %d has %d candidates\n", i, this->basic_query->getCandidateList(i).size());
 		if (this->basic_query->isReady(i))
 		{
 			continue;
@@ -226,6 +227,8 @@ Join::distributed_add_literal_candidate()
 			Triple triple = this->basic_query->getTriple(triple_id);
 			string neighbor_name = triple.subject;
 			IDList this_edge_literal_list;
+			
+			//printf("var_id = %d and predicate_id = %d and var_degree = %d and neighbor_id = %d and triple = <%s\t%s\t%s>\n", var_id, predicate_id, var_degree, neighbor_id, triple.subject.c_str(), triple.predicate.c_str(), triple.object.c_str());
 
 			// if the neighbor of this edge is an entity, we can add all literals which has an exact predicate edge linking to this entity.
 			if (neighbor_id == -1)
@@ -282,6 +285,8 @@ Join::distributed_add_literal_candidate()
 		// this variable's literal candidates have been added.
 		//this->basic_query->setAddedLiteralCandidate(var_id);
 		this->basic_query->setReady(var_id);
+		
+		//printf("after distributed_add_literal_candidate, variable %d has %d candidates\n", i, this->basic_query->getCandidateList(i).size());
 	}
 }
 
@@ -2854,11 +2859,8 @@ Join::multi_join(string &internal_tag_str, vector< set<int> >& can_set_list)
 				this->current_table.push_back(record);
 			}
 		}
-		//printf("_start_idx %s has id %d and current_table.size() ================= %d and cur_partial_matches.size() = %d\n", this->basic_query->getVarName(_start_idx).c_str(), _start_idx, this->current_table.size(), cur_partial_matches.size());
 		
-		this->mystack.push(this->start_id);
-		//dealed_triple[this->start_id] = true;
-		//int iter_count = 0;		
+		this->mystack.push(this->start_id);	
 
 		while(!this->mystack.empty() && this->current_table.size() != 0)
 		{

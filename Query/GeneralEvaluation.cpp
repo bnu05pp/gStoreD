@@ -18,7 +18,7 @@ vector<vector<string> > GeneralEvaluation::getSPARQLQueryVarset()
 	return res;
 }
 
-bool GeneralEvaluation::onlyParseQuery(const string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag)
+bool GeneralEvaluation::onlyParseQuery(const string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag, vector< vector<int> > &_query_adjacent_list)
 {
     try
     {
@@ -37,7 +37,8 @@ bool GeneralEvaluation::onlyParseQuery(const string &_query, int& var_num, Query
 	}else{
 		query_form = QueryTree::Select_Query;
 	}
-	star_tag = this->query_tree.checkStar();
+	
+	star_tag = this->query_tree.checkStar(_query_adjacent_list);
 	
     return true;
 }
@@ -129,7 +130,7 @@ void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& interna
 						}else if(internal_tag_str.at(ans_id) == 1){
 							lpm_ss << "1" << _kvstore->getEntityByID(ans_id) << "\t";
 						}else{
-							if(_basicquery.getVarDegree(v) != 1){
+							if(_basicquery.getVarDegree(result_str2id[v]) != 1){
 								lpm_ss << internal_tag_str.at(ans_id) << _kvstore->getEntityByID(ans_id) << "\t";
 							}else{
 								lpm_ss << "1" << _kvstore->getEntityByID(ans_id) << "\t";

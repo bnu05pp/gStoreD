@@ -48,7 +48,7 @@ class GeneralEvaluation
 		bool parseQuery(const std::string &_query);
 		QueryTree& getQueryTree();
 		
-		bool onlyParseQuery(const std::string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag);
+		bool onlyParseQuery(const std::string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag, std::vector< std::vector<int> > &_query_ad);
 
 		void doQuery();
 		void doQuery(string &internal_tag_str);

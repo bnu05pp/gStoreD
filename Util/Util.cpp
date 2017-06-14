@@ -1365,6 +1365,48 @@ Util::myfunction0(PPPartialResVec v1, PPPartialResVec v2){
 	return (v1.match_pos < v2.match_pos);
 }
 
+vector<int> 
+Util::findJoinOrder(vector< PPPartialResVec >& partialResVec, vector< vector<int> > _query_adjacent_list){
+	vector<int> _join_order_vec, _candidate_vec;
+	set<int> _visited_set;
+	
+	int min_i = 0, min_val = partialResVec[0].PartialResList.size();
+	for(int i = 1; i < partialResVec.size(); i++){
+		if(min_val > partialResVec[i].PartialResList.size()){
+			min_i = i;
+			min_val = partialResVec[i].PartialResList.size();
+		}
+	}
+	
+	_visited_set.insert(min_i);
+	_join_order_vec.push_back(min_i);
+	_candidate_vec.insert(_candidate_vec.begin(), _query_adjacent_list[min_i].begin(), _query_adjacent_list[min_i].end());
+	while(_join_order_vec.size() != partialResVec.size()){
+		
+		min_i = 0;
+		min_val = partialResVec[_candidate_vec[min_i]].PartialResList.size();
+		for(int i = 1; i < _candidate_vec.size(); i++){
+			if(min_val > partialResVec[_candidate_vec[i]].PartialResList.size()){
+				min_i = i;
+				min_val = partialResVec[_candidate_vec[i]].PartialResList.size();
+			}
+		}
+		
+		_visited_set.insert(_candidate_vec[min_i]);
+		_join_order_vec.push_back(_candidate_vec[min_i]);
+		
+		for(int i = 0; i < _query_adjacent_list[_candidate_vec[min_i]].size(); i++){
+			if(_visited_set.count(_query_adjacent_list[_candidate_vec[min_i]][i]) == 0 && find(_candidate_vec.begin(), _candidate_vec.end(), _query_adjacent_list[_candidate_vec[min_i]][i]) ==  _candidate_vec.end()){
+				_candidate_vec.push_back(_query_adjacent_list[_candidate_vec[min_i]][i]);
+			}
+		}
+		
+		_candidate_vec.erase(_candidate_vec.begin() + min_i);
+	}
+	
+	return _join_order_vec;
+}
+
 int 
 Util::checkJoinable(CrossingEdgeMappingVec& vec1, CrossingEdgeMappingVec& vec2){
 	if(vec1.tag & vec2.tag){

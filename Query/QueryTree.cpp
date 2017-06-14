@@ -556,9 +556,25 @@ void QueryTree::print()
 	for (int j = 0; j < 80; j++)			printf("=");	printf("\n");
 }
 
-int QueryTree::checkStar()
+int QueryTree::checkStar(vector< vector<int> > &_query_adjacent_list)
 {
 	vector<QueryTree::GroupPattern::Pattern> p_vec = this->getGroupPattern().patterns;
+	
+	map<string, int> varIDMap;
+	vector<string> var_vec = this->getProjection().varset;
+	for(int i = 0; i < var_vec.size(); i++){
+		varIDMap.insert(make_pair(var_vec[i], i));
+		_query_adjacent_list.push_back(vector<int>());
+	}
+	
+	for(int i = 0; i < p_vec.size(); i++){
+		if(p_vec[i].subject.value.at(0) == '?' && p_vec[i].object.value.at(0) == '?'){
+			_query_adjacent_list[varIDMap[p_vec[i].subject.value]].push_back(varIDMap[p_vec[i].object.value]);
+			_query_adjacent_list[varIDMap[p_vec[i].object.value]].push_back(varIDMap[p_vec[i].subject.value]);
+		}
+		
+	}
+	
 	if(p_vec.size() <= 1)
 		return 1;
 		

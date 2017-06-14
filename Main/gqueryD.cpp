@@ -97,9 +97,9 @@ main(int argc, char * argv[])
 			int PPQueryVertexCount = -1, vec_size = 0, star_tag = 0;
 			QueryTree::QueryForm query_form = QueryTree::Ask_Query;
 			GeneralEvaluation parser_evaluation(NULL, NULL, NULL);
+			vector< vector<int> > _query_adjacent_list;
 			
-			parser_evaluation.onlyParseQuery(_query_str, PPQueryVertexCount, query_form, star_tag);
-			//printf("@@@@@@@@@@@PPQueryVertexCount = %d\n", PPQueryVertexCount);
+			parser_evaluation.onlyParseQuery(_query_str, PPQueryVertexCount, query_form, star_tag, _query_adjacent_list);
 			
 			if(query_form == QueryTree::Ask_Query){
 			
@@ -271,7 +271,7 @@ main(int argc, char * argv[])
 				for(i = 0; i < partialResVec.size(); i++){
 					partialResVec[i].match_pos = i;
 				}
-				//ofstream log_output("log.txt");
+				ofstream log_output("log.txt");
 
 				for(int pInt = 1; pInt < p; pInt++){
 					MPI_Recv(&vec_size, 1, MPI_INT, pInt, 10, MPI_COMM_WORLD, &status);
@@ -362,11 +362,11 @@ main(int argc, char * argv[])
 				printf("There are %d inner matches.\n", finalPartialResSet.size());
 				
 				schedulingStart = MPI_Wtime();
-
-				sort(partialResVec.begin(), partialResVec.end(), Util::myfunction0);
+				
+				vector<int> join_order_vec = Util::findJoinOrder(partialResVec, _query_adjacent_list);				
 				vector<int> match_pos_vec;
 				int tag = 0;
-				match_pos_vec.push_back(partialResVec[0].match_pos);
+				match_pos_vec.push_back(partialResVec[join_order_vec[0]].match_pos);
 				if(0 != partialResVec.size()){
 				
 					stringstream intermediate_strm;
@@ -375,28 +375,28 @@ main(int argc, char * argv[])
 						//cout << "###########  " << partialResVec[i].match_pos << endl;
 						
 						map<int, vector<PPPartialRes> > tmpPartialResMap;
-						for(j = 0; j < partialResVec[i].PartialResList.size(); j++){
+						for(j = 0; j < partialResVec[join_order_vec[i]].PartialResList.size(); j++){
 							tag = 0;
 							for(k = 0; k < match_pos_vec.size(); k++){
-								if('1' == partialResVec[i].PartialResList[j].TagVec[match_pos_vec[k]]){
+								if('1' == partialResVec[join_order_vec[i]].PartialResList[j].TagVec[match_pos_vec[k]]){
 									tag = 1;
 									break;
 								}
 							}
 							if(0 == tag){
-								if(tmpPartialResMap.count(partialResVec[i].PartialResList[j].MatchVec[partialResVec[i].match_pos]) == 0){
+								if(tmpPartialResMap.count(partialResVec[join_order_vec[i]].PartialResList[j].MatchVec[partialResVec[join_order_vec[i]].match_pos]) == 0){
 									vector<PPPartialRes> tmpVec;
-									tmpPartialResMap.insert(make_pair(partialResVec[i].PartialResList[j].MatchVec[partialResVec[i].match_pos], tmpVec));
+									tmpPartialResMap.insert(make_pair(partialResVec[join_order_vec[i]].PartialResList[j].MatchVec[partialResVec[join_order_vec[i]].match_pos], tmpVec));
 								}
-								tmpPartialResMap[partialResVec[i].PartialResList[j].MatchVec[partialResVec[i].match_pos]].push_back(partialResVec[i].PartialResList[j]);
+								tmpPartialResMap[partialResVec[join_order_vec[i]].PartialResList[j].MatchVec[partialResVec[join_order_vec[i]].match_pos]].push_back(partialResVec[join_order_vec[i]].PartialResList[j]);
 							}
 						}
-						match_pos_vec.push_back(partialResVec[i].match_pos);
+						match_pos_vec.push_back(partialResVec[join_order_vec[i]].match_pos);
 						if(tmpPartialResMap.size() == 0){					
 							continue;
 						}
 						
-						Util::HashJoin(finalPartialResSet, partialResVec[0].PartialResList, tmpPartialResMap, p, partialResVec[i].match_pos);
+						Util::HashJoin(finalPartialResSet, partialResVec[0].PartialResList, tmpPartialResMap, p, partialResVec[join_order_vec[i]].match_pos);
 
 						if(partialResVec[0].PartialResList.size() == 0){
 							break;
