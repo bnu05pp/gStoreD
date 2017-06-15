@@ -363,7 +363,6 @@ main(int argc, char * argv[])
 				
 				schedulingStart = MPI_Wtime();
 				
-				vector<int> join_order_vec = Util::findJoinOrder(partialResVec, _query_adjacent_list);				
 				vector<int> match_pos_vec;
 				int tag = 0;
 				match_pos_vec.push_back(partialResVec[join_order_vec[0]].match_pos);
@@ -396,9 +395,9 @@ main(int argc, char * argv[])
 							continue;
 						}
 						
-						Util::HashJoin(finalPartialResSet, partialResVec[0].PartialResList, tmpPartialResMap, p, partialResVec[join_order_vec[i]].match_pos);
+						Util::HashJoin(finalPartialResSet, partialResVec[join_order_vec[0]].PartialResList, tmpPartialResMap, p, partialResVec[join_order_vec[i]].match_pos);
 
-						if(partialResVec[0].PartialResList.size() == 0){
+						if(partialResVec[join_order_vec[0]].PartialResList.size() == 0){
 							break;
 						}
 					}
