@@ -363,6 +363,7 @@ main(int argc, char * argv[])
 				
 				schedulingStart = MPI_Wtime();
 				
+				vector<int> join_order_vec = Util::findJoinOrder(partialResVec, _query_adjacent_list);				
 				vector<int> match_pos_vec;
 				int tag = 0;
 				match_pos_vec.push_back(partialResVec[join_order_vec[0]].match_pos);
