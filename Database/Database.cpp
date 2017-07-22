@@ -646,6 +646,64 @@ Database::query(const string _query, ResultSet& _result_set, vector<string>& par
 }
 
 bool
+Database::queryCrossingEdge(const string _query, ResultSet& _result_set, vector<string>& lpm_str_vec, vector< vector<int> >& res_crossing_edges_vec, vector<int>& all_crossing_edges_vec, int myRank, FILE* _fp)
+{
+    GeneralEvaluation general_evaluation(this->vstree, this->kvstore, this->stringindex);
+
+    long tv_begin = Util::get_cur_time();
+
+	if (!general_evaluation.parseQuery(_query))
+		return false;
+    long tv_parse = Util::get_cur_time();
+	
+    //Query
+	vector< vector<int> > _query_adjacent_list;
+    if (general_evaluation.getQueryTree().getUpdateType() == QueryTree::Not_Update)
+    {
+		if(general_evaluation.getQueryTree().checkStar(_query_adjacent_list) == 0){
+			general_evaluation.doQuery(this->internal_tag_str);
+
+			//printf("general_evaluation.getLocalPartialResult(this->internal_tag_str, partialResStrVec);\n");
+			general_evaluation.getCrossingEdges(this->kvstore, this->internal_tag_str, lpm_str_vec, res_crossing_edges_vec, all_crossing_edges_vec);
+		}else{
+			general_evaluation.doQuery();
+			general_evaluation.getFinalResult(_result_set);
+			string final_res_str = _result_set.to_str();
+			lpm_str_vec.push_back(final_res_str.substr(final_res_str.find("\n") + 1));
+		}
+    }
+
+	return true;
+}
+
+/*
+bool
+Database::generateVCandidate(const string _query, vector<string>& candidateSet)
+{
+    GeneralEvaluation general_evaluation(this->vstree, this->kvstore, this->stringindex);
+
+    long tv_begin = Util::get_cur_time();
+
+	if (!general_evaluation.parseQuery(_query))
+		return false;
+    long tv_parse = Util::get_cur_time();
+	
+    //Query
+	vector< vector<int> > _query_adjacent_list;
+    if (general_evaluation.getQueryTree().getUpdateType() == QueryTree::Not_Update)
+    {
+		if(general_evaluation.getQueryTree().checkStar(_query_adjacent_list) == 0){
+			general_evaluation.doQuery(this->internal_tag_str);
+
+			//printf("general_evaluation.getLocalPartialResult(this->internal_tag_str, partialResStrVec);\n");
+			general_evaluation.getLocalPartialResult(this->kvstore, this->internal_tag_str, partialResStrVec);
+		}
+    }
+    
+	return true;
+}
+*/
+bool
 Database::query(const string _query, ResultSet& _result_set, FILE* _fp)
 {
     GeneralEvaluation general_evaluation(this->vstree, this->kvstore, this->stringindex);

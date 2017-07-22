@@ -65,6 +65,10 @@ main(int argc, char * argv[])
 		double partialResStart, partialResEnd;
 		char* queryCharArr;
 		char* partialResArr;
+		int* crossingEdgeHashTable = new int[Util::MAX_CROSSING_EDGE_HASH_SIZE];
+		int* crossingEdgeHashTagTable = new int[Util::MAX_CROSSING_EDGE_HASH_SIZE];
+		memset(crossingEdgeHashTable, 0, Util::MAX_CROSSING_EDGE_HASH_SIZE);
+		memset(crossingEdgeHashTagTable, 0, Util::MAX_CROSSING_EDGE_HASH_SIZE);
 		MPI_Status status;
 		MPI_Init(&argc, &argv);
 
@@ -103,7 +107,7 @@ main(int argc, char * argv[])
 			
 			if(query_form == QueryTree::Ask_Query){
 			
-				int fullTag = 0, partialResNum = 0, ask_query_res_tag = 0;;
+				int fullTag = 0, partialResNum = 0, ask_query_res_tag = 0;
 				unsigned long long sizeSum = 0;
 				fullTag = (1 << PPQueryVertexCount) - 1;
 				printf("PPQueryVertexCount = %d and fullTag = %d\n", PPQueryVertexCount, fullTag);
@@ -149,17 +153,18 @@ main(int argc, char * argv[])
 								l = l * 2 + matchVec[matchVec.size() - 1].at(k) - '0';
 							}
 							
+							LEC curLEC;
+							
 							//printf("%s %d maps to tag %d\n", matchVec[matchVec.size() - 1].c_str(), pInt, l); 
-							vector<CrossingEdgeMapping> tmp_mapping_vec;
 							for(j = matchVec.size() - 2; j >= 0; j -= 4){
 								CrossingEdgeMapping curCrossingEdgeMapping;
 								curCrossingEdgeMapping.tail_query_id = atoi(matchVec[j - 2].c_str());
 								curCrossingEdgeMapping.head_query_id = atoi(matchVec[j - 3].c_str());
 								curCrossingEdgeMapping.mapping_str = matchVec[j] + "\t" + matchVec[j - 1];
 								curCrossingEdgeMapping.fragmentID = pInt;
-								tmp_mapping_vec.push_back(curCrossingEdgeMapping);
+								curLEC.CrossingEdgeMappings.push_back(curCrossingEdgeMapping);
 							}
-							intermediate_results_vec[l].CrossingEdgeMappings.push_back(tmp_mapping_vec);
+							intermediate_results_vec[l].LECVec.push_back(curLEC);
 						}
 
 						delete[] partialResArr;
@@ -178,11 +183,11 @@ main(int argc, char * argv[])
 				map< int, vector<int> > query_adjacent_list;
 
 				for(int i = 0; i < intermediate_results_vec.size(); i++){
-					if(intermediate_results_vec[i].CrossingEdgeMappings.size() == 0){
+					if(intermediate_results_vec[i].LECVec.size() == 0){
 						continue;
 					}
 					for(int j = i + 1; j < intermediate_results_vec.size(); j++){
-						if(intermediate_results_vec[j].CrossingEdgeMappings.size() == 0){
+						if(intermediate_results_vec[j].LECVec.size() == 0){
 							continue;
 						}
 						if(Util::checkJoinable(intermediate_results_vec[i], intermediate_results_vec[j])){
@@ -227,7 +232,7 @@ main(int argc, char * argv[])
 								CrossingEdgeMappingVec newCrossingEdgeMappingVec;
 								Util::HashLECFJoin(newCrossingEdgeMappingVec, tmpCrossingEdgeMappingVec, intermediate_results_vec[query_adjacent_list[cur_mapping_vec_id][j]]);
 								
-								if(newCrossingEdgeMappingVec.CrossingEdgeMappings.size() != 0){
+								if(newCrossingEdgeMappingVec.LECVec.size() != 0){
 									vector<int> new_state(cur_bfs_state);
 									new_state.push_back(query_adjacent_list[cur_mapping_vec_id][j]);
 									bfs_queue.push(new_state);
@@ -266,8 +271,9 @@ main(int argc, char * argv[])
 				int partialResNum = 0, finalResNum = 0, aResNum = 0, vec_size = 0;
 				unsigned long long sizeSum = 0;
 				set< vector<int> > finalPartialResSet;
+				int fullTag = (1 << PPQueryVertexCount) - 1;
 				
-				vector< PPPartialResVec > partialResVec(PPQueryVertexCount);
+				vector< PPPartialResVec > partialResVec(fullTag + 1);
 				for(i = 0; i < partialResVec.size(); i++){
 					partialResVec[i].match_pos = i;
 				}
@@ -312,9 +318,11 @@ main(int argc, char * argv[])
 								continue;
 							}
 							
-							vector<int> match_pos_vec;
+							l = 0;
 							for(j = 0; j < matchVec.size(); j++){
 								if(strcmp(matchVec[j].c_str(),"-1") != 0){
+									l = l * 2 + matchVec[j].at(0) - '0';
+									
 									newPPPartialRes.TagVec.push_back(matchVec[j].at(0));
 									matchVec[j].erase(0, 1);
 
@@ -325,27 +333,28 @@ main(int argc, char * argv[])
 									}
 									cur_id = URIIDMap[matchVec[j]];
 								}else{
+									l = l * 2;
 									newPPPartialRes.TagVec.push_back('2');
 									cur_id = -1;
 								}
 								newPPPartialRes.MatchVec.push_back(cur_id);
 								
-								if('1' == newPPPartialRes.TagVec[newPPPartialRes.TagVec.size() - 1])
-									match_pos_vec.push_back(j);
+								//if('1' == newPPPartialRes.TagVec[newPPPartialRes.TagVec.size() - 1])
+								//	match_pos_vec.push_back(j);
 							}
 							newPPPartialRes.FragmentID = pInt;
 							newPPPartialRes.ID = partialResNum;
 
 							if(0 == Util::isFinalResult(newPPPartialRes)){
-								for(j = 0; j < match_pos_vec.size(); j++){
-									partialResVec[match_pos_vec[j]].PartialResList.push_back(newPPPartialRes);
-								}
+								
+								partialResVec[l].PartialResList.push_back(newPPPartialRes);
 								aResNum++;
 								partialResNum++;
 							}else{
 								finalPartialResSet.insert(newPPPartialRes.MatchVec);
-								//finalResNum++;
 							}
+							
+							//printf("%d containing %d has the result: %s\n", pInt, l, resVec[i].c_str());
 						}
 						delete[] partialResArr;
 					}
@@ -363,42 +372,61 @@ main(int argc, char * argv[])
 				
 				schedulingStart = MPI_Wtime();
 				
-				vector<int> join_order_vec = Util::findJoinOrder(partialResVec, _query_adjacent_list);				
-				vector<int> match_pos_vec;
-				int tag = 0;
-				match_pos_vec.push_back(partialResVec[join_order_vec[0]].match_pos);
-				if(0 != partialResVec.size()){
-				
-					stringstream intermediate_strm;
+				map< int, vector<int> > partial_res_adjacent_list;
+				//stringstream adj_list_ss;
 
-					for(i = 1; i < partialResVec.size(); i++){
-						//cout << "###########  " << partialResVec[i].match_pos << endl;
-						
-						map<int, vector<PPPartialRes> > tmpPartialResMap;
-						for(j = 0; j < partialResVec[join_order_vec[i]].PartialResList.size(); j++){
-							tag = 0;
-							for(k = 0; k < match_pos_vec.size(); k++){
-								if('1' == partialResVec[join_order_vec[i]].PartialResList[j].TagVec[match_pos_vec[k]]){
-									tag = 1;
-									break;
-								}
-							}
-							if(0 == tag){
-								if(tmpPartialResMap.count(partialResVec[join_order_vec[i]].PartialResList[j].MatchVec[partialResVec[join_order_vec[i]].match_pos]) == 0){
-									vector<PPPartialRes> tmpVec;
-									tmpPartialResMap.insert(make_pair(partialResVec[join_order_vec[i]].PartialResList[j].MatchVec[partialResVec[join_order_vec[i]].match_pos], tmpVec));
-								}
-								tmpPartialResMap[partialResVec[join_order_vec[i]].PartialResList[j].MatchVec[partialResVec[join_order_vec[i]].match_pos]].push_back(partialResVec[join_order_vec[i]].PartialResList[j]);
-							}
-						}
-						match_pos_vec.push_back(partialResVec[join_order_vec[i]].match_pos);
-						if(tmpPartialResMap.size() == 0){					
+				for(int i = 0; i < partialResVec.size(); i++){
+					if(partialResVec[i].PartialResList.size() == 0){
+						continue;
+					}
+					//adj_list_ss << i << " : ";
+					for(int j = i + 1; j < partialResVec.size(); j++){
+						if(partialResVec[j].PartialResList.size() == 0){
 							continue;
 						}
+						if(Util::checkJoinable(partialResVec[i], partialResVec[j], i, j) != -1){
+							if(partial_res_adjacent_list.count(i) == 0){
+								vector<int> vec1;
+								partial_res_adjacent_list.insert(make_pair(i, vec1));
+							}
+							if(partial_res_adjacent_list.count(j) == 0){
+								vector<int> vec1;
+								partial_res_adjacent_list.insert(make_pair(j, vec1));
+							}
+							partial_res_adjacent_list[i].push_back(j);
+							partial_res_adjacent_list[j].push_back(i);
+							//adj_list_ss << j << "\t";
+						}
+					}
+					
+					//adj_list_ss << endl;
+				}
+				
+				vector< vector<int> > join_order_vec = Util::findMultipleJoinOrder(partial_res_adjacent_list, partialResVec, fullTag);
+				
+				for(i = 0; i < join_order_vec.size(); i++){
+					
+					PPPartialResVec tmpPPPartialResVec;
+					tmpPPPartialResVec.PartialResList.assign(partialResVec[join_order_vec[i][0]].PartialResList.begin(), partialResVec[join_order_vec[i][0]].PartialResList.end());
+					tmpPPPartialResVec.match_pos = partialResVec[join_order_vec[i][0]].match_pos;
+					
+					for(j = 1; j < join_order_vec[i].size(); j++){
 						
-						Util::HashJoin(finalPartialResSet, partialResVec[join_order_vec[0]].PartialResList, tmpPartialResMap, p, partialResVec[join_order_vec[i]].match_pos);
-
-						if(partialResVec[join_order_vec[0]].PartialResList.size() == 0){
+						int cur_match_pos = Util::checkJoinable(tmpPPPartialResVec, partialResVec[join_order_vec[i][j]], tmpPPPartialResVec.match_pos, partialResVec[join_order_vec[i][j]].match_pos);
+						tmpPPPartialResVec.match_pos = tmpPPPartialResVec.match_pos | partialResVec[join_order_vec[i][j]].match_pos;
+						
+						map<int, vector<PPPartialRes> > tmpPartialResMap;
+						for(k = 0; k < partialResVec[join_order_vec[i][j]].PartialResList.size(); k++){
+							
+							if(tmpPartialResMap.count(partialResVec[join_order_vec[i][j]].PartialResList[k].MatchVec[cur_match_pos]) == 0){
+								vector<PPPartialRes> tmpVec;
+								tmpPartialResMap.insert(make_pair(partialResVec[join_order_vec[i][j]].PartialResList[k].MatchVec[cur_match_pos], tmpVec));
+							}
+							tmpPartialResMap[partialResVec[join_order_vec[i][j]].PartialResList[k].MatchVec[cur_match_pos]].push_back(partialResVec[join_order_vec[i][j]].PartialResList[k]);
+						}
+						Util::HashJoin(finalPartialResSet, tmpPPPartialResVec.PartialResList, tmpPartialResMap, p, cur_match_pos);
+						
+						if(tmpPPPartialResVec.PartialResList.size() == 0){
 							break;
 						}
 					}
@@ -443,21 +471,31 @@ main(int argc, char * argv[])
 			string _query_str(queryCharArr);
 			
 			ResultSet _rs;
-			vector<string> partialResStrVec;
-			//_db.query(query, _rs, stdout);
-			_db.query(_query_str, _rs, partialResStrVec, myRank, stdout);
+			vector<string> all_lpm_str_vec;
+			vector<string> lpm_str_vec;
+			vector< vector<int> > res_crossing_edges_vec;
+			vector<int> all_crossing_edges_vec;
+			_db.queryCrossingEdge(_query_str, _rs, lpm_str_vec, res_crossing_edges_vec, all_crossing_edges_vec, myRank, stdout);
+			
+			stringstream all_lpm_ss;
+			for(int i = 0; i < lpm_str_vec.size(); i++){
+				all_lpm_ss << lpm_str_vec[i] << endl;
+			}
+			all_lpm_str_vec.push_back(all_lpm_ss.str());
+			//printf("After filtering, Client %d remains %d results\n", myRank, commResNum);
 			
 			partialResEnd = MPI_Wtime();
-		
-			double time_cost_value = partialResEnd - partialResStart;
-			//log_ss << "Finding local partial matches costs " << time_cost_value << " s in Client " << myRank << " vec_size = " << partialResStrVec.size();
-			printf("Finding local partial matches costs %f s in Client %d with vec_size = %d\n", time_cost_value, myRank, partialResStrVec.size());
 			
-			size = partialResStrVec.size();
+			//============================= communication of partial results =============================
+			
+			double time_cost_value = partialResEnd - partialResStart;
+			printf("Finding local partial matches costs %f s in Client %d with vec_size = %d\n", time_cost_value, myRank, all_lpm_str_vec.size());
+			
+			size = all_lpm_str_vec.size();
 			MPI_Send(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD);
-			for(int i = 0; i < partialResStrVec.size(); i++){
-				partialResArr = new char[partialResStrVec[i].size() + 3];
-				strcpy(partialResArr, partialResStrVec[i].c_str());
+			for(int i = 0; i < all_lpm_str_vec.size(); i++){
+				partialResArr = new char[all_lpm_str_vec[i].size() + 3];
+				strcpy(partialResArr, all_lpm_str_vec[i].c_str());
 				size = strlen(partialResArr);
 				
 				MPI_Send(&size, 1, MPI_INT, 0, 10, MPI_COMM_WORLD);
@@ -467,12 +505,11 @@ main(int argc, char * argv[])
 				
 				delete[] partialResArr;
 			}
-			
-			//log_ss << endl;			
-			//cout << log_ss.str();
 		}
 		
 		delete[] queryCharArr;
+		delete[] crossingEdgeHashTable;
+		delete[] crossingEdgeHashTagTable;
 
 		MPI_Finalize();
 	}

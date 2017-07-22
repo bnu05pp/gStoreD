@@ -1291,19 +1291,14 @@ bool operator==(CrossingEdgeMapping& node1, CrossingEdgeMapping& node2)
 }
 
 void
-Util::HashJoin(std::set< vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, vector<PPPartialRes> >& res2, int fragmentNum, int matchPos){
+Util::HashJoin(std::set< vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, vector<PPPartialRes> >& res2, int fragmentNum, int matchPos, PPPartialResVec& newPPPartialResVec){
 
 	if(0 == res1.size()){
 		return;
 	}
 	
 	int tag = 0, len = res1[0].MatchVec.size();
-	std::vector<PPPartialRes> new_res;
 	for(int i = 0; i < res1.size(); i++){
-		if('1' == res1[i].TagVec[matchPos]){
-			new_res.push_back(res1[i]);
-			continue;
-		}
 		if(res2.count(res1[i].MatchVec[matchPos]) == 0)
 			continue;
 		//cout << res2[res1[i].MatchVec[matchPos]].size() << " " << endl;
@@ -1340,13 +1335,12 @@ Util::HashJoin(std::set< vector<int> >& finalPartialResSet, std::vector<PPPartia
 				continue;
 
 			if(0 == Util::isFinalResult(curPPPartialRes)){
-				new_res.push_back(curPPPartialRes);
+				newPPPartialResVec.PartialResList.push_back(curPPPartialRes);
 			}else{
 				finalPartialResSet.insert(curPPPartialRes.MatchVec);
 			}
 		}
 	}
-	res1.assign(new_res.begin(), new_res.end());
 }
 
 int 
@@ -1407,15 +1401,79 @@ Util::findJoinOrder(vector< PPPartialResVec >& partialResVec, vector< vector<int
 	return _join_order_vec;
 }
 
+vector< vector<int> > 
+Util::findMultipleJoinOrder(map< int, vector<int> >& partial_res_adjacent_list, vector<PPPartialResVec>& partialResVec, int fullTag){
+	vector< vector<int> > _join_order_vec;
+	set< set<int> > _visited_set;
+	
+	for(int i = 0; i < partialResVec.size(); i++){
+		
+		if(partial_res_adjacent_list.count(i) == 0){
+			continue;
+		}
+
+		queue< vector<int> > bfs_queue;
+		queue< vector<int> > tag_queue;
+		
+		vector<int> tmp_vec(1, i);
+		bfs_queue.push(tmp_vec);
+		tag_queue.push(tmp_vec);
+		
+		while(bfs_queue.size()){
+			vector<int> cur_bfs_state = bfs_queue.front();
+			bfs_queue.pop();
+			
+			vector<int> cur_tag_state = tag_queue.front();
+			tag_queue.pop();
+			
+			int cur_tag = cur_tag_state[cur_tag_state.size() - 1];
+			for(int l = 0; l < cur_bfs_state.size(); l++){
+				int cur_mapping_vec_id = cur_bfs_state[l];
+			
+				for(int j = 0; j < partial_res_adjacent_list[cur_mapping_vec_id].size(); j++){
+					
+					if(partial_res_adjacent_list[cur_mapping_vec_id][j] <= i || find(cur_bfs_state.begin(), cur_bfs_state.end(), partial_res_adjacent_list[cur_mapping_vec_id][j]) != cur_bfs_state.end())
+						continue;
+					
+					int cur_match_pos = Util::checkJoinable(partialResVec[cur_mapping_vec_id], partialResVec[partial_res_adjacent_list[cur_mapping_vec_id][j]], cur_tag, partial_res_adjacent_list[cur_mapping_vec_id][j]);
+								
+					if(cur_match_pos != -1){
+						int new_tag = cur_tag | partial_res_adjacent_list[cur_mapping_vec_id][j];
+						if(new_tag != fullTag){
+							vector<int> new_state(cur_bfs_state);
+							new_state.push_back(partial_res_adjacent_list[cur_mapping_vec_id][j]);
+							bfs_queue.push(new_state);
+							
+							vector<int> new_tag_state(cur_tag_state);
+							new_tag_state.push_back(new_tag);
+							tag_queue.push(new_tag_state);
+						}else{
+							vector<int> new_state(cur_bfs_state);
+							new_state.push_back(partial_res_adjacent_list[cur_mapping_vec_id][j]);
+							set<int> tmp_join_order(new_state.begin(), new_state.end());
+							if(_visited_set.count(tmp_join_order) == 0){
+								_visited_set.insert(tmp_join_order);
+								_join_order_vec.push_back(new_state);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	return _join_order_vec;
+}
+
 int 
 Util::checkJoinable(CrossingEdgeMappingVec& vec1, CrossingEdgeMappingVec& vec2){
 	if(vec1.tag & vec2.tag){
 		return 0;
 	}
 	
-	for(int i = 0; i < vec1.CrossingEdgeMappings[0].size(); i++){
-		for(int j = 0; j < vec2.CrossingEdgeMappings[0].size(); j++){
-			if(vec1.CrossingEdgeMappings[0][i].head_query_id == vec2.CrossingEdgeMappings[0][j].head_query_id && vec1.CrossingEdgeMappings[0][i].tail_query_id == vec2.CrossingEdgeMappings[0][j].tail_query_id){
+	for(int i = 0; i < vec1.LECVec[0].CrossingEdgeMappings.size(); i++){
+		for(int j = 0; j < vec2.LECVec[0].CrossingEdgeMappings.size(); j++){
+			if(vec1.LECVec[0].CrossingEdgeMappings[i].head_query_id == vec2.LECVec[0].CrossingEdgeMappings[j].head_query_id && vec1.LECVec[0].CrossingEdgeMappings[i].tail_query_id == vec2.LECVec[0].CrossingEdgeMappings[j].tail_query_id){
 				return 1;
 			}
 		}
@@ -1424,18 +1482,93 @@ Util::checkJoinable(CrossingEdgeMappingVec& vec1, CrossingEdgeMappingVec& vec2){
 	return 0;
 }
 
+int 
+Util::checkJoinable(PPPartialResVec& vec1, PPPartialResVec& vec2, int tag1, int tag2){
+	if(tag1 & tag2){
+		return -1;
+	}
+	
+	int match_pos = -1;
+	for(int i = 0; i < vec1.PartialResList[0].TagVec.size(); i++){
+		
+		if(match_pos != -1)
+			continue;
+		
+		if((vec1.PartialResList[0].TagVec[i] == '0' && vec2.PartialResList[0].TagVec[i] == '1') || (vec1.PartialResList[0].TagVec[i] == '1' && vec2.PartialResList[0].TagVec[i] == '0')){
+			match_pos = i;
+		}
+	}
+	
+	return match_pos;
+}
+
+void
+Util::HashJoin(std::set< vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, vector<PPPartialRes> >& res2, int fragmentNum, int matchPos){
+
+	if(0 == res1.size()){
+		return;
+	}
+	
+	int tag = 0, len = res1[0].MatchVec.size();
+	std::vector<PPPartialRes> new_res;
+	for(int i = 0; i < res1.size(); i++){
+		if(res2.count(res1[i].MatchVec[matchPos]) == 0)
+			continue;
+		//cout << res2[res1[i].MatchVec[matchPos]].size() << " " << endl;
+		
+		std::vector<PPPartialRes> tmp_res = res2[res1[i].MatchVec[matchPos]];
+		for(int j = 0; j < tmp_res.size(); j++){
+			//cout << tmp_res.size() << "~~~~" << j << endl;
+			tag = 0;
+			PPPartialRes curPPPartialRes;
+			curPPPartialRes.TagVec.assign(len, '0');
+			curPPPartialRes.FragmentID = fragmentNum + res1[i].FragmentID;
+			for(int k = 0; k < len; k++){
+				//cout << "++++" << k << " " << res1[i].MatchVec[k] << " " << tmp_res[j].MatchVec[k] << endl;
+				if(res1[i].MatchVec[k] != -1 && tmp_res[j].MatchVec[k] != -1
+					&& res1[i].MatchVec[k] != tmp_res[j].MatchVec[k]){
+
+					tag = 1;
+					break;
+				}else if(res1[i].MatchVec[k] == -1 && tmp_res[j].MatchVec[k] != -1){
+					curPPPartialRes.TagVec[k] = tmp_res[j].TagVec[k];
+					curPPPartialRes.MatchVec.push_back(tmp_res[j].MatchVec[k]);
+				}else if(res1[i].MatchVec[k] != -1 && tmp_res[j].MatchVec[k] == -1){
+					curPPPartialRes.TagVec[k] = res1[i].TagVec[k];
+					curPPPartialRes.MatchVec.push_back(res1[i].MatchVec[k]);
+				}else{
+					if('1' == res1[i].TagVec[k] || '1' == tmp_res[j].TagVec[k])
+						curPPPartialRes.TagVec[k] = '1';
+					curPPPartialRes.MatchVec.push_back(res1[i].MatchVec[k]);
+				}
+			}
+					
+			//cout << "tag = " << tag << endl;
+			if(tag == 1)
+				continue;
+
+			if(0 == Util::isFinalResult(curPPPartialRes)){
+				new_res.push_back(curPPPartialRes);
+			}else{
+				finalPartialResSet.insert(curPPPartialRes.MatchVec);
+			}
+		}
+	}
+	res1.assign(new_res.begin(), new_res.end());
+}
+
 void 
 Util::HashLECFJoin(CrossingEdgeMappingVec& final_res, CrossingEdgeMappingVec& res1, CrossingEdgeMappingVec& res2){
-	if(res1.CrossingEdgeMappings.size() == 0){
+	if(res1.LECVec.size() == 0){
 		return ;
 	}
 
 	std::vector< std::pair<int, int> > matchPos;
 	std::set<int> second_match_pos;
-	for(int i = 0; i < res1.CrossingEdgeMappings[0].size(); i++){
-		for(int j = 0; j < res2.CrossingEdgeMappings[0].size(); j++){
+	for(int i = 0; i < res1.LECVec[0].CrossingEdgeMappings.size(); i++){
+		for(int j = 0; j < res2.LECVec[0].CrossingEdgeMappings.size(); j++){
 			
-			if(res1.CrossingEdgeMappings[0][i].head_query_id == res2.CrossingEdgeMappings[0][j].head_query_id && res1.CrossingEdgeMappings[0][i].tail_query_id == res2.CrossingEdgeMappings[0][j].tail_query_id){
+			if(res1.LECVec[0].CrossingEdgeMappings[i].head_query_id == res2.LECVec[0].CrossingEdgeMappings[j].head_query_id && res1.LECVec[0].CrossingEdgeMappings[i].tail_query_id == res2.LECVec[0].CrossingEdgeMappings[j].tail_query_id){
 				std::pair<int, int> tmp_pair;
 				matchPos.push_back(tmp_pair);
 				matchPos[matchPos.size() - 1].first = i;
@@ -1446,41 +1579,41 @@ Util::HashLECFJoin(CrossingEdgeMappingVec& final_res, CrossingEdgeMappingVec& re
 	}
 	//printf("~~~%d\n", matchPos.size());
 	
-	map<CrossingEdgeMapping, CrossingEdgeMappingVec> edge_LECF_map;
-	for(int i = 0; i < res2.CrossingEdgeMappings.size(); i++){
-		if(edge_LECF_map.count(res2.CrossingEdgeMappings[i][matchPos[0].second]) == 0){
-			CrossingEdgeMappingVec tmpCrossingEdgeMappingVec;
-			edge_LECF_map.insert(make_pair(res2.CrossingEdgeMappings[i][matchPos[0].second], tmpCrossingEdgeMappingVec));
+	map<CrossingEdgeMapping, vector<LEC> > edge_LECF_map;
+	for(int i = 0; i < res2.LECVec.size(); i++){
+		if(edge_LECF_map.count(res2.LECVec[i].CrossingEdgeMappings[matchPos[0].second]) == 0){
+			vector<LEC> tmpLECVec;
+			edge_LECF_map.insert(make_pair(res2.LECVec[i].CrossingEdgeMappings[matchPos[0].second], tmpLECVec));
 		}
-		edge_LECF_map[res2.CrossingEdgeMappings[i][matchPos[0].second]].CrossingEdgeMappings.push_back(res2.CrossingEdgeMappings[i]);
+		edge_LECF_map[res2.LECVec[i].CrossingEdgeMappings[matchPos[0].second]].push_back(res2.LECVec[i]);
 	}
 	
 	final_res.tag = res1.tag | res2.tag;
 	int tag = 0;
 	//printf("~~~%d\n", final_res.tag);
 	
-	for(int i = 0; i < res1.CrossingEdgeMappings.size(); i++){
-		if(edge_LECF_map.count(res1.CrossingEdgeMappings[i][matchPos[0].first]) == 0)
+	for(int i = 0; i < res1.LECVec.size(); i++){
+		if(edge_LECF_map.count(res1.LECVec[i].CrossingEdgeMappings[matchPos[0].first]) == 0)
 			continue;
 			
-		CrossingEdgeMappingVec tmpCrossingEdgeMappingVec = edge_LECF_map[res1.CrossingEdgeMappings[i][matchPos[0].first]];
+		vector<LEC> tmpLECVec = edge_LECF_map[res1.LECVec[i].CrossingEdgeMappings[matchPos[0].first]];
 		
-		for(int j = 0; j < tmpCrossingEdgeMappingVec.CrossingEdgeMappings.size(); j++){
+		for(int j = 0; j < tmpLECVec.size(); j++){
 		
 			//printf("%d %d = %d %d\n", res1.tag, res2.tag, i, j);
 		
-			if(res1.CrossingEdgeMappings[i][matchPos[0].first].fragmentID == tmpCrossingEdgeMappingVec.CrossingEdgeMappings[j][matchPos[0].second].fragmentID)
+			if(res1.LECVec[i].CrossingEdgeMappings[matchPos[0].first].fragmentID == tmpLECVec[j].CrossingEdgeMappings[matchPos[0].second].fragmentID)
 				continue;
 				
 			tag = 0;
-			std::vector<CrossingEdgeMapping> curCrossingEdgeMappingVec;
+			LEC curLEC;
 			int first_match_pos = 0;
-			for(int k = 0; k < res1.CrossingEdgeMappings[i].size(); k++){
+			for(int k = 0; k < res1.LECVec[i].CrossingEdgeMappings.size(); k++){
 				if(first_match_pos >= matchPos.size() || k != matchPos[first_match_pos].first){
-					curCrossingEdgeMappingVec.push_back(res1.CrossingEdgeMappings[i][k]);
+					curLEC.CrossingEdgeMappings.push_back(res1.LECVec[i].CrossingEdgeMappings[k]);
 					continue;
 				}
-				if(res1.CrossingEdgeMappings[i][matchPos[first_match_pos].first].mapping_str.compare(tmpCrossingEdgeMappingVec.CrossingEdgeMappings[j][matchPos[first_match_pos].second].mapping_str) != 0){
+				if(res1.LECVec[i].CrossingEdgeMappings[matchPos[first_match_pos].first].mapping_str.compare(tmpLECVec[j].CrossingEdgeMappings[matchPos[first_match_pos].second].mapping_str) != 0){
 
 					tag = 1;
 					break;
@@ -1494,13 +1627,30 @@ Util::HashLECFJoin(CrossingEdgeMappingVec& final_res, CrossingEdgeMappingVec& re
 			if(tag == 1)
 				continue;
 			
-			for(int k = 0; k < tmpCrossingEdgeMappingVec.CrossingEdgeMappings[j].size(); k++){
-				if(second_match_pos.count(k) == 0){
-					curCrossingEdgeMappingVec.push_back(tmpCrossingEdgeMappingVec.CrossingEdgeMappings[j][k]);
+			tag = 0;
+			for(int k = 0; k < res1.LECVec[i].matchVec.size(); k++){
+				if(res1.LECVec[i].matchVec[k].compare("-1") == 0){
+					curLEC.matchVec.push_back(tmpLECVec[j].matchVec[k]);
+				}else if(tmpLECVec[j].matchVec[k].compare("-1") == 0){
+					curLEC.matchVec.push_back(res1.LECVec[i].matchVec[k]);
+				}else if(res1.LECVec[i].matchVec[k].compare(tmpLECVec[j].matchVec[k]) == 0){
+					curLEC.matchVec.push_back(res1.LECVec[i].matchVec[k]);
+				}else{
+					tag = 1;
+					break;
 				}
 			}
 			
-			final_res.CrossingEdgeMappings.push_back(curCrossingEdgeMappingVec);
+			if(tag == 1)
+				continue;
+			
+			for(int k = 0; k < tmpLECVec[j].CrossingEdgeMappings.size(); k++){
+				if(second_match_pos.count(k) == 0){
+					curLEC.CrossingEdgeMappings.push_back(tmpLECVec[j].CrossingEdgeMappings[k]);
+				}
+			}
+			
+			final_res.LECVec.push_back(curLEC);
 		}
 	}
 	//printf("+++--- %d \n", final_res.CrossingEdgeMappings.size());

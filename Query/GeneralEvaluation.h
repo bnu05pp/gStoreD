@@ -232,6 +232,7 @@ class GeneralEvaluation
 		void queryRewriteEncodeRetrieveJoin(int dep);
 		void distributed_queryRewriteEncodeRetrieveJoin(int dep, string& internal_tag_str);
 		void getLocalPartialResult(KVstore *_kvstore, string& internal_tag_str, vector<string>& lpm_str_vec);
+		void getCrossingEdges(KVstore *_kvstore, string& internal_tag_str, vector<string>& lpm_str_vec, vector< vector<int> >& crossing_edges_vec, vector<int>& all_crossing_edges_vec);
 
 		bool needOutputAnswer();
 		void setNeedOutputAnswer();

@@ -49,6 +49,8 @@ public:
 	bool unload();
 	bool query(const string _query, ResultSet& _result_set, FILE* _fp = stdout);
 	bool query(const string _query, ResultSet& _result_set, vector<string>& partialResStrVec, int myRank, FILE* _fp = stdout);
+	bool queryCrossingEdge(const string _query, ResultSet& _result_set, vector<string>& lpm_str_vec, vector< vector<int> >& res_crossing_edges_vec, vector<int>& all_crossing_edges_vec, int myRank, FILE* _fp = stdout);
+	//bool generateVCandidate(const string _query, vector<string>& candidateSet);
 	
 	 //1. if subject of _triple doesn't exist,
 		//then assign a new subid, and insert a new SigEntry

@@ -155,6 +155,7 @@ void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& interna
 	else if (this->query_tree.getQueryForm() == QueryTree::Ask_Query)
 	{
 		vector<BasicQuery*>& queryList = this->sparql_query.getBasicQueryVec();
+		printf("this->query_tree.getQueryForm() == QueryTree::Ask_Query and queryList.size() = %d\n", queryList.size());
 		vector<BasicQuery*>::iterator iter = queryList.begin();
 		for(; iter != queryList.end(); iter++)
 		{
@@ -231,7 +232,139 @@ void GeneralEvaluation::getLocalPartialResult(KVstore *_kvstore, string& interna
 	}
 	
 	lpm_str_vec.push_back(lpm_ss.str());
-	//printf("lpm_str.size() == %d\n", lpm_str.size());
+	//printf("lpm_str == %s\n", lpm_ss.str().c_str());
+}
+
+void GeneralEvaluation::getCrossingEdges(KVstore *_kvstore, string& internal_tag_str, vector<string> &lpm_str_vec, vector< vector<int> >& res_crossing_edges_vec, vector<int>& all_crossing_edges_vec)
+{
+	if (this->semantic_evaluation_result_stack.empty())		return;
+
+	TempResultSet *results_id = this->semantic_evaluation_result_stack.top();
+	this->semantic_evaluation_result_stack.pop();
+
+	Varset &proj = this->query_tree.getProjection();
+
+	if (this->query_tree.getQueryForm() == QueryTree::Select_Query)
+	{
+		if (this->query_tree.checkProjectionAsterisk())
+		{
+			for (int i = 0 ; i < (int)results_id->results.size(); i++)
+				proj = proj + results_id->results[i].var;
+		}
+
+		if (this->query_tree.getProjectionModifier() == QueryTree::Modifier_Distinct)
+		{
+			TempResultSet *results_id_distinct = new TempResultSet();
+
+			results_id->doDistinct(proj, *results_id_distinct);
+
+			results_id->release();
+			delete results_id;
+
+			results_id = results_id_distinct;
+		}
+
+		//int var_num = proj.varset.size();
+		//int select_var_num = var_num;
+		int ansNum = 0;
+		
+		for (int i = 0; i < (int)results_id->results.size(); i++){
+			ansNum += (int)results_id->results[i].res.size();
+		}
+		
+		BasicQuery &_basicquery = this->expansion_evaluation_stack[0].sparql_query.getBasicQuery(0);
+		
+		int current_result = 0;
+		for (int i = 0; i < (int)results_id->results.size(); i++)
+		{
+			vector<int> result_str2id = proj.mapTo(results_id->results[i].var);
+			int size = results_id->results[i].res.size();
+			for (int j = 0; j < size; ++j)
+			{
+				vector<int> tmp_crossing_edge_vec;
+				vector<string> tmp_res_vec(result_str2id.size(), "");
+				vector<char> tmp_res_tag_vec(result_str2id.size(), '0');
+				
+				//printf("result_str2id.size() = %d\n", result_str2id.size());
+				for (int v = 0; v < result_str2id.size(); ++v)
+				{
+					int ans_id = -1;
+					//printf("result_str2id[v] = %d and v = %d\n", result_str2id[v], v);
+					if (result_str2id[v] != -1)
+						ans_id = results_id->results[i].res[j][result_str2id[v]];
+					
+					if (ans_id != -1)
+					{	
+						if(ans_id >= Util::LITERAL_FIRST_ID){
+							tmp_res_tag_vec[result_str2id[v]] = '1';
+							tmp_res_vec[result_str2id[v]] = _kvstore->getLiteralByID(ans_id);
+						}else if(internal_tag_str.at(ans_id) == 1){
+							tmp_res_tag_vec[result_str2id[v]] = '1';
+							tmp_res_vec[result_str2id[v]] = _kvstore->getEntityByID(ans_id);
+						}else{
+							if(_basicquery.getVarDegree(result_str2id[v]) != 1){
+								tmp_res_tag_vec[result_str2id[v]] = internal_tag_str.at(ans_id);
+								tmp_res_vec[result_str2id[v]] = _kvstore->getEntityByID(ans_id);
+							}else{
+								tmp_res_tag_vec[result_str2id[v]] = '1';
+								tmp_res_vec[result_str2id[v]] = _kvstore->getEntityByID(ans_id);
+							}
+						}
+					}else{
+						tmp_res_tag_vec[result_str2id[v]] = '2';
+						tmp_res_vec[result_str2id[v]] = "-1";
+					}
+				}
+				
+				stringstream partial_res_ss;
+				for (int v = 0; v < result_str2id.size(); ++v){
+					int var_id = v;
+					int var_degree = _basicquery.getVarDegree(var_id);
+					if(tmp_res_tag_vec[var_id] != '2')
+						partial_res_ss << tmp_res_tag_vec[var_id];
+					partial_res_ss << tmp_res_vec[var_id] << "\t";
+					
+					if(tmp_res_vec[var_id].compare("-1") == 0){
+						continue;
+					}
+					
+					for (int k = 0; k < var_degree; k++){
+						int edge_id = _basicquery.getEdgeID(var_id, k);		
+						int var_id2 = _basicquery.getEdgeNeighborID(var_id, k);
+						
+						if (var_id2 == -1)
+						{
+							continue;
+						}
+						
+						if(tmp_res_vec[var_id2].compare("-1") != 0){
+							if(tmp_res_tag_vec[var_id2] == '0' && _basicquery.getVarDegree(var_id2) != 1){
+								stringstream crossing_edge_ss;
+								
+								if(var_id < var_id2){
+									crossing_edge_ss << var_id << "\t" << var_id2 << "\t" << tmp_res_vec[var_id] << "\t" << tmp_res_vec[var_id2] << "\t";
+								}else{
+									crossing_edge_ss << var_id2 << "\t" << var_id << "\t" << tmp_res_vec[var_id2] << "\t" << tmp_res_vec[var_id] << "\t";
+								}
+								
+								int tmp_hash_val = Util::BKDRHash(crossing_edge_ss.str().c_str());
+								if(tmp_hash_val < 0)
+									tmp_hash_val *= -1;
+								
+								all_crossing_edges_vec.push_back((tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE));
+								tmp_crossing_edge_vec.push_back((tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE));
+								//printf("%s has hash code %d\n", crossing_edge_ss.str().c_str(), all_crossing_edges_vec[all_crossing_edges_vec.size() - 1]);
+							}
+						}
+					}
+				}
+				res_crossing_edges_vec.push_back(tmp_crossing_edge_vec);
+				partial_res_ss << endl;
+				lpm_str_vec.push_back(partial_res_ss.str());
+				current_result++;
+			}
+		}
+	}
 }
 
 void GeneralEvaluation::doQuery(string& internal_tag_str)

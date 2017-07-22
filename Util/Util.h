@@ -150,9 +150,15 @@ struct CrossingEdgeMapping{
 	int fragmentID;
 };
 
+struct LEC{
+	std::vector<CrossingEdgeMapping> CrossingEdgeMappings;
+	std::vector<std::string> matchVec;
+};
+
 struct CrossingEdgeMappingVec{
 	int tag;
-	std::vector< std::vector<CrossingEdgeMapping> > CrossingEdgeMappings;
+	std::vector< LEC > LECVec;
+	std::vector< std::vector<CrossingEdgeMapping> > CrossingEdgeMappingsInRes;
 };
 
 /******** all static&universal constants and fucntions ********/
@@ -179,6 +185,8 @@ public:
 	//0x4fffffff 0x3fffffff
 	static const unsigned STORAGE_BLOCK_SIZE = 1 << 12;	//fixed size of disk-block in B+ tree storage
 	//1 << 16
+	
+	static const int MAX_CROSSING_EDGE_HASH_SIZE = 1 << 30;		//max buffer size in Storage
 
 	//type of B+ tree
 	static const int SS_TREE = 0;
@@ -264,12 +272,15 @@ public:
 	static bool gStore_mode;
 	
 	static std::vector<std::string> split(std::string textline, std::string tag);
-	static void HashJoin(std::set< std::vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, std::vector<PPPartialRes> >& res2, int fragmentNum, int matchPos);
+	static void HashJoin(std::set< std::vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, std::vector<PPPartialRes> >& res2, int fragmentNum, int matchPos, PPPartialResVec& newPPPartialResVec);
 	static int isFinalResult(PPPartialRes curPPPartialRes);
 	static bool myfunction0(PPPartialResVec v1, PPPartialResVec v2);
 	static int checkJoinable(CrossingEdgeMappingVec& vec1, CrossingEdgeMappingVec& vec2);
+	static int checkJoinable(PPPartialResVec& vec1, PPPartialResVec& vec2, int tag1, int tag2);
 	static void HashLECFJoin(CrossingEdgeMappingVec& final_res, CrossingEdgeMappingVec& res1, CrossingEdgeMappingVec& res2);
 	static std::vector<int> findJoinOrder(std::vector<PPPartialResVec>& textline, std::vector< std::vector<int> > tag);
+	static std::vector< std::vector<int> > findMultipleJoinOrder(std::map< int, std::vector<int> >& pr_adjacent_list, std::vector<PPPartialResVec>& partialResVec, int fullTag);
+	static void HashJoin(std::set< std::vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, std::vector<PPPartialRes> >& res2, int fragmentNum, int matchPos);
 
 private:
 	static bool isValidIPV4(std::string);
