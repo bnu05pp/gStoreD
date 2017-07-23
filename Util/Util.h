@@ -281,6 +281,7 @@ public:
 	static std::vector<int> findJoinOrder(std::vector<PPPartialResVec>& textline, std::vector< std::vector<int> > tag);
 	static std::vector< std::vector<int> > findMultipleJoinOrder(std::map< int, std::vector<int> >& pr_adjacent_list, std::vector<PPPartialResVec>& partialResVec, int fullTag);
 	static void HashJoin(std::set< std::vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, std::vector<PPPartialRes> >& res2, int fragmentNum, int matchPos);
+	static void HashJoin_old(std::set< std::vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, std::vector<PPPartialRes> >& res2, int fragmentNum, int matchPos);
 
 private:
 	static bool isValidIPV4(std::string);

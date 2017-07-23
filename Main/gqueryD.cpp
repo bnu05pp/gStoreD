@@ -271,9 +271,8 @@ main(int argc, char * argv[])
 				int partialResNum = 0, finalResNum = 0, aResNum = 0, vec_size = 0;
 				unsigned long long sizeSum = 0;
 				set< vector<int> > finalPartialResSet;
-				int fullTag = (1 << PPQueryVertexCount) - 1;
 				
-				vector< PPPartialResVec > partialResVec(fullTag + 1);
+				vector< PPPartialResVec > partialResVec(PPQueryVertexCount);
 				for(i = 0; i < partialResVec.size(); i++){
 					partialResVec[i].match_pos = i;
 				}
@@ -318,11 +317,9 @@ main(int argc, char * argv[])
 								continue;
 							}
 							
-							l = 0;
+							vector<int> match_pos_vec;
 							for(j = 0; j < matchVec.size(); j++){
 								if(strcmp(matchVec[j].c_str(),"-1") != 0){
-									l = l * 2 + matchVec[j].at(0) - '0';
-									
 									newPPPartialRes.TagVec.push_back(matchVec[j].at(0));
 									matchVec[j].erase(0, 1);
 
@@ -333,28 +330,27 @@ main(int argc, char * argv[])
 									}
 									cur_id = URIIDMap[matchVec[j]];
 								}else{
-									l = l * 2;
 									newPPPartialRes.TagVec.push_back('2');
 									cur_id = -1;
 								}
 								newPPPartialRes.MatchVec.push_back(cur_id);
 								
-								//if('1' == newPPPartialRes.TagVec[newPPPartialRes.TagVec.size() - 1])
-								//	match_pos_vec.push_back(j);
+								if('1' == newPPPartialRes.TagVec[newPPPartialRes.TagVec.size() - 1])
+									match_pos_vec.push_back(j);
 							}
 							newPPPartialRes.FragmentID = pInt;
 							newPPPartialRes.ID = partialResNum;
 
 							if(0 == Util::isFinalResult(newPPPartialRes)){
-								
-								partialResVec[l].PartialResList.push_back(newPPPartialRes);
+								for(j = 0; j < match_pos_vec.size(); j++){
+									partialResVec[match_pos_vec[j]].PartialResList.push_back(newPPPartialRes);
+								}
 								aResNum++;
 								partialResNum++;
 							}else{
 								finalPartialResSet.insert(newPPPartialRes.MatchVec);
+								//finalResNum++;
 							}
-							
-							//printf("%d containing %d has the result: %s\n", pInt, l, resVec[i].c_str());
 						}
 						delete[] partialResArr;
 					}
@@ -435,7 +431,7 @@ main(int argc, char * argv[])
 							continue;
 						}
 						
-						Util::HashJoin(finalPartialResSet, partialResVec[join_order_vec[0]].PartialResList, tmpPartialResMap, p, partialResVec[join_order_vec[i]].match_pos);
+						Util::HashJoin_old(finalPartialResSet, partialResVec[join_order_vec[0]].PartialResList, tmpPartialResMap, p, partialResVec[join_order_vec[i]].match_pos);
 
 						if(partialResVec[join_order_vec[0]].PartialResList.size() == 0){
 							break;
