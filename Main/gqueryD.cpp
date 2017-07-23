@@ -402,31 +402,42 @@ main(int argc, char * argv[])
 					//adj_list_ss << endl;
 				}
 				
-				vector< vector<int> > join_order_vec = Util::findMultipleJoinOrder(partial_res_adjacent_list, partialResVec, fullTag);
+				vector<int> join_order_vec = Util::findJoinOrder(partialResVec, _query_adjacent_list);				
+				vector<int> match_pos_vec;
+				int tag = 0;
+				match_pos_vec.push_back(partialResVec[join_order_vec[0]].match_pos);
+				if(0 != partialResVec.size()){
 				
-				for(i = 0; i < join_order_vec.size(); i++){
-					
-					PPPartialResVec tmpPPPartialResVec;
-					tmpPPPartialResVec.PartialResList.assign(partialResVec[join_order_vec[i][0]].PartialResList.begin(), partialResVec[join_order_vec[i][0]].PartialResList.end());
-					tmpPPPartialResVec.match_pos = partialResVec[join_order_vec[i][0]].match_pos;
-					
-					for(j = 1; j < join_order_vec[i].size(); j++){
-						
-						int cur_match_pos = Util::checkJoinable(tmpPPPartialResVec, partialResVec[join_order_vec[i][j]], tmpPPPartialResVec.match_pos, partialResVec[join_order_vec[i][j]].match_pos);
-						tmpPPPartialResVec.match_pos = tmpPPPartialResVec.match_pos | partialResVec[join_order_vec[i][j]].match_pos;
+					stringstream intermediate_strm;
+
+					for(i = 1; i < partialResVec.size(); i++){
+						//cout << "###########  " << partialResVec[i].match_pos << endl;
 						
 						map<int, vector<PPPartialRes> > tmpPartialResMap;
-						for(k = 0; k < partialResVec[join_order_vec[i][j]].PartialResList.size(); k++){
-							
-							if(tmpPartialResMap.count(partialResVec[join_order_vec[i][j]].PartialResList[k].MatchVec[cur_match_pos]) == 0){
-								vector<PPPartialRes> tmpVec;
-								tmpPartialResMap.insert(make_pair(partialResVec[join_order_vec[i][j]].PartialResList[k].MatchVec[cur_match_pos], tmpVec));
+						for(j = 0; j < partialResVec[join_order_vec[i]].PartialResList.size(); j++){
+							tag = 0;
+							for(k = 0; k < match_pos_vec.size(); k++){
+								if('1' == partialResVec[join_order_vec[i]].PartialResList[j].TagVec[match_pos_vec[k]]){
+									tag = 1;
+									break;
+								}
 							}
-							tmpPartialResMap[partialResVec[join_order_vec[i][j]].PartialResList[k].MatchVec[cur_match_pos]].push_back(partialResVec[join_order_vec[i][j]].PartialResList[k]);
+							if(0 == tag){
+								if(tmpPartialResMap.count(partialResVec[join_order_vec[i]].PartialResList[j].MatchVec[partialResVec[join_order_vec[i]].match_pos]) == 0){
+									vector<PPPartialRes> tmpVec;
+									tmpPartialResMap.insert(make_pair(partialResVec[join_order_vec[i]].PartialResList[j].MatchVec[partialResVec[join_order_vec[i]].match_pos], tmpVec));
+								}
+								tmpPartialResMap[partialResVec[join_order_vec[i]].PartialResList[j].MatchVec[partialResVec[join_order_vec[i]].match_pos]].push_back(partialResVec[join_order_vec[i]].PartialResList[j]);
+							}
 						}
-						Util::HashJoin(finalPartialResSet, tmpPPPartialResVec.PartialResList, tmpPartialResMap, p, cur_match_pos);
+						match_pos_vec.push_back(partialResVec[join_order_vec[i]].match_pos);
+						if(tmpPartialResMap.size() == 0){					
+							continue;
+						}
 						
-						if(tmpPPPartialResVec.PartialResList.size() == 0){
+						Util::HashJoin(finalPartialResSet, partialResVec[join_order_vec[0]].PartialResList, tmpPartialResMap, p, partialResVec[join_order_vec[i]].match_pos);
+
+						if(partialResVec[join_order_vec[0]].PartialResList.size() == 0){
 							break;
 						}
 					}
