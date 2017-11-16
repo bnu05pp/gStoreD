@@ -236,6 +236,7 @@ public:
 	bool join_sparql(SPARQLquery& _sparql_query);
 	bool join_basic(BasicQuery* _basic_query);
 	bool join_pe(BasicQuery* _basic_query, string &internal_tag_str);
+	bool join_can(BasicQuery* _basic_query, string &internal_tag_str, vector< vector<int> >& candidates_vec, vector< vector<int> >& candidates_id_vec);
 	~Join();
 };
 

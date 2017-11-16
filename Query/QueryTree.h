@@ -210,7 +210,8 @@ class QueryTree
 			GroupPattern& getDeletePatterns();
 
 			bool checkWellDesigned();
-			int checkStar(std::vector< std::vector<int> > &_query_ad);
+			int checkStar();
+			int checkStar(std::vector< std::vector<int> > &_query_adjacent_list);
 
 			void print();
 };

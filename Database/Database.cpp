@@ -572,10 +572,9 @@ Database::query(const string _query, ResultSet& _result_set, vector<string>& par
     long tv_parse = Util::get_cur_time();
 	
     //Query
-	vector< vector<int> > _query_adjacent_list;
     if (general_evaluation.getQueryTree().getUpdateType() == QueryTree::Not_Update)
     {
-		if(general_evaluation.getQueryTree().checkStar(_query_adjacent_list) == 0){
+		if(general_evaluation.getQueryTree().checkStar() == 0){
 			general_evaluation.doQuery(this->internal_tag_str);
 
 			//printf("general_evaluation.getLocalPartialResult(this->internal_tag_str, partialResStrVec);\n");
@@ -657,10 +656,9 @@ Database::queryCrossingEdge(const string _query, ResultSet& _result_set, vector<
     long tv_parse = Util::get_cur_time();
 	
     //Query
-	vector< vector<int> > _query_adjacent_list;
     if (general_evaluation.getQueryTree().getUpdateType() == QueryTree::Not_Update)
     {
-		if(general_evaluation.getQueryTree().checkStar(_query_adjacent_list) == 0){
+		if(general_evaluation.getQueryTree().checkStar() == 0){
 			general_evaluation.doQuery(this->internal_tag_str);
 
 			//printf("general_evaluation.getLocalPartialResult(this->internal_tag_str, partialResStrVec);\n");
@@ -676,9 +674,9 @@ Database::queryCrossingEdge(const string _query, ResultSet& _result_set, vector<
 	return true;
 }
 
-/*
-bool
-Database::generateVCandidate(const string _query, vector<string>& candidateSet)
+
+int
+Database::queryPathBMC(const string _query, ResultSet& _result_set, string& final_res_str, int myRank, FILE* _fp)
 {
     GeneralEvaluation general_evaluation(this->vstree, this->kvstore, this->stringindex);
 
@@ -689,20 +687,44 @@ Database::generateVCandidate(const string _query, vector<string>& candidateSet)
     long tv_parse = Util::get_cur_time();
 	
     //Query
-	vector< vector<int> > _query_adjacent_list;
     if (general_evaluation.getQueryTree().getUpdateType() == QueryTree::Not_Update)
     {
-		if(general_evaluation.getQueryTree().checkStar(_query_adjacent_list) == 0){
-			general_evaluation.doQuery(this->internal_tag_str);
+		general_evaluation.doQuery();
+		general_evaluation.getFinalResult(_result_set);
+		final_res_str = _result_set.to_str();
+		//res_str_vec.push_back(final_res_str.substr(final_res_str.find("\n") + 1));
+	}
 
-			//printf("general_evaluation.getLocalPartialResult(this->internal_tag_str, partialResStrVec);\n");
-			general_evaluation.getLocalPartialResult(this->kvstore, this->internal_tag_str, partialResStrVec);
+	return _result_set.ansNum;
+}
+
+bool
+Database::generateCandidate(const string _query, vector< vector<int> >& candidates_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int> &satellites_set, ResultSet& _result_set, vector<string>& lpm_str_vec, vector< vector<int> >& candidate_id_vec)
+{
+    GeneralEvaluation general_evaluation(this->vstree, this->kvstore, this->stringindex);
+
+    long tv_begin = Util::get_cur_time();
+
+	if (!general_evaluation.parseQuery(_query))
+		return false;
+    long tv_parse = Util::get_cur_time();
+	
+    //Query
+    if (general_evaluation.getQueryTree().getUpdateType() == QueryTree::Not_Update)
+    {
+		if(general_evaluation.getQueryTree().checkStar() == 0){
+			general_evaluation.findCandidate(this->internal_tag_str, candidates_vec, candidate_id_vec, _query_dir_ad, _query_pre_ad, _query_ad, satellites_set);
+		}else{
+			general_evaluation.doQuery();
+			general_evaluation.getFinalResult(_result_set);
+			string final_res_str = _result_set.to_str();
+			lpm_str_vec.push_back(final_res_str.substr(final_res_str.find("\n") + 1));
 		}
     }
-    
+
 	return true;
 }
-*/
+
 bool
 Database::query(const string _query, ResultSet& _result_set, FILE* _fp)
 {
@@ -872,8 +894,84 @@ Database::build(const string& _rdf_file)
 	long tv_build_end = Util::get_cur_time();
 	cout << "after build, used " << (tv_build_end - tv_build_begin) << "ms." << endl;
 	cout << "finish build VS-Tree." << endl;
+	
+	delete this->vstree;
+	this->vstree = NULL;
+	//sync();
+	//cout << "sync vstree" << endl;
 
-	//this->vstree->saveTree();
+	//string cmd = "rm -rf " + _entry_file;
+	//system(cmd.c_str());
+	//cout << "signature file removed" << endl;
+
+	return true;
+}
+
+//NOTICE+QUERY:to save memory for large cases, we can consider building one tree at a time(then release)
+//Or read the rdf file on separate segments
+//WARN:the ID type is int, and entity/literal are just separated by a limit
+//which means that entity num <= 10^9 literal num <= 10^9 predicate num <= 2*10^9
+//If we use unsigned as type, then max triple can be 10^9(edge case)
+//If we use long long, no more problem, but wasteful
+//Or we can consider divide entity and literal totally
+//In distributed gStore, each machine's graph should be based on unique encoding IDs,
+//and require that triples in each graph no more than a limit(maybe 10^9)
+bool
+Database::build(const string& _rdf_file, const char* _internal_file)
+{
+	//manage the id for a new database
+	this->resetIDinfo();
+
+	string ret = Util::getExactPath(_rdf_file.c_str());
+	long tv_build_begin = Util::get_cur_time();
+
+	string store_path = this->name;
+	Util::create_dir(store_path);
+
+	string kv_store_path = store_path + "/kv_store";
+	Util::create_dir(kv_store_path);
+
+	string vstree_store_path = store_path + "/vs_store";
+	Util::create_dir(vstree_store_path);
+	
+	string stringindex_store_path = store_path + "/stringindex_store";
+    Util::create_dir(stringindex_store_path);
+
+	cout << "begin encode RDF from : " << ret << " ..." << endl;
+
+	//BETTER+TODO:now require that dataset size < memory
+	//to support really larger datasets, divide and insert into B+ tree and VStree
+	//(read the value, add list and set; update the signature, remove and reinsert)
+	//the query process is nearly the same
+	//QUERY:build each index in one thread to speed up, but the sorting case?
+	//one sorting order for several indexes
+
+	// to be switched to new encodeRDF method.
+	//    this->encodeRDF(ret);
+	if (!this->encodeRDF_new(ret, _internal_file))	//<-- this->kvstore->id2* trees are closed
+	{
+		return false;
+	}
+	cout << "finish encode." << endl;
+
+	//this->kvstore->flush();
+	delete this->kvstore;
+	this->kvstore = NULL;
+	//sync();
+	//cout << "sync kvstore" << endl;
+	//this->kvstore->release();
+	//cout<<"release kvstore"<<endl;
+
+	//(this->kvstore)->open();
+	string _entry_file = this->getSignatureBFile();
+
+	cout << "begin build VS-Tree on " << ret << "..." << endl;
+	(this->vstree)->buildTree(_entry_file);
+
+	long tv_build_end = Util::get_cur_time();
+	cout << "after build, used " << (tv_build_end - tv_build_begin) << "ms." << endl;
+	cout << "finish build VS-Tree." << endl;
+	
 	delete this->vstree;
 	this->vstree = NULL;
 	//sync();
@@ -1100,6 +1198,81 @@ Database::exist_triple(int _sub_id, int _pre_id, int _obj_id)
 //NOTICE: all constants are transfered to ids in memory
 //this maybe not ok when size is too large!
 bool
+Database::encodeRDF_new(const string _rdf_file, const char* _in_file)
+{
+#ifdef DEBUG
+	//cerr<< "now to log!!!" << endl;
+	Util::logging("In encodeRDF_new");
+	//cerr<< "end log!!!" << endl;
+#endif
+	int** _p_id_tuples = NULL;
+	int _id_tuples_max = 0;
+
+	//map sub2id, pre2id, entity/literal in obj2id, store in kvstore, encode RDF data into signature
+	if (!this->sub2id_pre2id_obj2id_RDFintoSignature(_rdf_file, _p_id_tuples, _id_tuples_max, _in_file))
+	{
+		return false;
+	}
+
+    //build stringindex before this->kvstore->id2* trees are closed
+    this->stringindex->setNum(StringIndexFile::Entity, this->entity_num);
+    this->stringindex->setNum(StringIndexFile::Literal, this->literal_num);
+    this->stringindex->setNum(StringIndexFile::Predicate, this->pre_num);
+    this->stringindex->save(*this->kvstore);
+
+	//NOTICE:close these trees now to save memory
+	this->kvstore->close_entity2id();
+	this->kvstore->close_id2entity();
+	this->kvstore->close_literal2id();
+	this->kvstore->close_id2literal();
+	this->kvstore->close_predicate2id();
+	this->kvstore->close_id2predicate();
+
+	/* map subid 2 objid_list  &
+	* subIDpreID 2 objid_list &
+	* subID 2 <preIDobjID>_list */
+	//this->s2o_s2po_sp2o(_p_id_tuples, _id_tuples_max);
+
+	/* map objid 2 subid_list  &
+	* objIDpreID 2 subid_list &
+	* objID 2 <preIDsubID>_list */
+	//this->o2s_o2ps_op2s(_p_id_tuples, _id_tuples_max);
+
+	//this->s2p_s2po_sp2o(_p_id_tuples, _id_tuples_max);
+	//NOTICE:we had better compute the corresponding triple num here
+	this->s2p_s2o_s2po_sp2o(_p_id_tuples, _id_tuples_max);
+	//this->s2p_s2o_s2po_sp2o_sp2n(_p_id_tuples, _id_tuples_max);
+	this->o2p_o2s_o2ps_op2s(_p_id_tuples, _id_tuples_max);
+	//this->o2p_o2s_o2ps_op2s_op2n(_p_id_tuples, _id_tuples_max);
+	this->p2s_p2o_p2so(_p_id_tuples, _id_tuples_max);
+	//this->p2s_p2o_p2so_p2n(_p_id_tuples, _id_tuples_max);
+	//
+	//WARN:this is too costly because s-o key num is too large
+	//100G+ for DBpedia2014
+	//this->so2p_s2o(_p_id_tuples, _id_tuples_max);
+
+	//WARN:we must free the memory for id_tuples array
+	//for (int i = 0; i < _id_tuples_max; ++i)
+	for (int i = 0; i < this->triples_num; ++i)
+	{
+		delete[] _p_id_tuples[i];
+	}
+	delete[] _p_id_tuples;
+
+	bool flag = this->saveDBInfoFile();
+	if (!flag)
+	{
+		return false;
+	}
+
+	Util::logging("finish encodeRDF_new");
+
+	return true;
+}
+
+//NOTICE: all constants are transfered to ids in memory
+//this maybe not ok when size is too large!
+bool
 Database::encodeRDF_new(const string _rdf_file)
 {
 #ifdef DEBUG
@@ -1171,6 +1344,315 @@ Database::encodeRDF_new(const string _rdf_file)
 
 	return true;
 }
+
+
+bool
+Database::sub2id_pre2id_obj2id_RDFintoSignature(const string _rdf_file, int**& _p_id_tuples, int & _id_tuples_max, const char* _in_file)
+{
+	int _id_tuples_size;
+	{
+		//initial
+		_id_tuples_max = 10 * 1000 * 1000;
+		_p_id_tuples = new int*[_id_tuples_max];
+		_id_tuples_size = 0;
+		this->sub_num = 0;
+		this->pre_num = 0;
+		this->entity_num = 0;
+		this->literal_num = 0;
+		this->triples_num = 0;
+		(this->kvstore)->open_entity2id(KVstore::CREATE_MODE);
+		(this->kvstore)->open_id2entity(KVstore::CREATE_MODE);
+		(this->kvstore)->open_predicate2id(KVstore::CREATE_MODE);
+		(this->kvstore)->open_id2predicate(KVstore::CREATE_MODE);
+		(this->kvstore)->open_literal2id(KVstore::CREATE_MODE);
+		(this->kvstore)->open_id2literal(KVstore::CREATE_MODE);
+	}
+
+	//Util::logging("finish initial sub2id_pre2id_obj2id");
+	cerr << "finish initial sub2id_pre2id_obj2id" << endl;
+
+	ifstream _fin(_rdf_file.c_str());
+	if (!_fin)
+	{
+		cerr << "sub2id&pre2id&obj2id: Fail to open : " << _rdf_file << endl;
+		//exit(0);
+		return false;
+	}
+
+	string _six_tuples_file = this->getSixTuplesFile();
+	ofstream _six_tuples_fout(_six_tuples_file.c_str());
+	if (!_six_tuples_fout)
+	{
+		cerr << "sub2id&pre2id&obj2id: Fail to open: " << _six_tuples_file << endl;
+		//exit(0);
+		return false;
+	}
+
+	TripleWithObjType* triple_array = new TripleWithObjType[RDFParser::TRIPLE_NUM_PER_GROUP];
+
+	//don't know the number of entity
+	//pre allocate entitybitset_max EntityBitSet for storing signature, double the space until the _entity_bitset is used up.
+	int entitybitset_max = 10000;
+	EntityBitSet** _entity_bitset = new EntityBitSet*[entitybitset_max];
+	for (int i = 0; i < entitybitset_max; i++)
+	{
+		_entity_bitset[i] = new EntityBitSet();
+		_entity_bitset[i]->reset();
+	}
+	EntityBitSet _tmp_bitset;
+
+	//parse a file
+	RDFParser _parser(_fin);
+
+	Util::logging("==> while(true)");
+
+	while (true)
+	{
+		int parse_triple_num = 0;
+
+		_parser.parseFile(triple_array, parse_triple_num);
+
+		{
+			stringstream _ss;
+			_ss << "finish rdfparser" << this->triples_num << endl;
+			//Util::logging(_ss.str());
+			cout << _ss.str() << endl;
+		}
+		cout<<"after info in sub2id_"<<endl;
+
+		if (parse_triple_num == 0)
+		{
+			break;
+		}
+
+		//Process the Triple one by one
+		for (int i = 0; i < parse_triple_num; i++)
+		{
+			this->triples_num++;
+
+			//if the _id_tuples exceeds, double the space
+			if (_id_tuples_size == _id_tuples_max)
+			{
+				int _new_tuples_len = _id_tuples_max * 2;
+				int** _new_id_tuples = new int*[_new_tuples_len];
+				memcpy(_new_id_tuples, _p_id_tuples, sizeof(int*) * _id_tuples_max);
+				delete[] _p_id_tuples;
+				_p_id_tuples = _new_id_tuples;
+				_id_tuples_max = _new_tuples_len;
+			}
+
+			// For subject
+			// (all subject is entity, some object is entity, the other is literal)
+			string _sub = triple_array[i].getSubject();
+			int _sub_id = (this->kvstore)->getIDByEntity(_sub);
+			if (_sub_id == -1)
+			{
+				//_sub_id = this->entity_num;
+				_sub_id = this->allocEntityID();
+				//this->entity_num++;
+				(this->kvstore)->setIDByEntity(_sub, _sub_id);
+				(this->kvstore)->setEntityByID(_sub_id, _sub);
+			}
+			//  For predicate
+			string _pre = triple_array[i].getPredicate();
+			int _pre_id = (this->kvstore)->getIDByPredicate(_pre);
+			if (_pre_id == -1)
+			{
+				//_pre_id = this->pre_num;
+				_pre_id = this->allocPredicateID();
+				//this->pre_num++;
+				(this->kvstore)->setIDByPredicate(_pre, _pre_id);
+				(this->kvstore)->setPredicateByID(_pre_id, _pre);
+			}
+
+			//  For object
+			string _obj = triple_array[i].getObject();
+			int _obj_id = -1;
+			// obj is entity
+			if (triple_array[i].isObjEntity())
+			{
+				_obj_id = (this->kvstore)->getIDByEntity(_obj);
+				if (_obj_id == -1)
+				{
+					//_obj_id = this->entity_num;
+					_obj_id = this->allocEntityID();
+					//this->entity_num++;
+					(this->kvstore)->setIDByEntity(_obj, _obj_id);
+					(this->kvstore)->setEntityByID(_obj_id, _obj);
+				}
+			}
+			//obj is literal
+			if (triple_array[i].isObjLiteral())
+			{
+				_obj_id = (this->kvstore)->getIDByLiteral(_obj);
+				if (_obj_id == -1)
+				{
+					//_obj_id = Util::LITERAL_FIRST_ID + (this->literal_num);
+					_obj_id = this->allocLiteralID();
+					//this->literal_num++;
+					(this->kvstore)->setIDByLiteral(_obj, _obj_id);
+					(this->kvstore)->setLiteralByID(_obj_id, _obj);
+					//#ifdef DEBUG
+					//if(_obj == "\"Bob\"")
+					//{
+					//cout << "this is id for Bob: " << _obj_id << endl;
+					//}
+					//cout<<"literal should be bob: " << kvstore->getLiteralByID(_obj_id)<<endl;
+					//cout<<"id for bob: "<<kvstore->getIDByLiteral("\"Bob\"")<<endl;
+					//#endif
+				}
+			}
+
+			//  For id_tuples
+			_p_id_tuples[_id_tuples_size] = new int[3];
+			_p_id_tuples[_id_tuples_size][0] = _sub_id;
+			_p_id_tuples[_id_tuples_size][1] = _pre_id;
+			_p_id_tuples[_id_tuples_size][2] = _obj_id;
+			_id_tuples_size++;
+
+#ifdef DEBUG_PRECISE
+			//  save six tuples
+			{
+				_six_tuples_fout << _sub_id << '\t'
+					<< _pre_id << '\t'
+					<< _obj_id << '\t'
+					<< _sub << '\t'
+					<< _pre << '\t'
+					<< _obj << endl;
+			}
+#endif
+			//_entity_bitset is used up, double the space
+			if (this->entity_num >= entitybitset_max)
+			{
+				//cout<<"to double entity bitset num"<<endl;
+				EntityBitSet** _new_entity_bitset = new EntityBitSet*[entitybitset_max * 2];
+				memcpy(_new_entity_bitset, _entity_bitset, sizeof(EntityBitSet*) * entitybitset_max);
+				delete[] _entity_bitset;
+				_entity_bitset = _new_entity_bitset;
+
+				int tmp = entitybitset_max * 2;
+				for (int i = entitybitset_max; i < tmp; i++)
+				{
+					_entity_bitset[i] = new EntityBitSet();
+					_entity_bitset[i]->reset();
+				}
+
+				entitybitset_max = tmp;
+			}
+
+			{
+				_tmp_bitset.reset();
+				Signature::encodePredicate2Entity(_pre_id, _tmp_bitset, Util::EDGE_OUT);
+				Signature::encodeStr2Entity(_obj.c_str(), _tmp_bitset);
+				*_entity_bitset[_sub_id] |= _tmp_bitset;
+			}
+
+			if (triple_array[i].isObjEntity())
+			{
+				_tmp_bitset.reset();
+				Signature::encodePredicate2Entity(_pre_id, _tmp_bitset, Util::EDGE_IN);
+				Signature::encodeStr2Entity(_sub.c_str(), _tmp_bitset);
+				//cout<<"objid: "<<_obj_id <<endl;
+				//when 15999 error
+				//WARN:id allocated can be very large while the num is not so much
+				//This means that maybe the space for the _obj_id is not allocated now
+				//NOTICE:we prepare the free id list in uporder and contiguous, so in build process
+				//this can work well
+				*_entity_bitset[_obj_id] |= _tmp_bitset;
+			}
+		}
+	}
+
+	Util::logging("==> end while(true)");
+
+	delete[] triple_array;
+	_fin.close();
+	_six_tuples_fout.close();
+	
+	//-------------------------------- begin loading internal uris --------------------------------
+	vector<char> buffer(this->entity_num, '0');
+	string buff;
+    ifstream infile;
+
+    infile.open(_in_file);
+
+    if(!infile){
+            cout << "import internal vertices failed." << endl;
+    }
+	set<string> internal_set;
+    
+    while(getline(infile, buff)){
+            buff.erase(0, buff.find_first_not_of("\r\t\n "));
+            buff.erase(buff.find_last_not_of("\r\t\n ") + 1);
+            internal_set.insert(buff);
+    }
+
+    infile.close();
+	//-------------------------------- finish loading internal uris --------------------------------
+
+	{
+		//save all entity_signature into binary file
+		string _sig_binary_file = this->getSignatureBFile();
+		FILE* _sig_fp = fopen(_sig_binary_file.c_str(), "wb");
+		if (_sig_fp == NULL) {
+			cerr << "Failed to open : " << _sig_binary_file << endl;
+		}
+
+		//EntityBitSet _all_bitset;
+		for (int i = 0; i < this->entity_num; i++)
+		{
+			SigEntry* _sig = new SigEntry(EntitySig(*_entity_bitset[i]), i);
+			fwrite(_sig, sizeof(SigEntry), 1, _sig_fp);
+			//_all_bitset |= *_entity_bitset[i];
+			
+			string tmp_uri_str = this->kvstore->getEntityByID(i);
+			if(internal_set.count(tmp_uri_str) != 0){
+				buffer[i] = '1';
+			}
+			
+			delete _sig;
+		}
+		fclose(_sig_fp);
+
+		for (int i = 0; i < entitybitset_max; i++)
+		{
+			delete _entity_bitset[i];
+		}
+		delete[] _entity_bitset;
+	}
+	
+	//-------------------------------- begin writing internal vertices --------------------------------
+	stringstream _internal_path;
+    _internal_path << this->getStorePath() << "/internal_nodes.dat";
+    cout << this->getStorePath() << " begin to import internal vertices to database " << _internal_path.str() << endl;
+
+    //FILE * pFile;
+    ofstream _internal_output(_internal_path.str().c_str());
+    //pFile = fopen (_internal_path.str().c_str(), "wb");
+    //fwrite(buffer, sizeof(char), this->entity_num, pFile);
+    //fclose(pFile);
+    for (int i = 0; i < buffer.size(); ++i){
+            _internal_output << buffer[i];
+    }
+    _internal_output.close();
+	cout << this->getStorePath() << " import internal vertices to database " << _internal_path.str() << " done." << endl;
+	//-------------------------------- finish writing internal vertices --------------------------------
+
+	{
+		stringstream _ss;
+		_ss << "finish sub2id pre2id obj2id" << endl;
+		_ss << "tripleNum is " << this->triples_num << endl;
+		_ss << "entityNum is " << this->entity_num << endl;
+		_ss << "preNum is " << this->pre_num << endl;
+		_ss << "literalNum is " << this->literal_num << endl;
+		Util::logging(_ss.str());
+		cout << _ss.str() << endl;
+	}
+
+	return true;
+}
+
+//NOTICE: below are the the new ones
 
 bool
 Database::sub2id_pre2id_obj2id_RDFintoSignature(const string _rdf_file, int**& _p_id_tuples, int & _id_tuples_max)
@@ -3705,58 +4187,240 @@ Database::test_build_sig()
 	Util::logging("candidate:\n\n" + _q.candidate_str());
 }
 
-//void
-//Database::test_join()
-//{
-//BasicQuery* _bq = new BasicQuery("");
-//
-//* <!!!>	y:created	<!!!_(album)>.
-//*  <!!!>	y:created	<Louden_Up_Now>.
-//*  <!!!_(album)>	y:hasSuccessor	<Louden_Up_Now>
-//* <!!!_(album)>	rdf:type	<wordnet_album_106591815>
-//*
-//* id of <!!!> is 0
-//* id of <!!!_(album)> is 2
-//*
-//*
-//* ?x1	y:created	?x2.
-//*  ?x1	y:created	<Louden_Up_Now>.
-//*  ?x2	y:hasSuccessor	<Louden_Up_Now>.
-//* ?x2	rdf:type	<wordnet_album_106591815>
-//
-//{
-////Triple _triple("?x1", "y:created", "?x2");
-//_bq->addTriple(_triple);
-//}
-//{
-//Triple _triple("?x1", "y:created", "<Louden_Up_Now>");
-//_bq->addTriple(_triple);
-//}
-//{
-//Triple _triple("?x2", "y:hasSuccessor", "<Louden_Up_Now>");
-//_bq->addTriple(_triple);
-//}
-//{
-//Triple _triple("?x2", "rdf:type", "<wordnet_album_106591815>");
-//_bq->addTriple(_triple);
-//}
-//vector<string> _v;
-//_v.push_back("?x1");
-//_v.push_back("?x2");
+bool
+Database::locallyJoin(vector< vector<int> >& candidates_vec, vector< set<int> >& can_set_list, vector<string>& lpm_str_vec, vector< vector<int> >& res_crossing_edges_vec, vector<int>& all_crossing_edges_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int>& satellites_set, int myRank, vector< set<int> >& internal_can_set_list)
+{
+	int this_var_num = _query_ad.size();
+	set<RecordType> cur_partial_matches;
+	TableType this_current_table;
+	for(int _start_idx = 0; _start_idx < this_var_num; _start_idx++){
+		
+		if(satellites_set.count(_start_idx) != 0){
+			continue;
+		}
+		
+		int this_start_id = _start_idx;
+		//vector<bool> this_dealed_triple(this_edge_num, false);
+		stack<RecordType> this_mystack;
+		for(int i = 0; i < candidates_vec[this_start_id].size(); ++i)
+		{
+			int ele = candidates_vec[this_start_id][i];
+			if(ele >= Util::LITERAL_FIRST_ID || this->internal_tag_str.at(ele) == '1'){
+				RecordType record(this_var_num, -1);
+				record[this_start_id] = ele;
+				this_mystack.push(record);
+			}
+		}
+		
+		while(!this_mystack.empty()){
+			
+			RecordType record = this_mystack.top();
+			this_mystack.pop();
+			
+			set<int> dealed_id;
+			int next_id = this->choose_next_node(record, _query_ad, dealed_id);
+			if(next_id == -1){
+				this_current_table.push_back(record);
+				continue;
+			}
+			
+			IDList* valid_ans_list = NULL;
+			bool matched = true;
+			
+			for(int i = 0; i < _query_ad[next_id].size(); i++){
+				
+				if(dealed_id.count(_query_ad[next_id][i]) != 0){
+					if(_query_pre_ad[next_id][i] == -1){
+						matched = false;
+						break;
+					}
+					
+					int ele = record[_query_ad[next_id][i]];
+					
+					int* id_list;
+					int id_list_len = -1;
+					if(_query_dir_ad[next_id][i] == 0){
+						if(_query_pre_ad[next_id][i] == -2)
+							this->kvstore->getsubIDlistByobjID(ele, id_list, id_list_len);
+						else if(_query_pre_ad[next_id][i] >= 0)
+							this->kvstore->getsubIDlistByobjIDpreID(ele, _query_pre_ad[next_id][i], id_list, id_list_len);
+															
+						//this->kvstore->getsubIDlistByobjIDpreID(ele, _query_pre_ad[next_id][i], id_list, id_list_len);
+					}else{
+						if(_query_pre_ad[next_id][i] == -2)
+							this->kvstore->getobjIDlistBysubID(ele, id_list, id_list_len);
+						else if(_query_pre_ad[next_id][i] >= 0)
+							this->kvstore->getobjIDlistBysubIDpreID(ele, _query_pre_ad[next_id][i], id_list, id_list_len);
+						
+						//this->kvstore->getobjIDlistBysubIDpreID(ele, _query_pre_ad[next_id][i], id_list, id_list_len);
+					}
+					
+					if(id_list_len == -1 || id_list_len == 0)
+					{
+						matched = false;
+						break;
+					}
+					
+					if(valid_ans_list == NULL)
+					{
+						valid_ans_list = new IDList;
+						for(int i = 0; i < id_list_len; ++i){
+							valid_ans_list->addID(id_list[i]);
+						}	
+					}else{
+						valid_ans_list->intersectList(id_list, id_list_len);
+					}
+					
+					if(valid_ans_list->size() == 0)
+					{
+						matched = false;
+						break;
+					}
+					
+					delete[] id_list;
+				}
+			}
+			
+			if(matched)
+			{
+				for(int i = 0; i < valid_ans_list->size(); ++i)
+				{
+					RecordType tmp(record);
+					tmp[next_id] = (*valid_ans_list)[i];
+					
+					if(tmp[next_id] >= Util::LITERAL_FIRST_ID || internal_tag_str.at(tmp[next_id]) == '1'){
+						if(internal_can_set_list[next_id].count(tmp[next_id]) != 0)
+							this_mystack.push(tmp);
+					}else{
+						string tmp_extended_node_str = (this->kvstore)->getEntityByID(tmp[next_id]);
+						int tmp_hash_val = Util::BKDRHash(tmp_extended_node_str.c_str());
+						if(tmp_hash_val < 0)
+							tmp_hash_val *= -1;
+						tmp_hash_val = tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE;
+						
+						if(can_set_list[next_id].count(tmp_hash_val) != 0){
+							this_mystack.push(tmp);
+						}
+					}
+				}
+			}
+			delete valid_ans_list;
+			valid_ans_list = NULL;
+		}
+		cur_partial_matches.insert(this_current_table.begin(), this_current_table.end());
+		
+		this_current_table.clear();
+	}
+	this_current_table.assign(cur_partial_matches.begin(), cur_partial_matches.end());
+	//printf("In Client %d, there are %d local partial matches\n", myRank, this_current_table.size());
+	
+	for(TableIterator it0 = this_current_table.begin(); it0 != this_current_table.end(); ++it0)
+	{
+		RecordType cur_record = *it0;
+		int size = cur_record.size();
+		
+		vector<int> tmp_crossing_edge_vec;
+		vector<string> tmp_res_vec(size, "");
+		vector<char> tmp_res_tag_vec(size, '0');
+		
+		//printf("result_str2id.size() = %d\n", result_str2id.size());
+		for (int v = 0; v < cur_record.size(); ++v)
+		{
+			if (cur_record[v] != -1)
+			{	
+				if(cur_record[v] >= Util::LITERAL_FIRST_ID){
+					tmp_res_tag_vec[v] = '1';
+					tmp_res_vec[v] = (this->kvstore)->getLiteralByID(cur_record[v]);
+				}else if(internal_tag_str.at(cur_record[v]) == 1){
+					tmp_res_tag_vec[v] = '1';
+					tmp_res_vec[v] = (this->kvstore)->getEntityByID(cur_record[v]);
+				}else{
+					if(satellites_set.count(v) == 0){
+						tmp_res_tag_vec[v] = internal_tag_str.at(cur_record[v]);
+						tmp_res_vec[v] = (this->kvstore)->getEntityByID(cur_record[v]);
+					}else{
+						tmp_res_tag_vec[v] = '1';
+						tmp_res_vec[v] = (this->kvstore)->getEntityByID(cur_record[v]);
+					}
+				}
+			}else{
+				tmp_res_tag_vec[v] = '2';
+				tmp_res_vec[v] = "-1";
+			}
+		}
+		
+		stringstream partial_res_ss;
+		for (int v = 0; v < cur_record.size(); ++v){
+			int var_id = v;
+			if(tmp_res_tag_vec[var_id] != '2')
+				partial_res_ss << tmp_res_tag_vec[var_id];
+			partial_res_ss << tmp_res_vec[var_id] << "\t";
+			
+			if(tmp_res_tag_vec[var_id] != '1'){
+				continue;
+			}
+			
+			for (int k = 0; k < _query_ad[v].size(); k++){
+				int var_id2 = _query_ad[v][k];
+				
+				if (var_id2 == -1)
+				{
+					continue;
+				}
+				
+				if(tmp_res_vec[var_id2].compare("-1") != 0){
+					if(tmp_res_tag_vec[var_id2] == '0' && satellites_set.count(var_id2) == 0){
+						stringstream crossing_edge_ss;
+						
+						if(var_id < var_id2){
+							crossing_edge_ss << var_id << "\t" << var_id2 << "\t" << tmp_res_vec[var_id] << "\t" << tmp_res_vec[var_id2] << "\t";
+						}else{
+							crossing_edge_ss << var_id2 << "\t" << var_id << "\t" << tmp_res_vec[var_id2] << "\t" << tmp_res_vec[var_id] << "\t";
+						}
+						
+						int tmp_hash_val = Util::BKDRHash(crossing_edge_ss.str().c_str());
+						if(tmp_hash_val < 0)
+							tmp_hash_val *= -1;
+						
+						all_crossing_edges_vec.push_back((tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE));
+						tmp_crossing_edge_vec.push_back((tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE));
+						
+						//log_output_partial << crossing_edge_ss.str() << "=" << (tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE) << "\t";
+					}
+				}
+			}
+		}
+		res_crossing_edges_vec.push_back(tmp_crossing_edge_vec);
+		partial_res_ss << endl;
+		lpm_str_vec.push_back(partial_res_ss.str());
+	}
+	
+    return true;
+}
 
-//_bq->encodeBasicQuery(this->kvstore, _v);
-//Util::logging(_bq->to_str());
-//SPARQLquery _q;
-//_q.addBasicQuery(_bq);
 
-//(this->vstree)->retrieve(_q);
-
-//Util::logging("\n\n");
-//Util::logging("candidate:\n\n"+_q.candidate_str());
-//_q.print(cout);
-
-//this->join(_q);
-//ResultSet _rs;
-//this->getFinalResult(_q, _rs);
-//cout << _rs.to_str() << endl;
-//}
+int
+Database::choose_next_node(RecordType& record, vector< vector<int> > &_query_ad, set<int>& dealed_id)
+{
+	set<int> matched_id;
+	for(int i = 0; i < _query_ad.size(); i++){
+		if(record[i] != -1){
+			if(record[i] >= Util::LITERAL_FIRST_ID || this->internal_tag_str.at(record[i]) == '1'){
+				dealed_id.insert(i);
+			}
+			matched_id.insert(i);
+		}
+	}
+	
+	for(int i = 0; i < _query_ad.size(); i++){
+		if(dealed_id.count(i) != 0){
+			for(int j = 0; j < _query_ad[i].size(); j++){
+				if(matched_id.count(_query_ad[i][j]) == 0){
+					return _query_ad[i][j];
+				}
+			}
+		}
+	}
+	
+    return -1;
+}

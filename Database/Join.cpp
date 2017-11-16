@@ -197,6 +197,65 @@ Join::join_pe(BasicQuery* _basic_query, string &internal_tag_str)
 	return true;
 }
 
+bool
+Join::join_can(BasicQuery* _basic_query, string &internal_tag_str, vector< vector<int> >& candidates_vec, vector< vector<int> >& candidates_id_vec)
+{
+	this->init(_basic_query);
+	
+	bool ret1 = this->distributed_filter_before_join();
+	
+	if (!ret1)
+	{
+		this->clear();
+		return false;
+	}
+
+	this->distributed_add_literal_candidate();
+	bool ret2 = true;//this->allFilterByPres();
+	
+	if (!ret2)
+	{
+		this->clear();
+		return false;
+	}
+	
+	for(int j = 0; j < this->var_num; ++j){
+		
+		if(this->basic_query->getVarDegree(j) == 0){
+			continue;			
+		}
+		
+		IDList& cur_table = this->basic_query->getCandidateList(j);
+		int cur_size = this->basic_query->getCandidateSize(j);
+		vector<int> cur_can_vec, cur_can_id_vec;
+		
+		for(int i = cur_size - 1; i >= 0; i--)
+		{
+			int ele = cur_table.getID(i);
+			string can_str;
+			if(ele >= Util::LITERAL_FIRST_ID){
+				can_str = (this->kvstore)->getLiteralByID(ele);
+			}else if(internal_tag_str.at(ele) == '1'){
+				can_str = (this->kvstore)->getEntityByID(ele);
+			}else{
+				continue;
+			}
+			int tmp_hash_val = Util::BKDRHash(can_str.c_str());
+			if(tmp_hash_val < 0)
+				tmp_hash_val *= -1;
+			
+			cur_can_vec.push_back((tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE));
+			cur_can_id_vec.push_back(ele);
+		}
+
+		candidates_vec.push_back(cur_can_vec);
+		candidates_id_vec.push_back(cur_can_id_vec);
+	}
+	
+	return true;
+}
+
+
 void
 Join::distributed_add_literal_candidate()
 {

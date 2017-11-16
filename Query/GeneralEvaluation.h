@@ -48,10 +48,13 @@ class GeneralEvaluation
 		bool parseQuery(const std::string &_query);
 		QueryTree& getQueryTree();
 		
-		bool onlyParseQuery(const std::string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag, std::vector< std::vector<int> > &_query_ad);
+		bool onlyParseQuery(const std::string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag);
+		bool onlyParseQuery(const std::string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag, std::vector< vector<int> > &_query_adjacent_list);
 
 		void doQuery();
-		void doQuery(string &internal_tag_str);
+		void doQuery(std::string &internal_tag_str);
+		
+		void findCandidate(string &internal_tag_str, vector< vector<int> >& candidates_vec, vector< vector<int> >& candidates_id_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int> &satellites_set);
 
 		void getBasicQuery(QueryTree::GroupPattern &grouppattern);
 

@@ -74,7 +74,7 @@ library = -ltermcap -lreadline -L./lib -lantlr
 def64IO = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
 
 #gtest
-all: $(exedir)gload $(exedir)gloadD $(exedir)gserver $(exedir)gclient $(exedir)gquery $(exedir)gqueryD $(exedir)gconsole $(api_java) $(exedir)gadd $(exedir)gsub
+all: $(exedir)gload $(exedir)gloadD $(exedir)gloadD_local $(exedir)gserver $(exedir)gclient $(exedir)gquery $(exedir)gqueryD $(exedir)gconsole $(api_java) $(exedir)gadd $(exedir)gsub
 
 test_index: test_index.cpp
 	$(CC) $(EXEFLAG) -o test_index test_index.cpp $(objfile) $(library)
@@ -84,6 +84,9 @@ test_index: test_index.cpp
 #NOTICE:not include g*.o in objfile due to multiple definitions of main()
 $(exedir)gload: $(lib_antlr) $(objdir)gload.o $(objfile) 
 	$(CC) $(EXEFLAG) -o $(exedir)gload $(objdir)gload.o $(objfile) $(library)
+	
+$(exedir)gloadD_local: $(lib_antlr) $(objdir)gloadD_local.o $(objfile) 
+	$(CC) $(EXEFLAG) -o $(exedir)gloadD_local $(objdir)gloadD_local.o $(objfile) $(library)
 
 $(exedir)gloadD: $(lib_antlr) $(objdir)gloadD.o $(objfile) 
 	$(MPICC) $(EXEFLAG) -o $(exedir)gloadD $(objdir)gloadD.o $(objfile) $(library)
@@ -93,7 +96,7 @@ $(exedir)gquery: $(lib_antlr) $(objdir)gquery.o $(objfile)
 
 $(exedir)gqueryD: $(lib_antlr) $(objdir)gqueryD.o $(objfile) 
 	$(MPICC) $(EXEFLAG) -o $(exedir)gqueryD $(objdir)gqueryD.o $(objfile) $(library)
-	
+		
 $(exedir)gserver: $(lib_antlr) $(objdir)gserver.o $(objfile) 
 	$(CC) $(EXEFLAG) -o $(exedir)gserver $(objdir)gserver.o $(objfile) $(library)
 
@@ -111,6 +114,9 @@ $(exedir)gconsole: $(lib_antlr) $(objdir)gconsole.o $(objfile) $(api_cpp)
 $(objdir)gload.o: Main/gload.cpp Database/Database.h Util/Util.h
 	$(CC) $(CFLAGS) Main/gload.cpp $(inc) -o $(objdir)gload.o 
 	
+$(objdir)gloadD_local.o: Main/gloadD_local.cpp Database/Database.h Util/Util.h
+	$(CC) $(CFLAGS) Main/gloadD_local.cpp $(inc) -o $(objdir)gloadD_local.o 
+	
 $(objdir)gquery.o: Main/gquery.cpp Database/Database.h Util/Util.h
 	$(CC) $(CFLAGS) Main/gquery.cpp $(inc) -o $(objdir)gquery.o  #-DREADLINE_ON
 	#add -DREADLINE_ON if using readline
@@ -121,7 +127,7 @@ $(objdir)gloadD.o: Main/gloadD.cpp Database/Database.h Util/Util.h
 $(objdir)gqueryD.o: Main/gqueryD.cpp Database/Database.h Util/Util.h
 	$(MPICC) $(CFLAGS) Main/gqueryD.cpp $(inc) -o $(objdir)gqueryD.o  #-DREADLINE_ON
 	#add -DREADLINE_ON if using readline
-	
+		
 $(objdir)gserver.o: Main/gserver.cpp Server/Server.h Util/Util.h
 	$(CC) $(CFLAGS) Main/gserver.cpp $(inc) -o $(objdir)gserver.o
 

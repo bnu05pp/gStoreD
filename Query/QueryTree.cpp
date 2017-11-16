@@ -556,6 +556,31 @@ void QueryTree::print()
 	for (int j = 0; j < 80; j++)			printf("=");	printf("\n");
 }
 
+int QueryTree::checkStar()
+{
+	vector<QueryTree::GroupPattern::Pattern> p_vec = this->getGroupPattern().patterns;
+	
+	if(p_vec.size() <= 1)
+		return 1;
+	
+	string center_var;
+	if(p_vec[0].subject.value.compare(p_vec[1].subject.value) == 0 || p_vec[0].subject.value.compare(p_vec[1].object.value) == 0){
+		center_var = p_vec[0].subject.value;
+	}else if(p_vec[0].object.value.compare(p_vec[1].subject.value) == 0 || p_vec[0].object.value.compare(p_vec[1].object.value) == 0){
+		center_var = p_vec[0].object.value;
+	}else{
+		return 0;
+	}
+	
+	for(int i = 2; i < p_vec.size(); i++){
+		if(p_vec[i].subject.value.compare(center_var) != 0 && p_vec[i].object.value.compare(center_var) != 0){
+			return 0;
+		}
+	}
+	
+	return 1;
+}
+
 int QueryTree::checkStar(vector< vector<int> > &_query_adjacent_list)
 {
 	vector<QueryTree::GroupPattern::Pattern> p_vec = this->getGroupPattern().patterns;

@@ -18,6 +18,31 @@ vector<vector<string> > GeneralEvaluation::getSPARQLQueryVarset()
 	return res;
 }
 
+bool GeneralEvaluation::onlyParseQuery(const string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag)
+{
+    try
+    {
+        this->query_parser.SPARQLParse(_query, this->query_tree);
+    }
+    catch(const char* e)
+    {
+        cerr << e << endl;
+        return false;
+    }
+	
+	this->query_tree.getGroupPattern().getVarset();
+	var_num = this->query_tree.getGroupPattern().grouppattern_subject_object_maximal_varset.varset.size();
+	if(this->query_tree.getQueryForm() == QueryTree::Ask_Query){
+		query_form = QueryTree::Ask_Query;
+	}else{
+		query_form = QueryTree::Select_Query;
+	}
+	
+	star_tag = this->query_tree.checkStar();
+	
+    return true;
+}
+
 bool GeneralEvaluation::onlyParseQuery(const string &_query, int& var_num, QueryTree::QueryForm& query_form, int& star_tag, vector< vector<int> > &_query_adjacent_list)
 {
     try
@@ -246,6 +271,8 @@ void GeneralEvaluation::getCrossingEdges(KVstore *_kvstore, string& internal_tag
 
 	if (this->query_tree.getQueryForm() == QueryTree::Select_Query)
 	{
+		//ofstream log_output_partial("log_partial_full.txt");
+		
 		if (this->query_tree.checkProjectionAsterisk())
 		{
 			for (int i = 0 ; i < (int)results_id->results.size(); i++)
@@ -324,7 +351,7 @@ void GeneralEvaluation::getCrossingEdges(KVstore *_kvstore, string& internal_tag
 						partial_res_ss << tmp_res_tag_vec[var_id];
 					partial_res_ss << tmp_res_vec[var_id] << "\t";
 					
-					if(tmp_res_vec[var_id].compare("-1") == 0){
+					if(tmp_res_tag_vec[var_id] != '1'){
 						continue;
 					}
 					
@@ -353,7 +380,8 @@ void GeneralEvaluation::getCrossingEdges(KVstore *_kvstore, string& internal_tag
 								
 								all_crossing_edges_vec.push_back((tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE));
 								tmp_crossing_edge_vec.push_back((tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE));
-								//printf("%s has hash code %d\n", crossing_edge_ss.str().c_str(), all_crossing_edges_vec[all_crossing_edges_vec.size() - 1]);
+								
+								//log_output_partial << crossing_edge_ss.str() << "=" << (tmp_hash_val % Util::MAX_CROSSING_EDGE_HASH_SIZE) << "\t";
 							}
 						}
 					}
@@ -361,10 +389,27 @@ void GeneralEvaluation::getCrossingEdges(KVstore *_kvstore, string& internal_tag
 				res_crossing_edges_vec.push_back(tmp_crossing_edge_vec);
 				partial_res_ss << endl;
 				lpm_str_vec.push_back(partial_res_ss.str());
+				//log_output_partial << partial_res_ss.str();
 				current_result++;
 			}
 		}
 	}
+}
+
+void GeneralEvaluation::findCandidate(string& internal_tag_str, vector< vector<int> >& candidates_vec, vector< vector<int> >& candidates_id_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int> &satellites_set)
+{
+	this->query_tree.getGroupPattern().getVarset();
+	if (this->query_tree.getGroupPattern().grouppattern_subject_object_maximal_varset.hasCommonVar(this->query_tree.getGroupPattern().grouppattern_predicate_maximal_varset))
+	{
+		cerr << "There are some vars occur both in subject/object and predicate." << endl;
+		return;
+	}
+
+	this->strategy = Strategy(this->kvstore, this->vstree);
+	this->getBasicQuery(this->query_tree.getGroupPattern());
+
+	this->sparql_query.encodeQuery(this->kvstore, this->getSPARQLQueryVarset());
+	this->strategy.handleCandidate(this->sparql_query, internal_tag_str, candidates_vec, candidates_id_vec, _query_dir_ad, _query_pre_ad, _query_ad, satellites_set);
 }
 
 void GeneralEvaluation::doQuery(string& internal_tag_str)

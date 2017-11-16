@@ -28,6 +28,7 @@ public:
 	//select efficient strategy to do the sparql query
 	bool handle(SPARQLquery&, ResultFilter* _result_filter = NULL);
 	bool handle(SPARQLquery& _query, string &internal_tag_str, ResultFilter* _result_filter = NULL);
+	bool handleCandidate(SPARQLquery& _query, string &internal_tag_str, vector< vector<int> >& candidates_vec, vector< vector<int> >& candidates_id_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int> &satellites_set, ResultFilter* _result_filter = NULL);
 
 private:
 	int method;
@@ -35,6 +36,7 @@ private:
 	VSTree* vstree;
 	void handler0(BasicQuery*, vector<int*>&, ResultFilter* _result_filter = NULL);
 	void handler0_0(BasicQuery*, string &, vector<int*>&, ResultFilter* _result_filter = NULL);
+	void handler0_1(BasicQuery*, vector< vector<int> >&, string &, vector< vector<int> >& , ResultFilter* _result_filter = NULL);
 	void handler1(BasicQuery*, vector<int*>&);
 	void handler2(BasicQuery*, vector<int*>&);
 	void handler3(BasicQuery*, vector<int*>&);

@@ -223,7 +223,7 @@ main(int argc, char * argv[])
 			//_rdf = string("../") + _rdf;
 		//}
 		Database _db(_db_path);
-		bool flag = _db.build("_distributed_gStore_tmp_rdf_triples.n3");
+		bool flag = _db.build("_distributed_gStore_tmp_rdf_triples.n3", "_distributed_gStore_tmp_internal_vertices.txt");
 		if (flag)
 		{
 			cout << "import RDF file to database done." << endl;
@@ -233,6 +233,7 @@ main(int argc, char * argv[])
 			cout << "import RDF file to database failed." << endl;
 		}
 		
+		/*
 		printf("%d begin to load internal vertices!\n", myRank); 
 		
 		//_db.setInternalVertices("_distributed_gStore_tmp_internal_vertices.txt");
@@ -240,7 +241,7 @@ main(int argc, char * argv[])
         //_db1.load();
         string _in_file = "_distributed_gStore_tmp_internal_vertices.txt";
         _db1.loadInternalVertices(_in_file);
-		
+		*/
 		remove("_distributed_gStore_tmp_internal_vertices.txt");
 		remove("_distributed_gStore_tmp_rdf_triples.n3");
 		

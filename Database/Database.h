@@ -49,8 +49,11 @@ public:
 	bool unload();
 	bool query(const string _query, ResultSet& _result_set, FILE* _fp = stdout);
 	bool query(const string _query, ResultSet& _result_set, vector<string>& partialResStrVec, int myRank, FILE* _fp = stdout);
+	int queryPathBMC(const string _query, ResultSet& _result_set, string& res_str_vec, int myRank, FILE* _fp = stdout);
 	bool queryCrossingEdge(const string _query, ResultSet& _result_set, vector<string>& lpm_str_vec, vector< vector<int> >& res_crossing_edges_vec, vector<int>& all_crossing_edges_vec, int myRank, FILE* _fp = stdout);
-	//bool generateVCandidate(const string _query, vector<string>& candidateSet);
+	bool generateCandidate(const string _query, vector< vector<int> >& candidates_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int>& satellites_set, ResultSet& _result_set, vector<string>& lpm_str_vec, vector< vector<int> >& candidate_id_vec);
+	bool locallyJoin(vector< vector<int> >& candidates_vec, vector< set<int> >& can_set_list, vector<string>& lpm_str_vec, vector< vector<int> >& res_crossing_edges_vec, vector<int>& all_crossing_edges_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int>& satellites_set, int myRank, vector< set<int> >& internal_can_set_list);
+	int choose_next_node(RecordType& record, vector< vector<int> > &_query_ad, set<int>& dealed_id);
 	
 	 //1. if subject of _triple doesn't exist,
 		//then assign a new subid, and insert a new SigEntry
@@ -58,6 +61,7 @@ public:
 	 //3. if subject exist, update SigEntry, and update spo, ops... etc. if needed
 
     bool build(const string& _rdf_file);
+	bool build(const string& _rdf_file, const char* _internal_file);
 	//interfaces to insert/delete from given rdf file
 	bool insert(std::string _rdf_file);
 	bool remove(std::string _rdf_file);
@@ -164,6 +168,7 @@ private:
 	//encodeRDF_new invoke new rdfParser to solve task 1 & 2 in one time scan.
 	bool encodeRDF(const string _rdf_file);
 	bool encodeRDF_new(const string _rdf_file);
+	bool encodeRDF_new(const string _rdf_file, const char* _in_file);
 
 	//insert and delete, notice that modify is not needed here
 	//we can read from file or use sparql syntax
@@ -176,6 +181,7 @@ private:
 	//bool remove(const vector<TripleWithObjType>& _triples, vector<int>& _vertices, vector<int>& _predicates);
 
 	bool sub2id_pre2id_obj2id_RDFintoSignature(const string _rdf_file, int**& _p_id_tuples, int & _id_tuples_max);
+	bool sub2id_pre2id_obj2id_RDFintoSignature(const string _rdf_file, int**& _p_id_tuples, int & _id_tuples_max, const char* _in_file);
 	bool literal2id_RDFintoSignature(const string _rdf_file, int** _p_id_tuples, int _id_tuples_max);
 	
 	bool s2o_s2po_sp2o(int** _p_id_tuples, int _id_tuples_max);

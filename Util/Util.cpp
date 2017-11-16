@@ -1291,65 +1291,6 @@ bool operator==(CrossingEdgeMapping& node1, CrossingEdgeMapping& node2)
 }
 
 void
-Util::HashJoin_old(std::set< vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, vector<PPPartialRes> >& res2, int fragmentNum, int matchPos){
-
-	if(0 == res1.size()){
-		return;
-	}
-	
-	int tag = 0, len = res1[0].MatchVec.size();
-	std::vector<PPPartialRes> new_res;
-	for(int i = 0; i < res1.size(); i++){
-		if('1' == res1[i].TagVec[matchPos]){
-			new_res.push_back(res1[i]);
-			continue;
-		}
-		if(res2.count(res1[i].MatchVec[matchPos]) == 0)
-			continue;
-		//cout << res2[res1[i].MatchVec[matchPos]].size() << " " << endl;
-		
-		std::vector<PPPartialRes> tmp_res = res2[res1[i].MatchVec[matchPos]];
-		for(int j = 0; j < tmp_res.size(); j++){
-			//cout << tmp_res.size() << "~~~~" << j << endl;
-			tag = 0;
-			PPPartialRes curPPPartialRes;
-			curPPPartialRes.TagVec.assign(len, '0');
-			curPPPartialRes.FragmentID = fragmentNum + res1[i].FragmentID;
-			for(int k = 0; k < len; k++){
-				//cout << "++++" << k << " " << res1[i].MatchVec[k] << " " << tmp_res[j].MatchVec[k] << endl;
-				if(res1[i].MatchVec[k] != -1 && tmp_res[j].MatchVec[k] != -1
-					&& res1[i].MatchVec[k] != tmp_res[j].MatchVec[k]){
-
-					tag = 1;
-					break;
-				}else if(res1[i].MatchVec[k] == -1 && tmp_res[j].MatchVec[k] != -1){
-					curPPPartialRes.TagVec[k] = tmp_res[j].TagVec[k];
-					curPPPartialRes.MatchVec.push_back(tmp_res[j].MatchVec[k]);
-				}else if(res1[i].MatchVec[k] != -1 && tmp_res[j].MatchVec[k] == -1){
-					curPPPartialRes.TagVec[k] = res1[i].TagVec[k];
-					curPPPartialRes.MatchVec.push_back(res1[i].MatchVec[k]);
-				}else{
-					if('1' == res1[i].TagVec[k] || '1' == tmp_res[j].TagVec[k])
-						curPPPartialRes.TagVec[k] = '1';
-					curPPPartialRes.MatchVec.push_back(res1[i].MatchVec[k]);
-				}
-			}
-					
-			//cout << "tag = " << tag << endl;
-			if(tag == 1)
-				continue;
-
-			if(0 == Util::isFinalResult(curPPPartialRes)){
-				new_res.push_back(curPPPartialRes);
-			}else{
-				finalPartialResSet.insert(curPPPartialRes.MatchVec);
-			}
-		}
-	}
-	res1.assign(new_res.begin(), new_res.end());
-}
-
-void
 Util::HashJoin(std::set< vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, vector<PPPartialRes> >& res2, int fragmentNum, int matchPos, PPPartialResVec& newPPPartialResVec){
 
 	if(0 == res1.size()){
@@ -1719,15 +1660,15 @@ vector<string>
 Util::split(string textline, string tag){
 	vector<string> res;
 	std::size_t pre_pos = 0;
-	std::size_t pos = textline.find_first_of(tag);
+	std::size_t pos = textline.find(tag);
 	while (pos != std::string::npos){
 		string curStr = textline.substr(pre_pos, pos - pre_pos);
 		curStr.erase(0, curStr.find_first_not_of("\r\t\n "));
 		curStr.erase(curStr.find_last_not_of("\r\t\n ") + 1);
 		if(strcmp(curStr.c_str(), "") != 0)
 			res.push_back(curStr);
-		pre_pos = pos + 1;
-		pos = textline.find_first_of(tag, pre_pos);
+		pre_pos = pos + tag.size();
+		pos = textline.find(tag, pre_pos);
 	}
 
 	string curStr = textline.substr(pre_pos, pos - pre_pos);
@@ -1737,4 +1678,157 @@ Util::split(string textline, string tag){
 		res.push_back(curStr);
 
 	return res;
+}
+
+bool 
+Util::myfunction1(PartialResVec v1, PartialResVec v2){
+	if(v1.partialResList.size() != v2.partialResList.size())
+		return (v1.partialResList.size() < v2.partialResList.size());
+	if(v1.varList.size() != v2.varList.size())
+		return (v1.varList.size() < v2.varList.size());
+	return v1.varList[0].compare(v2.varList[0]);
+}
+
+void 
+Util::CheckJoinPosition(PartialResVec v1, PartialResVec v2, int& pos1, int& pos2){
+	for(int i = 0; i < v1.varList.size(); i++){
+		for(int j = 0; j < v2.varList.size(); j++){
+			if(v1.varList[i].compare(v2.varList[j]) == 0){
+				pos1 = i;
+				pos2 = j;
+				return;
+			}
+		}
+	}
+}
+
+int
+Util::FindParent(vector<int>& p, int x){
+    if(p[x] != x){
+		p[x] = Util::FindParent(p, p[x]);
+	}
+    return p[x];
+}
+
+void 
+Util::HashJoin(PartialResVec& res1, map<int, vector< vector<int> > >& res2, vector<string> varList2, int pos1, int pos2){
+	if(0 == res1.partialResList.size()){
+		return;
+	}
+	
+	int tag = 0;
+	PartialResVec new_res;
+	
+	for(int i = 0; i < res1.varList.size(); i++){
+		new_res.varList.push_back(res1.varList[i]);
+	}
+	std::set<string> additionalVarSet;
+	std::map<int, int> mappingPosMap;
+	for(int i = 0; i < varList2.size(); i++){
+		tag = -1;
+		for(int j = 0; j < res1.varList.size(); j++){
+			if(res1.varList[j].compare(varList2[i]) == 0){
+				mappingPosMap.insert(make_pair(i, j));
+				tag = 1;
+				break;
+			}
+		}
+		if(tag == -1){
+			new_res.varList.push_back(varList2[i]);
+			additionalVarSet.insert(varList2[i]);
+		}
+	}
+	
+	for(int i = 0; i < res1.partialResList.size(); i++){
+		if(res2.count(res1.partialResList[i][pos1]) == 0)
+			continue;
+		
+		std::vector< std::vector<int> > tmp_res = res2[res1.partialResList[i][pos1]];
+		for(int j = 0; j < tmp_res.size(); j++){
+			tag = 0;
+			std::vector<int> new_res_vec(res1.partialResList[i][pos1]);
+			
+			for(int k = 0; k < tmp_res[j].size(); k++){
+				if(additionalVarSet.count(varList2[k]) != 0){
+					new_res_vec.push_back(tmp_res[j][k]);
+					continue;
+				}
+
+				if(res1.partialResList[i][mappingPosMap[k]] != tmp_res[j][k]){
+
+					tag = 1;
+					break;
+				}else{
+					new_res_vec.push_back(tmp_res[j][k]);
+				}
+			}
+
+			if(tag == 1){
+				continue;
+			}else{
+				new_res.partialResList.push_back(new_res_vec);
+			}
+		}
+	}
+	res1.varList.assign(new_res.varList.begin(), new_res.varList.end());
+	res1.partialResList.assign(new_res.partialResList.begin(), new_res.partialResList.end());
+}
+
+void
+Util::HashJoin_old(std::set< vector<int> >& finalPartialResSet, std::vector<PPPartialRes>& res1, std::map<int, vector<PPPartialRes> >& res2, int fragmentNum, int matchPos){
+
+	if(0 == res1.size()){
+		return;
+	}
+	
+	int tag = 0, len = res1[0].MatchVec.size();
+	std::vector<PPPartialRes> new_res;
+	for(int i = 0; i < res1.size(); i++){
+		if('1' == res1[i].TagVec[matchPos]){
+			new_res.push_back(res1[i]);
+			continue;
+		}
+		if(res2.count(res1[i].MatchVec[matchPos]) == 0)
+			continue;
+		//cout << res2[res1[i].MatchVec[matchPos]].size() << " " << endl;
+		
+		std::vector<PPPartialRes> tmp_res = res2[res1[i].MatchVec[matchPos]];
+		for(int j = 0; j < tmp_res.size(); j++){
+			//cout << tmp_res.size() << "~~~~" << j << endl;
+			tag = 0;
+			PPPartialRes curPPPartialRes;
+			curPPPartialRes.TagVec.assign(len, '0');
+			curPPPartialRes.FragmentID = fragmentNum + res1[i].FragmentID;
+			for(int k = 0; k < len; k++){
+				//cout << "++++" << k << " " << res1[i].MatchVec[k] << " " << tmp_res[j].MatchVec[k] << endl;
+				if(res1[i].MatchVec[k] != -1 && tmp_res[j].MatchVec[k] != -1
+					&& res1[i].MatchVec[k] != tmp_res[j].MatchVec[k]){
+
+					tag = 1;
+					break;
+				}else if(res1[i].MatchVec[k] == -1 && tmp_res[j].MatchVec[k] != -1){
+					curPPPartialRes.TagVec[k] = tmp_res[j].TagVec[k];
+					curPPPartialRes.MatchVec.push_back(tmp_res[j].MatchVec[k]);
+				}else if(res1[i].MatchVec[k] != -1 && tmp_res[j].MatchVec[k] == -1){
+					curPPPartialRes.TagVec[k] = res1[i].TagVec[k];
+					curPPPartialRes.MatchVec.push_back(res1[i].MatchVec[k]);
+				}else{
+					if('1' == res1[i].TagVec[k] || '1' == tmp_res[j].TagVec[k])
+						curPPPartialRes.TagVec[k] = '1';
+					curPPPartialRes.MatchVec.push_back(res1[i].MatchVec[k]);
+				}
+			}
+					
+			//cout << "tag = " << tag << endl;
+			if(tag == 1)
+				continue;
+
+			if(0 == Util::isFinalResult(curPPPartialRes)){
+				new_res.push_back(curPPPartialRes);
+			}else{
+				finalPartialResSet.insert(curPPPartialRes.MatchVec);
+			}
+		}
+	}
+	res1.assign(new_res.begin(), new_res.end());
 }
