@@ -38,7 +38,7 @@ gqueryD is used to query an exsisting database with SPARQL files.
 
 When the program finish answering the query, the SPARQL matches are written in the file named `finalRes.txt`.
 
-*gStorev0.3.0-D only support simple "select" queries and "ask" queries of BGP now, and all variables occuring in the "where" clause of a "select" query should also occur in the "selsect" clause*
+*gStorev0.3.0-D only support simple "select" queries and "ask" queries of BGP now, and all variables occuring in the "where" clause of a "select" query should also occur in the "selsect" clause.*
 
 We also take dbpedia_example_distgStore.n3 as an example.
 
