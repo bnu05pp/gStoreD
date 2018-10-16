@@ -51,7 +51,7 @@ public:
 	bool query(const string _query, ResultSet& _result_set, vector<string>& partialResStrVec, int myRank, FILE* _fp = stdout);
 	int queryPathBMC(const string _query, ResultSet& _result_set, string& res_str_vec, int myRank, FILE* _fp = stdout);
 	bool queryCrossingEdge(const string _query, ResultSet& _result_set, vector<string>& lpm_str_vec, vector< vector<int> >& res_crossing_edges_vec, vector<int>& all_crossing_edges_vec, int myRank, FILE* _fp = stdout);
-	bool generateCandidate(const string _query, vector< vector<int> >& candidates_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int>& satellites_set, ResultSet& _result_set, vector<string>& lpm_str_vec, vector< vector<int> >& candidate_id_vec);
+	int generateCandidate(const string _query, vector< vector<int> >& candidates_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int>& satellites_set, ResultSet& _result_set, vector<string>& lpm_str_vec, vector< vector<int> >& candidate_id_vec);
 	bool locallyJoin(vector< vector<int> >& candidates_vec, vector< set<int> >& can_set_list, vector<string>& lpm_str_vec, vector< vector<int> >& res_crossing_edges_vec, vector<int>& all_crossing_edges_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int>& satellites_set, int myRank, vector< set<int> >& internal_can_set_list);
 	int choose_next_node(RecordType& record, vector< vector<int> > &_query_ad, set<int>& dealed_id);
 	

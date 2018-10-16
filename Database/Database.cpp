@@ -698,7 +698,7 @@ Database::queryPathBMC(const string _query, ResultSet& _result_set, string& fina
 	return _result_set.ansNum;
 }
 
-bool
+int
 Database::generateCandidate(const string _query, vector< vector<int> >& candidates_vec, vector< vector<int> > &_query_dir_ad, vector< vector<int> > &_query_pre_ad, vector< vector<int> > &_query_ad, set<int> &satellites_set, ResultSet& _result_set, vector<string>& lpm_str_vec, vector< vector<int> >& candidate_id_vec)
 {
     GeneralEvaluation general_evaluation(this->vstree, this->kvstore, this->stringindex);
@@ -706,12 +706,13 @@ Database::generateCandidate(const string _query, vector< vector<int> >& candidat
     long tv_begin = Util::get_cur_time();
 
 	if (!general_evaluation.parseQuery(_query))
-		return false;
+		return -1;
     long tv_parse = Util::get_cur_time();
 	
     //Query
     if (general_evaluation.getQueryTree().getUpdateType() == QueryTree::Not_Update)
     {
+		//0 means that the query is not star, and 1 means that the query is a star
 		if(general_evaluation.getQueryTree().checkStar() == 0){
 			general_evaluation.findCandidate(this->internal_tag_str, candidates_vec, candidate_id_vec, _query_dir_ad, _query_pre_ad, _query_ad, satellites_set);
 		}else{
@@ -719,10 +720,11 @@ Database::generateCandidate(const string _query, vector< vector<int> >& candidat
 			general_evaluation.getFinalResult(_result_set);
 			string final_res_str = _result_set.to_str();
 			lpm_str_vec.push_back(final_res_str.substr(final_res_str.find("\n") + 1));
+			return 1;
 		}
     }
 
-	return true;
+	return 0;
 }
 
 bool

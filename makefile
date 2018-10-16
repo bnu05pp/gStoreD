@@ -74,7 +74,7 @@ library = -ltermcap -lreadline -L./lib -lantlr
 def64IO = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
 
 #gtest
-all: $(exedir)gload $(exedir)gloadD $(exedir)gloadD_local $(exedir)gserver $(exedir)gclient $(exedir)gquery $(exedir)gqueryD $(exedir)gconsole $(api_java) $(exedir)gadd $(exedir)gsub
+all: $(exedir)gload $(exedir)gloadD $(exedir)gloadD_local $(exedir)gserver $(exedir)gclient $(exedir)gquery $(exedir)gqueryD $(exedir)gqueryDECan $(exedir)gqueryDBasic $(exedir)gqueryDist $(exedir)gqueryDOld $(exedir)gconsole $(api_java) $(exedir)gadd $(exedir)gsub
 
 test_index: test_index.cpp
 	$(CC) $(EXEFLAG) -o test_index test_index.cpp $(objfile) $(library)
@@ -96,7 +96,19 @@ $(exedir)gquery: $(lib_antlr) $(objdir)gquery.o $(objfile)
 
 $(exedir)gqueryD: $(lib_antlr) $(objdir)gqueryD.o $(objfile) 
 	$(MPICC) $(EXEFLAG) -o $(exedir)gqueryD $(objdir)gqueryD.o $(objfile) $(library)
-		
+	
+$(exedir)gqueryDOld: $(lib_antlr) $(objdir)gqueryDOld.o $(objfile) 
+	$(MPICC) $(EXEFLAG) -o $(exedir)gqueryDOld $(objdir)gqueryDOld.o $(objfile) $(library)
+
+$(exedir)gqueryDBasic: $(lib_antlr) $(objdir)gqueryDBasic.o $(objfile) 
+	$(MPICC) $(EXEFLAG) -o $(exedir)gqueryDBasic $(objdir)gqueryDBasic.o $(objfile) $(library)
+
+$(exedir)gqueryDECan: $(lib_antlr) $(objdir)gqueryDECan.o $(objfile) 
+	$(MPICC) $(EXEFLAG) -o $(exedir)gqueryDECan $(objdir)gqueryDECan.o $(objfile) $(library)
+	
+$(exedir)gqueryDist: $(lib_antlr) $(objdir)gqueryDist.o $(objfile) 
+	$(MPICC) $(EXEFLAG) -o $(exedir)gqueryDist $(objdir)gqueryDist.o $(objfile) $(library)
+	
 $(exedir)gserver: $(lib_antlr) $(objdir)gserver.o $(objfile) 
 	$(CC) $(EXEFLAG) -o $(exedir)gserver $(objdir)gserver.o $(objfile) $(library)
 
@@ -127,7 +139,23 @@ $(objdir)gloadD.o: Main/gloadD.cpp Database/Database.h Util/Util.h
 $(objdir)gqueryD.o: Main/gqueryD.cpp Database/Database.h Util/Util.h
 	$(MPICC) $(CFLAGS) Main/gqueryD.cpp $(inc) -o $(objdir)gqueryD.o  #-DREADLINE_ON
 	#add -DREADLINE_ON if using readline
-		
+	
+$(objdir)gqueryDOld.o: Main/gqueryDOld.cpp Database/Database.h Util/Util.h
+	$(MPICC) $(CFLAGS) Main/gqueryDOld.cpp $(inc) -o $(objdir)gqueryDOld.o  #-DREADLINE_ON
+	#add -DREADLINE_ON if using readline
+
+$(objdir)gqueryDBasic.o: Main/gqueryDBasic.cpp Database/Database.h Util/Util.h
+	$(MPICC) $(CFLAGS) Main/gqueryDBasic.cpp $(inc) -o $(objdir)gqueryDBasic.o  #-DREADLINE_ON
+	#add -DREADLINE_ON if using readline
+	
+$(objdir)gqueryDECan.o: Main/gqueryDECan.cpp Database/Database.h Util/Util.h
+	$(MPICC) $(CFLAGS) Main/gqueryDECan.cpp $(inc) -o $(objdir)gqueryDECan.o  #-DREADLINE_ON
+	#add -DREADLINE_ON if using readline
+
+$(objdir)gqueryDist.o: Main/gqueryDist.cpp Database/Database.h Util/Util.h
+	$(MPICC) $(CFLAGS) Main/gqueryDist.cpp $(inc) -o $(objdir)gqueryDist.o  #-DREADLINE_ON
+	#add -DREADLINE_ON if using readline
+	
 $(objdir)gserver.o: Main/gserver.cpp Server/Server.h Util/Util.h
 	$(CC) $(CFLAGS) Main/gserver.cpp $(inc) -o $(objdir)gserver.o
 
