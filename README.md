@@ -16,7 +16,7 @@ You can install gStore v0.3.0-D in one command. Just run
 to compile the gStore code and build executable "gloadD", "gqueryD".
 
 ### Usage
-gStore v0.3.0-D currently includes four executables and others.
+gStore v0.3.0-D currently includes two executables and others.
 
 ####1. gloadD
 gloadD is used to build a new database from a RDF triple format file.
