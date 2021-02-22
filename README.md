@@ -5,6 +5,11 @@
 ### Overview
 gStoreD is a distributed RDF data management system (or what is commonly called a "triple store") that is based on "partial evaluation" and maintains the graph structure of the original [RDF](http://www.w3.org/TR/rdf11-concepts/) data. Its data model is a labeled, directed multiedge graph, where each vertex corresponds to a subject or an object. We also represent a given [SPARQL](http://www.w3.org/TR/sparql11-overview/) query by a query graph Q. Query processing involves finding subgraph matches of Q over the RDF graph G. 
 
+This system has been published in two papers. 
+Peng Peng, Lei Zou, Runyu Guan. Accelerating Partial Evaluation in Distributed SPARQL Query Evaluation. ICDE 2019: 112-123
+Peng Peng, Lei Zou, M. Tamer Özsu, Lei Chen, Dongyan Zhao. Processing SPARQL queries over distributed RDF graphs. VLDB J. 25(2): 243-268 (2016)
+
+
 ### Install Steps
 System Requirement: 64-bit linux server with GCC, mpich-3.0.4, make, readline installed.
 *We have tested on linux server with CentOS 6.2 x86_64. The version of GCC should be 4.4.7 or later.*
