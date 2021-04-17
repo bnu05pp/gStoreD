@@ -8,6 +8,7 @@ gStoreD is a distributed RDF data management system (or what is commonly called 
 This system has been published in two papers. 
 
 Peng Peng, Lei Zou, Runyu Guan. Accelerating Partial Evaluation in Distributed SPARQL Query Evaluation. ICDE 2019: 112-123
+
 Peng Peng, Lei Zou, M. Tamer Özsu, Lei Chen, Dongyan Zhao. Processing SPARQL queries over distributed RDF graphs. VLDB J. 25(2): 243-268 (2016)
 
 
