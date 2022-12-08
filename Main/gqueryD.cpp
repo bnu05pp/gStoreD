@@ -582,6 +582,18 @@ main(int argc, char * argv[])
 					double time_cost_value = partialResEnd - partialResStart;
 					printf("Communication cost %f s!\n", time_cost_value);
 					printf("It is a star query, and there are %d inner matches.\n", finalPartialResSet.size());
+					
+					ofstream res_output("finalRes.txt");
+					set< vector<int> >::iterator iter = finalPartialResSet.begin();
+					while(iter != finalPartialResSet.end()){
+						vector<int> tempVec = *iter;
+						for(l = 0; l < tempVec.size(); l++){
+							res_output << IDURIMap[tempVec[l]] << "\t";
+						}
+						res_output << endl;
+						iter++;
+					}
+					res_output.close();
 				}
 			}
 			
